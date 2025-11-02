@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessibility Widget - Modern UI Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin: 40px 0 20px;
+            color: #2d3748;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin: 30px 0 15px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #4a5568;
+            line-height: 1.8;
+        }
+
+        .intro {
+            font-size: 1.3rem;
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .feature-card h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border-left: 5px solid #f59e0b;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-box h2 {
+            color: white;
+            margin-top: 0;
+        }
+
+        .cta-box p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+        }
+
+        ul {
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+
+        code {
+            background: #f7fafc;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+            font-size: 0.95em;
+        }
+
+        .demo-section {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            border: 2px dashed #cbd5e0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Focus styles for accessibility */
+        *:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        /* Image styling */
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .icon-demo {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .icon-item {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 30px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 tabindex="0">🎨 Modern Accessibility Widget</h1>
+        
+        <p class="intro" tabindex="0">
+            Experience a beautiful, modern accessibility widget with a sleek design inspired by industry-leading solutions like UserWay.
+        </p>
+
+        <div class="highlight">
+            <h3>✨ What's New?</h3>
+            <p>The accessibility widget has been completely redesigned with a modern, vibrant UI that's both beautiful and functional. Click the accessibility button in the bottom right corner to see the new design!</p>
+        </div>
+
+        <h2 tabindex="0">Key Features</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🎨 Modern Design</h3>
+                <p>Vibrant gradient colors, smooth animations, and professional depth with layered shadows.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>✨ Smooth Animations</h3>
+                <p>Buttery-smooth transitions and hover effects that feel premium and polished.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🎯 Better Visual Hierarchy</h3>
+                <p>Improved spacing, rounded corners, and clear visual distinction between elements.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>💜 Vibrant Colors</h3>
+                <p>Eye-catching indigo-to-purple gradients that look modern and professional.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔘 Enhanced Buttons</h3>
+                <p>Interactive buttons with hover states, active states, and visual feedback.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📱 Responsive Design</h3>
+                <p>Works beautifully on all devices with optimized touch targets.</p>
+            </div>
+        </div>
+
+        <h2 tabindex="0">Design Improvements</h2>
+        
+        <h3 tabindex="0">Color Scheme</h3>
+        <p tabindex="0">
+            The new color palette features vibrant indigo (#6366f1) and purple (#8b5cf6) gradients that create 
+            a modern, professional appearance. The gradient backgrounds add depth and visual interest while 
+            maintaining excellent readability.
+        </p>
+
+        <div class="icon-demo">
+            <div class="icon-item">🎨</div>
+            <div class="icon-item">✨</div>
+            <div class="icon-item">💫</div>
+            <div class="icon-item">🌈</div>
+        </div>
+
+        <h3 tabindex="0">Interactive Elements</h3>
+        <p tabindex="0">
+            All buttons and interactive elements now feature:
+        </p>
+        <ul>
+            <li><strong>Hover Effects:</strong> Smooth scale transformations and color transitions</li>
+            <li><strong>Active States:</strong> Visual feedback when clicking or tapping</li>
+            <li><strong>Focus Indicators:</strong> Clear outlines for keyboard navigation</li>
+            <li><strong>Shimmer Animations:</strong> Subtle light effects on hover</li>
+            <li><strong>Checkmarks:</strong> Visual indicators for active features</li>
+        </ul>
+
+        <h3 tabindex="0">Shadows & Depth</h3>
+        <p tabindex="0">
+            Professional multi-layered shadows create a sense of depth and elevation. The floating button 
+            and menu panels use carefully tuned shadows that enhance the modern aesthetic without 
+            overwhelming the design.
+        </p>
+
+        <div class="demo-section">
+            <h3>🔍 Try It Out!</h3>
+            <p>
+                Look for the vibrant purple accessibility button in the bottom right corner. 
+                Click it to open the menu and explore all the features with the new modern design!
+            </p>
+        </div>
+
+        <h2 tabindex="0">Accessibility Features</h2>
+        
+        <p tabindex="0">
+            Despite the modern redesign, all accessibility features remain fully functional:
+        </p>
+
+        <ul>
+            <li tabindex="0"><strong>Screen Reader:</strong> Built-in text-to-speech for focused elements</li>
+            <li tabindex="0"><strong>Voice Control:</strong> Hands-free operation with voice commands</li>
+            <li tabindex="0"><strong>High Contrast:</strong> Multiple contrast levels for better visibility</li>
+            <li tabindex="0"><strong>Text Size:</strong> Adjustable text sizing with multiple levels</li>
+            <li tabindex="0"><strong>Text Spacing:</strong> Improved letter and word spacing</li>
+            <li tabindex="0"><strong>Dyslexia Font:</strong> Special fonts for easier reading</li>
+            <li tabindex="0"><strong>Color Filters:</strong> Support for different types of color blindness</li>
+            <li tabindex="0"><strong>Animation Control:</strong> Pause or reduce motion</li>
+            <li tabindex="0"><strong>And many more...</strong></li>
+        </ul>
+
+        <div class="cta-box">
+            <h2>Beautiful & Accessible</h2>
+            <p>
+                This widget proves that accessibility tools can be both functional AND beautiful. 
+                The modern design enhances user experience while maintaining all the powerful 
+                accessibility features you need.
+            </p>
+        </div>
+
+        <h2 tabindex="0">Sample Content for Testing</h2>
+        
+        <p tabindex="0">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt 
+            ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation 
+            ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        </p>
+
+        <p tabindex="0">
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat 
+            nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia 
+            deserunt mollit anim id est laborum.
+        </p>
+
+        <h3 tabindex="0">More Sample Text</h3>
+        
+        <p tabindex="0">
+            The quick brown fox jumps over the lazy dog. This pangram contains every letter of the 
+            alphabet, making it perfect for testing fonts and text rendering. Try changing the text 
+            size or font using the accessibility widget!
+        </p>
+
+        <p tabindex="0">
+            Test the various features like high contrast mode, text spacing, line height adjustments, 
+            and dyslexia-friendly fonts to see how they affect the readability of this content.
+        </p>
+
+        <div class="highlight">
+            <h3>💡 Pro Tip</h3>
+            <p>
+                Your preferences are saved automatically! The widget remembers your settings across 
+                page reloads, so you don't have to reconfigure it every time you visit.
+            </p>
+        </div>
+
+        <h2 tabindex="0">Technical Details</h2>
+        
+        <p tabindex="0">
+            The widget is built with vanilla JavaScript and requires no dependencies. It uses modern 
+            CSS features like:
+        </p>
+
+        <ul>
+            <li><code>linear-gradient()</code> for beautiful color transitions</li>
+            <li><code>cubic-bezier()</code> for smooth, natural animations</li>
+            <li><code>box-shadow</code> with multiple layers for professional depth</li>
+            <li><code>transform</code> for performant animations</li>
+            <li><code>::before</code> pseudo-elements for shimmer effects</li>
+        </ul>
+
+        <p tabindex="0">
+            All animations use GPU-accelerated properties for buttery-smooth 60fps performance on 
+            modern browsers.
+        </p>
+    </div>
+
+    <!-- Load the accessibility widget -->
+    <script src="/widget.js"></script>
+</body>
+</html>
