@@ -1,32 +1,763 @@
-<!doctype html><html lang="tr">
-  <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TEST PAGE</title>
-<style>body{font-family:"Arial"; font-size: 18px; } *:focus{outline:solid 2px rgb(27, 132, 224)}</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility Widget Test Page - Comprehensive Testing Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        *:focus {
+            outline: solid 3px #1b84e0;
+            outline-offset: 2px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        nav a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        nav a:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #764ba2;
+            margin: 20px 0 10px;
+            font-size: 1.5em;
+        }
+
+        h4 {
+            color: #555;
+            margin: 15px 0 10px;
+            font-size: 1.2em;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            transition: all 0.3s;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background: #764ba2;
+            transform: scale(1.05);
+        }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
+        .button.secondary {
+            background: #48bb78;
+        }
+
+        .button.danger {
+            background: #f56565;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        input[type="tel"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #f0f0f0;
+        }
+
+        .highlight {
+            background: #fef08a;
+            padding: 2px 4px;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .alert.info {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #075985;
+        }
+
+        .alert.success {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #166534;
+        }
+
+        .alert.warning {
+            background: #fef3c7;
+            border-color: #eab308;
+            color: #854d0e;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            border-color: #dc2626;
+            color: #991b1b;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+        }
+
+        pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+        }
+
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        li {
+            margin: 8px 0;
+        }
+
+        .modal-trigger {
+            cursor: pointer;
+        }
+
+        footer {
+            background: #2d3748;
+            color: white;
+            padding: 30px;
+            margin-top: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            text-decoration: none;
+            z-index: 100;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            nav ul {
+                flex-direction: column;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<h1 tabindex="0">test</h1>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet </p>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet </p>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet </p>
-                                        
+    <header role="banner">
+        <h1 tabindex="0">Accessibility Widget Test Page</h1>
+        <p tabindex="0">Comprehensive testing suite for accessibility features including text-to-speech, keyboard navigation, visual adjustments, and more.</p>
+    </header>
 
-<h1>test</h1>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet </p>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet </p>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet </p>
-<p tabindex="0">Lorem ipsum dolor sinan amet Lorem ipsum dolor sinan Lorem ipsum dolor sinan amet 
-       
+    <nav role="navigation" aria-label="Main navigation">
+        <ul>
+            <li><a href="#typography">Typography</a></li>
+            <li><a href="#forms">Forms</a></li>
+            <li><a href="#tables">Tables</a></li>
+            <li><a href="#media">Media</a></li>
+            <li><a href="#interactive">Interactive</a></li>
+            <li><a href="#content">Content</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
 
+    <main id="main-content" role="main">
+        <!-- Typography Section -->
+        <section id="typography" aria-labelledby="typography-heading">
+            <h2 id="typography-heading" tabindex="0">Typography & Text Elements</h2>
 
-<script type="module" src="/widget.js"></script>
+            <div class="card">
+                <h3 tabindex="0">Headings Hierarchy</h3>
+                <h4 tabindex="0">Level 4 Heading - Testing Font Size Adjustments</h4>
+                <p tabindex="0">This section tests various text elements and font size adjustments. The accessibility widget should allow users to <span class="highlight">increase or decrease font sizes</span>, adjust line spacing, and change font families for better readability.</p>
+
+                <p tabindex="0"><strong>Bold text</strong> and <em>italic text</em> are important for emphasis. The widget should maintain readability across all text styles including <code>inline code elements</code> and <a href="#" tabindex="0">hyperlinks</a>.</p>
+            </div>
+
+            <div class="card">
+                <h3 tabindex="0">Lists and Structure</h3>
+                <h4 tabindex="0">Unordered List</h4>
+                <ul>
+                    <li tabindex="0">First list item - tests keyboard navigation</li>
+                    <li tabindex="0">Second list item - tests text-to-speech reading</li>
+                    <li tabindex="0">Third list item with <a href="#" tabindex="0">embedded link</a></li>
+                    <li tabindex="0">Fourth list item - tests focus indicators</li>
+                </ul>
+
+                <h4 tabindex="0">Ordered List</h4>
+                <ol>
+                    <li tabindex="0">First step in a process</li>
+                    <li tabindex="0">Second step with important details</li>
+                    <li tabindex="0">Third step with <strong>emphasis</strong></li>
+                    <li tabindex="0">Final step in the sequence</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h3 tabindex="0">Quotes and Special Content</h3>
+                <blockquote tabindex="0">
+                    "Accessibility is not a feature, it's a fundamental right. Good design is accessible design that works for everyone, regardless of their abilities or disabilities."
+                    <footer>— Web Accessibility Initiative</footer>
+                </blockquote>
+
+                <p tabindex="0">Here's some <mark>highlighted text</mark> that should remain visible with different color schemes. Testing color contrast and readability adjustments.</p>
+            </div>
+        </section>
+
+        <!-- Forms Section -->
+        <section id="forms" aria-labelledby="forms-heading">
+            <h2 id="forms-heading" tabindex="0">Form Elements & Interactions</h2>
+
+            <div class="card">
+                <h3 tabindex="0">Contact Form</h3>
+                <form aria-label="Contact form">
+                    <div class="form-group">
+                        <label for="fullname">Full Name <span aria-label="required">*</span></label>
+                        <input type="text" id="fullname" name="fullname" required aria-required="true" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address <span aria-label="required">*</span></label>
+                        <input type="email" id="email" name="email" required aria-required="true" placeholder="your.email@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthdate">Birth Date</label>
+                        <input type="date" id="birthdate" name="birthdate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" name="country">
+                            <option value="">Select your country</option>
+                            <option value="us">United States</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="ca">Canada</option>
+                            <option value="au">Australia</option>
+                            <option value="de">Germany</option>
+                            <option value="fr">France</option>
+                            <option value="jp">Japan</option>
+                            <option value="tr">Turkey</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message <span aria-label="required">*</span></label>
+                        <textarea id="message" name="message" required aria-required="true" placeholder="Enter your message here..."></textarea>
+                    </div>
+
+                    <fieldset style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <legend>Communication Preferences</legend>
+                        <div style="margin: 10px 0;">
+                            <input type="checkbox" id="newsletter" name="newsletter">
+                            <label for="newsletter" style="display: inline; margin-left: 5px;">Subscribe to newsletter</label>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <input type="checkbox" id="updates" name="updates">
+                            <label for="updates" style="display: inline; margin-left: 5px;">Receive product updates</label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin: 15px 0;">
+                        <legend>Preferred Contact Method</legend>
+                        <div style="margin: 10px 0;">
+                            <input type="radio" id="contact-email" name="contact-method" value="email" checked>
+                            <label for="contact-email" style="display: inline; margin-left: 5px;">Email</label>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <input type="radio" id="contact-phone" name="contact-method" value="phone">
+                            <label for="contact-phone" style="display: inline; margin-left: 5px;">Phone</label>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            <input type="radio" id="contact-sms" name="contact-method" value="sms">
+                            <label for="contact-sms" style="display: inline; margin-left: 5px;">SMS</label>
+                        </div>
+                    </fieldset>
+
+                    <button type="submit" class="button">Submit Form</button>
+                    <button type="reset" class="button secondary">Reset Form</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Tables Section -->
+        <section id="tables" aria-labelledby="tables-heading">
+            <h2 id="tables-heading" tabindex="0">Data Tables</h2>
+
+            <div class="card">
+                <h3 tabindex="0">Accessibility Features Comparison</h3>
+                <table role="table" aria-label="Accessibility features comparison">
+                    <thead>
+                        <tr>
+                            <th scope="col">Feature</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Keyboard Shortcut</th>
+                            <th scope="col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td tabindex="0">Text-to-Speech</td>
+                            <td tabindex="0">Reads content aloud for users with visual impairments</td>
+                            <td tabindex="0">Alt + S</td>
+                            <td tabindex="0">✓ Active</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">Font Size Control</td>
+                            <td tabindex="0">Adjust text size for better readability</td>
+                            <td tabindex="0">Alt + Plus/Minus</td>
+                            <td tabindex="0">✓ Active</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">High Contrast</td>
+                            <td tabindex="0">Enhance color contrast for visibility</td>
+                            <td tabindex="0">Alt + C</td>
+                            <td tabindex="0">✓ Active</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">Keyboard Navigation</td>
+                            <td tabindex="0">Navigate using only keyboard</td>
+                            <td tabindex="0">Tab/Shift+Tab</td>
+                            <td tabindex="0">✓ Active</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">Line Height</td>
+                            <td tabindex="0">Adjust spacing between lines</td>
+                            <td tabindex="0">Alt + L</td>
+                            <td tabindex="0">✓ Active</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">Dyslexia Font</td>
+                            <td tabindex="0">Use dyslexia-friendly fonts</td>
+                            <td tabindex="0">Alt + D</td>
+                            <td tabindex="0">✓ Active</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3 tabindex="0">Sample Data Table</h3>
+                <table role="table" aria-label="Sample user data">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Join Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td tabindex="0">001</td>
+                            <td tabindex="0">John Smith</td>
+                            <td tabindex="0">john.smith@example.com</td>
+                            <td tabindex="0">Administrator</td>
+                            <td tabindex="0">2024-01-15</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">002</td>
+                            <td tabindex="0">Emma Johnson</td>
+                            <td tabindex="0">emma.j@example.com</td>
+                            <td tabindex="0">Editor</td>
+                            <td tabindex="0">2024-02-20</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">003</td>
+                            <td tabindex="0">Michael Brown</td>
+                            <td tabindex="0">m.brown@example.com</td>
+                            <td tabindex="0">Contributor</td>
+                            <td tabindex="0">2024-03-10</td>
+                        </tr>
+                        <tr>
+                            <td tabindex="0">004</td>
+                            <td tabindex="0">Sarah Davis</td>
+                            <td tabindex="0">sarah.d@example.com</td>
+                            <td tabindex="0">Viewer</td>
+                            <td tabindex="0">2024-04-05</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Media Section -->
+        <section id="media" aria-labelledby="media-heading">
+            <h2 id="media-heading" tabindex="0">Media & Visual Elements</h2>
+
+            <div class="card">
+                <h3 tabindex="0">Image Gallery (Placeholders)</h3>
+                <div class="image-gallery">
+                    <div class="image-placeholder" role="img" aria-label="Landscape photo 1" tabindex="0">
+                        Image 1
+                    </div>
+                    <div class="image-placeholder" role="img" aria-label="Portrait photo 2" tabindex="0">
+                        Image 2
+                    </div>
+                    <div class="image-placeholder" role="img" aria-label="Abstract art 3" tabindex="0">
+                        Image 3
+                    </div>
+                    <div class="image-placeholder" role="img" aria-label="Nature scene 4" tabindex="0">
+                        Image 4
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Section -->
+        <section id="interactive" aria-labelledby="interactive-heading">
+            <h2 id="interactive-heading" tabindex="0">Interactive Elements</h2>
+
+            <div class="card">
+                <h3 tabindex="0">Buttons & Actions</h3>
+                <p tabindex="0">Test various button types and interactive elements:</p>
+                <div style="margin: 20px 0;">
+                    <button class="button" onclick="alert('Primary button clicked!')" tabindex="0">Primary Action</button>
+                    <button class="button secondary" onclick="alert('Secondary button clicked!')" tabindex="0">Secondary Action</button>
+                    <button class="button danger" onclick="alert('Danger button clicked!')" tabindex="0">Delete Action</button>
+                    <button class="button" disabled tabindex="-1">Disabled Button</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 tabindex="0">Alert Messages</h3>
+                <div class="alert info" role="alert" tabindex="0">
+                    <strong>Info:</strong> This is an informational message to test text-to-speech and color contrast.
+                </div>
+                <div class="alert success" role="alert" tabindex="0">
+                    <strong>Success:</strong> Your form has been submitted successfully!
+                </div>
+                <div class="alert warning" role="alert" tabindex="0">
+                    <strong>Warning:</strong> Please review your input before proceeding.
+                </div>
+                <div class="alert error" role="alert" tabindex="0">
+                    <strong>Error:</strong> An error occurred while processing your request.
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Section -->
+        <section id="content" aria-labelledby="content-heading">
+            <h2 id="content-heading" tabindex="0">Rich Content</h2>
+
+            <div class="card">
+                <h3 tabindex="0">Long-Form Article</h3>
+                <article>
+                    <h4 tabindex="0">Understanding Web Accessibility</h4>
+                    <p tabindex="0">Web accessibility means that websites, tools, and technologies are designed and developed so that people with disabilities can use them. More specifically, people can perceive, understand, navigate, and interact with the Web, and they can contribute to the Web.</p>
+
+                    <p tabindex="0">Accessibility encompasses all disabilities that affect access to the Web, including auditory, cognitive, neurological, physical, speech, and visual disabilities. Accessibility also benefits people without disabilities, such as older people with changing abilities due to aging, people with temporary disabilities like a broken arm, and people with situational limitations such as bright sunlight or in an environment where they cannot listen to audio.</p>
+
+                    <h4 tabindex="0">Key Principles of Accessibility</h4>
+                    <p tabindex="0">The Web Content Accessibility Guidelines (WCAG) are organized around four principles, often called by the acronym POUR:</p>
+
+                    <ul>
+                        <li tabindex="0"><strong>Perceivable:</strong> Information and user interface components must be presentable to users in ways they can perceive. This means that users must be able to perceive the information being presented (it can't be invisible to all of their senses).</li>
+                        <li tabindex="0"><strong>Operable:</strong> User interface components and navigation must be operable. This means that users must be able to operate the interface (the interface cannot require interaction that a user cannot perform).</li>
+                        <li tabindex="0"><strong>Understandable:</strong> Information and the operation of user interface must be understandable. This means that users must be able to understand the information as well as the operation of the user interface.</li>
+                        <li tabindex="0"><strong>Robust:</strong> Content must be robust enough that it can be interpreted reliably by a wide variety of user agents, including assistive technologies.</li>
+                    </ul>
+                </article>
+            </div>
+
+            <div class="card">
+                <h3 tabindex="0">Code Example</h3>
+                <p tabindex="0">Here's an example of accessible HTML markup:</p>
+                <pre tabindex="0"><code>&lt;button
+    aria-label="Close dialog"
+    onclick="closeDialog()"
+    tabindex="0"&gt;
+    &times;
+&lt;/button&gt;
+
+&lt;img
+    src="logo.png"
+    alt="Company Logo - Accessibility First"
+    role="img"&gt;</code></pre>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <h4 tabindex="0">Feature Card 1</h4>
+                    <p tabindex="0">This card tests grid layouts and responsive design with accessibility features enabled.</p>
+                    <button class="button" tabindex="0">Learn More</button>
+                </div>
+                <div class="card">
+                    <h4 tabindex="0">Feature Card 2</h4>
+                    <p tabindex="0">Accessibility widgets should work seamlessly across different layout structures.</p>
+                    <button class="button" tabindex="0">Explore</button>
+                </div>
+                <div class="card">
+                    <h4 tabindex="0">Feature Card 3</h4>
+                    <p tabindex="0">Test keyboard navigation through grid items and focus management.</p>
+                    <button class="button" tabindex="0">Get Started</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" aria-labelledby="contact-heading">
+            <h2 id="contact-heading" tabindex="0">Contact Information</h2>
+
+            <div class="card">
+                <h3 tabindex="0">Get in Touch</h3>
+                <address>
+                    <p tabindex="0"><strong>Email:</strong> <a href="mailto:accessibility@example.com">accessibility@example.com</a></p>
+                    <p tabindex="0"><strong>Phone:</strong> <a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+                    <p tabindex="0"><strong>Address:</strong> 123 Accessibility Lane, Web City, Internet 12345</p>
+                </address>
+
+                <h4 tabindex="0">Office Hours</h4>
+                <dl>
+                    <dt tabindex="0">Monday - Friday:</dt>
+                    <dd tabindex="0">9:00 AM - 5:00 PM EST</dd>
+                    <dt tabindex="0">Saturday:</dt>
+                    <dd tabindex="0">10:00 AM - 2:00 PM EST</dd>
+                    <dt tabindex="0">Sunday:</dt>
+                    <dd tabindex="0">Closed</dd>
+                </dl>
+            </div>
+        </section>
+    </main>
+
+    <footer role="contentinfo">
+        <p tabindex="0">&copy; 2024 Accessibility Widget Test Suite. All rights reserved.</p>
+        <p tabindex="0">This comprehensive test page includes typography, forms, tables, media, interactive elements, and rich content to thoroughly test all accessibility features.</p>
+        <p tabindex="0">
+            <a href="#" style="color: #a0aec0; margin: 0 10px;">Privacy Policy</a> |
+            <a href="#" style="color: #a0aec0; margin: 0 10px;">Terms of Service</a> |
+            <a href="#" style="color: #a0aec0; margin: 0 10px;">Accessibility Statement</a>
+        </p>
+    </footer>
+
+    <script type="module" src="/widget.js"></script>
 </body>
 </html>
