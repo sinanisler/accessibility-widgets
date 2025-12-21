@@ -57,7 +57,7 @@ const DEFAULT_WIDGET_CONFIG = {
 
   // Menu styling
   menu: {
-    headerHeight: '55px',
+    headerHeight: '70px',
     padding: '0 10px 10px 10px',
     optionPadding: '20px 10px',
     optionMargin: '10px',
