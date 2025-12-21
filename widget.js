@@ -1258,9 +1258,50 @@ function createAccessibilityMenu() {
   const optionsGrid = document.createElement('div');
   optionsGrid.classList.add('snn-options-grid');
 
-  // Add accessibility options based on configuration
-  const options = [
+  // ===================================================================
+  // UNIFIED BUTTON CONFIGURATION WITH EXPLICIT ORDERING
+  // Add/remove/reorder buttons by changing the 'order' property
+  // Lower order numbers appear first, higher numbers appear last
+  // ===================================================================
+  const allButtonConfigs = [
+    // Order 1-4: Primary accessibility features (as requested)
     {
+      order: 1,
+      type: 'action',
+      text: WIDGET_CONFIG.lang.textSize,
+      actionFunction: handleBiggerText,
+      icon: icons.biggerText,
+      enabled: WIDGET_CONFIG.enableBiggerText,
+    },
+    {
+      order: 2,
+      type: 'action',
+      text: WIDGET_CONFIG.lang.highContrast,
+      actionFunction: handleHighContrast,
+      icon: icons.highContrast,
+      enabled: WIDGET_CONFIG.enableHighContrast,
+    },
+    {
+      order: 3,
+      type: 'action',
+      text: WIDGET_CONFIG.lang.textAlign,
+      actionFunction: handleTextAlign,
+      icon: icons.textAlign,
+      enabled: WIDGET_CONFIG.enableTextAlign,
+    },
+    {
+      order: 4,
+      type: 'action',
+      text: WIDGET_CONFIG.lang.colorFilter,
+      actionFunction: handleColorFilter,
+      icon: icons.colorFilter,
+      enabled: WIDGET_CONFIG.enableColorFilter,
+    },
+    
+    // Order 5-11: Other visual/text features
+    {
+      order: 5,
+      type: 'toggle',
       text: WIDGET_CONFIG.lang.textSpacing,
       key: 'textSpacing',
       className: 'snn-text-spacing',
@@ -1268,34 +1309,8 @@ function createAccessibilityMenu() {
       enabled: WIDGET_CONFIG.enableTextSpacing,
     },
     {
-      text: WIDGET_CONFIG.lang.pauseAnimations,
-      key: 'pauseAnimations',
-      className: 'snn-pause-animations',
-      icon: icons.pauseAnimations,
-      enabled: WIDGET_CONFIG.enablePauseAnimations,
-    },
-    {
-      text: WIDGET_CONFIG.lang.hideImages,
-      key: 'hideImages',
-      icon: icons.hideImages,
-      customToggleFunction: toggleHideImages,
-      enabled: WIDGET_CONFIG.enableHideImages,
-    },
-    {
-      text: WIDGET_CONFIG.lang.dyslexiaFriendly,
-      key: 'dyslexiaFont',
-      className: 'snn-dyslexia-font',
-      icon: icons.dyslexiaFont,
-      enabled: WIDGET_CONFIG.enableDyslexiaFont,
-    },
-    {
-      text: WIDGET_CONFIG.lang.biggerCursor,
-      key: 'biggerCursor',
-      className: 'snn-bigger-cursor',
-      icon: icons.biggerCursor,
-      enabled: WIDGET_CONFIG.enableBiggerCursor,
-    },
-    {
+      order: 6,
+      type: 'toggle',
       text: WIDGET_CONFIG.lang.lineHeight,
       key: 'lineHeight',
       className: 'snn-line-height',
@@ -1303,82 +1318,109 @@ function createAccessibilityMenu() {
       enabled: WIDGET_CONFIG.enableLineHeight,
     },
     {
+      order: 7,
+      type: 'action',
+      text: WIDGET_CONFIG.lang.fontSelection,
+      actionFunction: handleFontSelection,
+      icon: icons.fontSelection,
+      enabled: WIDGET_CONFIG.enableFontSelection,
+    },
+    {
+      order: 8,
+      type: 'toggle',
+      text: WIDGET_CONFIG.lang.dyslexiaFriendly,
+      key: 'dyslexiaFont',
+      className: 'snn-dyslexia-font',
+      icon: icons.dyslexiaFont,
+      enabled: WIDGET_CONFIG.enableDyslexiaFont,
+    },
+    {
+      order: 9,
+      type: 'toggle',
+      text: WIDGET_CONFIG.lang.biggerCursor,
+      key: 'biggerCursor',
+      className: 'snn-bigger-cursor',
+      icon: icons.biggerCursor,
+      enabled: WIDGET_CONFIG.enableBiggerCursor,
+    },
+    {
+      order: 10,
+      type: 'toggle',
+      text: WIDGET_CONFIG.lang.hideImages,
+      key: 'hideImages',
+      icon: icons.hideImages,
+      customToggleFunction: toggleHideImages,
+      enabled: WIDGET_CONFIG.enableHideImages,
+    },
+    
+    // Order 11-12: Animation controls
+    {
+      order: 11,
+      type: 'toggle',
+      text: WIDGET_CONFIG.lang.pauseAnimations,
+      key: 'pauseAnimations',
+      className: 'snn-pause-animations',
+      icon: icons.pauseAnimations,
+      enabled: WIDGET_CONFIG.enablePauseAnimations,
+    },
+    {
+      order: 12,
+      type: 'toggle',
       text: WIDGET_CONFIG.lang.reducedMotion,
       key: 'reducedMotion',
       className: 'snn-reduced-motion',
       icon: icons.reducedMotion,
       enabled: WIDGET_CONFIG.enableReducedMotion,
     },
+    
+    // Order 98-99: Screen Reader and Voice Control (always last)
+    {
+      order: 98,
+      type: 'toggle',
+      text: WIDGET_CONFIG.lang.screenReader,
+      key: 'screenReader',
+      customToggleFunction: screenReader.toggle,
+      icon: icons.screenReader,
+      requiresFeature: screenReader,
+      enabled: WIDGET_CONFIG.enableScreenReader,
+    },
+    {
+      order: 99,
+      type: 'toggle',
+      text: WIDGET_CONFIG.lang.voiceCommand,
+      key: 'voiceControl',
+      customToggleFunction: voiceControl.toggle,
+      icon: icons.voiceControl,
+      requiresFeature: voiceControl,
+      enabled: WIDGET_CONFIG.enableVoiceControl,
+    },
   ];
 
-  // Add enabled toggle options to grid
-  options.forEach((option) => {
-    if (option.enabled) {
-      const button = createToggleButton(
-        option.text,
-        option.key,
-        option.className,
-        option.target,
-        option.customToggleFunction,
-        option.icon,
-        option.requiresFeature
-      );
-      optionsGrid.appendChild(button);
-    }
-  });
-
-  // Add action buttons (font selection and color filters) to grid if enabled
-  if (WIDGET_CONFIG.enableFontSelection) {
-    const fontButton = createActionButton(WIDGET_CONFIG.lang.fontSelection, handleFontSelection, icons.fontSelection);
-    optionsGrid.appendChild(fontButton);
-  }
-
-  if (WIDGET_CONFIG.enableColorFilter) {
-    const colorButton = createActionButton(WIDGET_CONFIG.lang.colorFilter, handleColorFilter, icons.colorFilter);
-    optionsGrid.appendChild(colorButton);
-  }
-
-  if (WIDGET_CONFIG.enableTextAlign) {
-    const textAlignButton = createActionButton(WIDGET_CONFIG.lang.textAlign, handleTextAlign, icons.textAlign);
-    optionsGrid.appendChild(textAlignButton);
-  }
-
-  if (WIDGET_CONFIG.enableBiggerText) {
-    const biggerTextButton = createActionButton(WIDGET_CONFIG.lang.textSize, handleBiggerText, icons.biggerText);
-    optionsGrid.appendChild(biggerTextButton);
-  }
-
-  if (WIDGET_CONFIG.enableHighContrast) {
-    const highContrastButton = createActionButton(WIDGET_CONFIG.lang.highContrast, handleHighContrast, icons.highContrast);
-    optionsGrid.appendChild(highContrastButton);
-  }
-
-  // Add Screen Reader and Voice Command as the LAST two buttons
-  if (WIDGET_CONFIG.enableScreenReader) {
-    const screenReaderButton = createToggleButton(
-      WIDGET_CONFIG.lang.screenReader,
-      'screenReader',
-      null,
-      document.body,
-      screenReader.toggle,
-      icons.screenReader,
-      screenReader
-    );
-    optionsGrid.appendChild(screenReaderButton);
-  }
-
-  if (WIDGET_CONFIG.enableVoiceControl) {
-    const voiceControlButton = createToggleButton(
-      WIDGET_CONFIG.lang.voiceCommand,
-      'voiceControl',
-      null,
-      document.body,
-      voiceControl.toggle,
-      icons.voiceControl,
-      voiceControl
-    );
-    optionsGrid.appendChild(voiceControlButton);
-  }
+  // Sort buttons by order and add only enabled ones to the grid
+  allButtonConfigs
+    .filter(config => config.enabled)
+    .sort((a, b) => a.order - b.order)
+    .forEach((config) => {
+      let button;
+      
+      if (config.type === 'action') {
+        button = createActionButton(config.text, config.actionFunction, config.icon);
+      } else if (config.type === 'toggle') {
+        button = createToggleButton(
+          config.text,
+          config.key,
+          config.className,
+          config.target || document.body,
+          config.customToggleFunction,
+          config.icon,
+          config.requiresFeature
+        );
+      }
+      
+      if (button) {
+        optionsGrid.appendChild(button);
+      }
+    });
 
   // Add grid to content
   content.appendChild(optionsGrid);
