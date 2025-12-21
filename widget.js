@@ -822,6 +822,7 @@ const widgetStyles = `
     flex: 1;
     letter-spacing: 1px !important;
     word-spacing: 2px !important;
+    text-align: left;
   }
 `;
 
@@ -1360,7 +1361,8 @@ function createToggleButton(
   targetElement = document.body,
   customToggleFunction = null,
   iconSVG = '',
-  requiresFeature = null
+  requiresFeature = null,
+  optionId = null
 ) {
   const button = document.createElement('button');
   button.innerHTML = `
@@ -1370,6 +1372,9 @@ function createToggleButton(
   button.setAttribute('data-key', localStorageKey);
   button.setAttribute('aria-label', buttonText);
   button.classList.add('snn-accessibility-option');
+  if (optionId) {
+    button.setAttribute('data-accessibility-option-id', optionId);
+  }
 
   // Check if feature is supported
   if (requiresFeature && !requiresFeature.isSupported) {
@@ -1429,7 +1434,7 @@ function createToggleButton(
 }
 
 // Create special action buttons (for cycling through options)
-function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig = null) {
+function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig = null, optionId = null) {
   const button = document.createElement('button');
   
   let buttonHTML = `
@@ -1450,14 +1455,17 @@ function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig =
   button.setAttribute('aria-label', buttonText);
   button.classList.add('snn-accessibility-option');
   button.setAttribute('data-options-config', optionsConfig ? JSON.stringify(optionsConfig) : '');
+  if (optionId) {
+    button.setAttribute('data-accessibility-option-id', optionId);
+  }
 
   // Update initial status
-  updateActionButtonStatus(button, buttonText, optionsConfig);
+  updateActionButtonStatus(button, optionId, optionsConfig);
 
   button.addEventListener('click', function () {
     const result = actionFunction();
     if (result) {
-      updateActionButtonStatus(button, buttonText, optionsConfig);
+      updateActionButtonStatus(button, optionId, optionsConfig);
     }
   });
 
@@ -1466,7 +1474,7 @@ function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig =
       e.preventDefault();
       const result = actionFunction();
       if (result) {
-        updateActionButtonStatus(button, buttonText, optionsConfig);
+        updateActionButtonStatus(button, optionId, optionsConfig);
       }
     }
   });
@@ -1475,41 +1483,41 @@ function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig =
 }
 
 // Update action button status on page load
-function updateActionButtonStatus(button, buttonText, optionsConfig) {
+function updateActionButtonStatus(button, optionId, optionsConfig) {
   if (!optionsConfig) return;
   
   const steps = button.querySelectorAll('.snn-option-step');
   let currentIndex = -1;
   
-  if (buttonText.includes('Font')) {
+  if (optionId === 'fontSelection') {
     const currentFont = localStorage.getItem('fontSelection');
     const fonts = ['arial', 'times', 'verdana'];
     currentIndex = currentFont ? fonts.indexOf(currentFont) : -1;
-  } else if (buttonText.includes('Color')) {
+  } else if (optionId === 'colorFilter') {
     const currentFilter = localStorage.getItem('colorFilter');
     const filters = ['protanopia', 'deuteranopia', 'tritanopia', 'grayscale'];
     currentIndex = currentFilter ? filters.indexOf(currentFilter) : -1;
-  } else if (buttonText.includes('Text Align')) {
+  } else if (optionId === 'textAlign') {
     const currentAlign = localStorage.getItem('textAlign');
     const alignments = ['left', 'center', 'right'];
     currentIndex = currentAlign ? alignments.indexOf(currentAlign) : -1;
-  } else if (buttonText.includes('Text Size')) {
+  } else if (optionId === 'biggerText') {
     const currentSize = localStorage.getItem('biggerText');
     const sizes = ['medium', 'large', 'xlarge'];
     currentIndex = currentSize ? sizes.indexOf(currentSize) : -1;
-  } else if (buttonText.includes('High Contrast')) {
+  } else if (optionId === 'highContrast') {
     const currentContrast = localStorage.getItem('highContrast');
     const contrasts = ['medium', 'high', 'ultra'];
     currentIndex = currentContrast ? contrasts.indexOf(currentContrast) : -1;
-  } else if (buttonText.includes('Text Spacing')) {
+  } else if (optionId === 'textSpacing') {
     const currentSpacing = localStorage.getItem('textSpacing');
     const spacings = ['light', 'medium', 'heavy'];
     currentIndex = currentSpacing ? spacings.indexOf(currentSpacing) : -1;
-  } else if (buttonText.includes('Line Height')) {
+  } else if (optionId === 'lineHeight') {
     const currentLineHeight = localStorage.getItem('lineHeight');
     const heights = ['2em', '3em', '4em'];
     currentIndex = currentLineHeight ? heights.indexOf(currentLineHeight) : -1;
-  } else if (buttonText.includes('Saturation')) {
+  } else if (optionId === 'saturation') {
     const currentSaturation = localStorage.getItem('saturation');
     const saturations = ['low', 'high', 'none'];
     currentIndex = currentSaturation ? saturations.indexOf(currentSaturation) : -1;
@@ -2056,7 +2064,8 @@ function createAccessibilityMenu() {
       actionFunction: handleBiggerText,
       icon: icons.biggerText,
       enabled: WIDGET_CONFIG.enableBiggerText,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'biggerText'
     },
     {
       order: 2,
@@ -2065,7 +2074,8 @@ function createAccessibilityMenu() {
       actionFunction: handleHighContrast,
       icon: icons.highContrast,
       enabled: WIDGET_CONFIG.enableHighContrast,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'highContrast'
     },
     {
       order: 3,
@@ -2074,7 +2084,8 @@ function createAccessibilityMenu() {
       actionFunction: handleTextAlign,
       icon: icons.textAlign,
       enabled: WIDGET_CONFIG.enableTextAlign,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'textAlign'
     },
     {
       order: 4,
@@ -2083,7 +2094,8 @@ function createAccessibilityMenu() {
       actionFunction: handleColorFilter,
       icon: icons.colorFilter,
       enabled: WIDGET_CONFIG.enableColorFilter,
-      optionsConfig: { count: 4 }
+      optionsConfig: { count: 4 },
+      optionId: 'colorFilter'
     },
     
     // Order 5-11: Other visual/text features
@@ -2094,7 +2106,8 @@ function createAccessibilityMenu() {
       actionFunction: handleTextSpacing,
       icon: icons.textSpacing,
       enabled: WIDGET_CONFIG.enableTextSpacing,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'textSpacing'
     },
     {
       order: 6,
@@ -2103,7 +2116,8 @@ function createAccessibilityMenu() {
       actionFunction: handleLineHeight,
       icon: icons.lineHeight,
       enabled: WIDGET_CONFIG.enableLineHeight,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'lineHeight'
     },
     {
       order: 7,
@@ -2112,7 +2126,8 @@ function createAccessibilityMenu() {
       actionFunction: handleFontSelection,
       icon: icons.fontSelection,
       enabled: WIDGET_CONFIG.enableFontSelection,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'fontSelection'
     },
     {
       order: 7.5,
@@ -2121,7 +2136,8 @@ function createAccessibilityMenu() {
       actionFunction: handleSaturation,
       icon: icons.saturation,
       enabled: true,
-      optionsConfig: { count: 3 }
+      optionsConfig: { count: 3 },
+      optionId: 'saturation'
     },
     {
       order: 8,
@@ -2131,6 +2147,7 @@ function createAccessibilityMenu() {
       className: 'snn-dyslexia-font',
       icon: icons.dyslexiaFont,
       enabled: WIDGET_CONFIG.enableDyslexiaFont,
+      optionId: 'dyslexiaFont'
     },
     {
       order: 9,
@@ -2140,6 +2157,7 @@ function createAccessibilityMenu() {
       className: 'snn-bigger-cursor',
       icon: icons.biggerCursor,
       enabled: WIDGET_CONFIG.enableBiggerCursor,
+      optionId: 'biggerCursor'
     },
     {
       order: 10,
@@ -2149,6 +2167,7 @@ function createAccessibilityMenu() {
       icon: icons.hideImages,
       customToggleFunction: toggleHideImages,
       enabled: WIDGET_CONFIG.enableHideImages,
+      optionId: 'hideImages'
     },
     
     // Order 11: Animation controls (Reduced Motion merged here)
@@ -2160,6 +2179,7 @@ function createAccessibilityMenu() {
       className: 'snn-pause-animations',
       icon: icons.pauseAnimations,
       enabled: WIDGET_CONFIG.enablePauseAnimations,
+      optionId: 'pauseAnimations'
     },
     
     // Order 98-99: Screen Reader and Voice Control (always last)
@@ -2172,6 +2192,7 @@ function createAccessibilityMenu() {
       icon: icons.screenReader,
       requiresFeature: screenReader,
       enabled: WIDGET_CONFIG.enableScreenReader,
+      optionId: 'screenReader'
     },
     {
       order: 99,
@@ -2182,6 +2203,7 @@ function createAccessibilityMenu() {
       icon: icons.voiceControl,
       requiresFeature: voiceControl,
       enabled: WIDGET_CONFIG.enableVoiceControl,
+      optionId: 'voiceControl'
     },
   ];
 
@@ -2193,7 +2215,7 @@ function createAccessibilityMenu() {
       let button;
       
       if (config.type === 'action') {
-        button = createActionButton(config.text, config.actionFunction, config.icon, config.optionsConfig);
+        button = createActionButton(config.text, config.actionFunction, config.icon, config.optionsConfig, config.optionId);
       } else if (config.type === 'toggle') {
         button = createToggleButton(
           config.text,
@@ -2202,7 +2224,8 @@ function createAccessibilityMenu() {
           config.target || document.body,
           config.customToggleFunction,
           config.icon,
-          config.requiresFeature
+          config.requiresFeature,
+          config.optionId
         );
       }
       
