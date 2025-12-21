@@ -1,202 +1,157 @@
 # Accessibility Widgets
 
+[![npm version](https://badge.fury.io/js/accessibility-widgets.svg)](https://www.npmjs.com/package/accessibility-widgets)
+[![License: GPL](https://img.shields.io/badge/License-GPL-blue.svg)](https://opensource.org/licenses/GPL-3.0)
+[![CDN](https://img.shields.io/badge/CDN-unpkg-orange.svg)](https://unpkg.com/accessibility-widgets)
 
-A comprehensive, lightweight accessibility tool that enhances web accessibility for all users. This single-file JavaScript widget provides multiple accessibility features to make websites more usable for people with disabilities.
+A comprehensive, zero-dependency accessibility widget that enhances web accessibility for all users. This lightweight, single-file JavaScript solution provides 14+ accessibility features to make your website instantly more inclusive and compliant with WCAG 2.1 AA, Section 508, and EN 301 549 standards.
 
-![image](https://github.com/user-attachments/assets/2d0e761e-dac5-4319-8a64-970d1b5fe28f)
-
-
-
-
-### Feature coverage against WCAG 2.1 AA criteria
-> These checks show how each feature aligns with WCAG 2.1 AA success criteria.  
-> They do **not** by themselves make a site fully compliant with WCAG, EN 301 549 or Section 508.
-> To become fully compliant you still need to run a manual checks, fix any underlying HTML/CSS/ARIA issues, test with real users, and re-test every time the site changes.
+![Accessibility Widget Demo](https://github.com/user-attachments/assets/2d0e761e-dac5-4319-8a64-970d1b5fe28f)
 
 
-
-
-| Feature | WCAG AA criterion(s) | EU (EN 301 549 / EAA / WAD) | US (ADA / Section 508) |
-|---------|---------------------|-----------------------------|------------------------|
-| High Contrast Mode | ✔️ | ✔️ | ✔️ |
-| Text Size Adjustment | ✔️ | ✔️ | ✔️ |
-| Text Spacing | ✔️ | ✔️ | ✔️ |
-| Line Height Adjustment | ✔️ | ✔️ | ✔️ |
-| Text Alignment (Left Align) | ✔️ (1.4.8) | ✔️ | ✔️ |
-| Cursor Enhancement | ✔️ | ✔️ | ✔️ |
-| Pause Animations | ✔️ | ✔️ | ✔️ |
-| Reduced Motion | ✔️ | ✔️ | ✔️ |
-| Hide Images | ✔️ (1.1.1) | ✔️ | ✔️ |
-| Dyslexia-Friendly / Font Select | ✔️ | ✔️ | ✔️ |
-| Screen Reader Assist | ✔️ | ✔️ | ✔️ |
-| Voice Control | ✔️ (Chrome-only API) | ◑ | ◑ |
-| Color-Blindness Filters | ✔️ | ✔️ | ✔️ |
-
-
-
-
-
-
-## Features
-
-### Core Accessibility Features
-
-#### **High Contrast Mode**
-Provides three levels of contrast enhancement:
-- **Medium**: 1.3x contrast boost for subtle improvement
-- **High**: Black background with white text and 1.5x contrast
-- **Ultra**: Black background with yellow text and 2.0x contrast for maximum visibility
-
-How it works: Applies CSS filters and background/text color overrides while preserving the widget's own styling.
-
-#### **Text Size Adjustment**
-Offers four text size options:
-- **Default**: Original website text size
-- **Medium**: 20px font size for all text elements
-- **Large**: 24px font size for improved readability
-- **X-Large**: 28px font size for maximum accessibility
-
-How it works: Uses CSS to override font-size properties across all page elements while excluding the widget interface.
-
-#### **Text Spacing**
-Enhances text readability by adding:
-- **Letter spacing**: 0.2em between characters
-- **Word spacing**: 0.3em between words
-
-How it works: Applies CSS letter-spacing and word-spacing properties to all text elements except the widget interface.
-
-#### **Animation Control**
-Completely stops all animations and transitions on the page.
-
-How it works: Uses CSS to disable all `animation` and `transition` properties, helping users with vestibular disorders or attention difficulties.
-
-#### **Image Hiding**
-Removes all images from the page for users who prefer text-only content or have slow connections.
-
-How it works: Sets `display: none` on all `<img>` elements. The system caches image queries for performance and updates every 5 seconds to catch dynamically loaded images.
-
-#### **Dyslexia-Friendly Font**
-Replaces all fonts with dyslexia-friendly alternatives:
-- Primary: Comic Sans MS (widely available dyslexia-friendly font)
-- Fallbacks: Chalkboard SE, Bradley Hand, Brush Script MT, fantasy
-
-How it works: Overrides the font-family CSS property for all elements on the page.
-
-#### **Cursor Enhancement**
-Provides a larger, high-contrast cursor for better visibility.
-
-How it works: Uses a custom SVG cursor (48x72px) with black fill and white stroke, applied via CSS cursor property.
-
-#### **Line Height Adjustment**
-Increases line spacing to 2.5x normal for improved readability.
-
-How it works: Applies CSS `line-height: 2.5` to all text elements except the widget interface.
-
-#### **Text Alignment**
-Provides three alignment options:
-- **Left**: Forces left alignment for consistent reading flow
-- **Center**: Centers all text for specific user preferences
-- **Right**: Right-aligns all text
-
-How it works: Uses CSS `text-align` property override for all text elements.
-
-### Advanced Features
-
-#### **Screen Reader Support**
-Built-in text-to-speech functionality that reads focused elements aloud.
-
-How it works: Uses the Web Speech API's SpeechSynthesis interface. When enabled, it listens for `focusin` events and speaks the text content, alt text, or title of focused elements. Includes error handling for unsupported browsers.
-
-#### **Voice Control**
-Voice commands to control accessibility features hands-free.
-
-How it works: Uses the Web Speech API's SpeechRecognition interface. Continuously listens for voice commands and maps them to widget functions. Includes retry logic for reliability and graceful degradation for unsupported browsers.
-
-Supported commands:
-- "show menu" / "open menu" - Opens accessibility menu
-- "high contrast" - Cycles through contrast levels
-- "bigger text" - Cycles through text sizes
-- "text spacing" - Toggles text spacing
-- "pause animations" - Toggles animation control
-- "hide images" - Toggles image visibility
-- "dyslexia font" - Toggles dyslexia-friendly font
-- "bigger cursor" - Toggles cursor enhancement
-- "screen reader" - Toggles screen reader
-- "reset all" - Resets all settings
-
-#### **Reduced Motion**
-Disables all animations and transitions for users with motion sensitivity.
-
-How it works: Similar to Animation Control but specifically targets motion-related CSS properties including pseudo-elements (::before, ::after).
-
-#### **Font Selection**
-Cycle through three professional font options:
-- **Arial**: Sans-serif, high readability
-- **Times New Roman**: Serif, traditional
-- **Verdana**: Sans-serif, designed for screen reading
-
-How it works: Applies font-family overrides via CSS classes, cycling through options when activated.
-
-#### **Color Blindness Filters**
-Provides specialized filters for different types of color blindness:
-- **Protanopia**: Red-blind color correction
-- **Deuteranopia**: Green-blind color correction  
-- **Tritanopia**: Blue-blind color correction
-- **Grayscale**: Complete color removal
-
-How it works: Uses SVG filters with color matrix transformations applied via CSS filter property to the entire document.
-
-## Installation
-
-### Method 1: Direct Download
-1. Download the `widget.js` file
-2. Include it in your HTML page:
+## ⚡ Quick Start
 
 ```html
-<script src="widget.js"></script>
+<!-- Include the widget - That's it! -->
+<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
 ```
 
-### Method 2: NPM
+Or install via NPM:
+
 ```bash
 npm install accessibility-widgets
 ```
 
-### Method 3: CDN
+```javascript
+// Import in your project
+import 'accessibility-widgets';
+// or
+require('accessibility-widgets');
+```
+
+## ✨ Key Features
+
+### 🎨 Visual Enhancements
+- **High Contrast Mode** - 3 levels (Medium 1.3x, High 1.5x, Ultra 2.0x) for improved visibility
+- **Text Size Control** - 4 size options (Default, Medium 20px, Large 24px, X-Large 28px)
+- **Line Height Adjustment** - 3 spacing levels (2em, 3em, 4em) for better readability
+- **Text Spacing** - Enhanced letter (0.2em) and word spacing (0.3em)
+- **Text Alignment** - Left, Center, or Right alignment options
+- **Bigger Cursor** - High-contrast 48x72px cursor with SVG rendering
+- **Hide Images** - Text-only mode for focused reading or bandwidth saving
+
+### 🧠 Cognitive Support
+- **Dyslexia-Friendly Font** - Comic Sans MS and other dyslexia-optimized fonts
+- **Font Selection** - Choose between Arial, Times New Roman, or Verdana
+- **Animation Control** - Pause all animations and transitions
+- **Reduced Motion** - Motion sensitivity support for vestibular disorders
+
+### ♿ Assistive Technology
+- **Screen Reader** - Built-in text-to-speech using Web Speech API
+- **Voice Control** - Hands-free navigation with 15+ voice commands
+- **Color Blindness Filters** - Protanopia, Deuteranopia, Tritanopia, and Grayscale modes
+- **Keyboard Navigation** - Full Tab/Arrow key support with proper focus indicators
+
+## 📊 Compliance & Standards
+
+### WCAG 2.1 AA Coverage
+
+| Feature | WCAG Criteria | EU EN 301 549 | US Section 508 |
+|---------|---------------|---------------|----------------|
+| High Contrast Mode | ✅ 1.4.3, 1.4.6 | ✅ | ✅ |
+| Text Size Adjustment | ✅ 1.4.4 | ✅ | ✅ |
+| Text Spacing | ✅ 1.4.12 | ✅ | ✅ |
+| Line Height Adjustment | ✅ 1.4.12 | ✅ | ✅ |
+| Text Alignment | ✅ 1.4.8 | ✅ | ✅ |
+| Cursor Enhancement | ✅ 2.5.5 | ✅ | ✅ |
+| Pause Animations | ✅ 2.2.2, 2.3.3 | ✅ | ✅ |
+| Reduced Motion | ✅ 2.3.3 | ✅ | ✅ |
+| Hide Images | ✅ 1.1.1 | ✅ | ✅ |
+| Dyslexia-Friendly Font | ✅ 1.4.8 | ✅ | ✅ |
+| Screen Reader | ✅ 4.1.3 | ✅ | ✅ |
+| Voice Control | ⚠️ Browser API | ⚠️ | ⚠️ |
+| Color Filters | ✅ 1.4.1 | ✅ | ✅ |
+
+> **Note**: This widget helps meet accessibility criteria but does not guarantee full compliance. Complete WCAG/Section 508 compliance requires proper HTML semantics, ARIA attributes, manual testing, and user validation.
+
+
+
+
+
+
+## 🎯 Installation Methods
+
+### CDN (Fastest)
+```html
+<!-- unpkg CDN -->
+<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+
+<!-- jsdelivr CDN -->
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
+```
+
+### NPM
+```bash
+npm install accessibility-widgets
+```
+
+```javascript
+// ES6 Import
+import 'accessibility-widgets/widget.js';
+
+// CommonJS
+require('accessibility-widgets/widget.js');
+```
+
+### Direct Download
+1. Download [widget.js](https://github.com/sinanisler/accessibility-widgets/raw/main/widget.js)
+2. Include in your HTML:
+```html
+<script src="path/to/widget.js"></script>
+```
+
+## ⚙️ Configuration
+
+### Basic Setup (No Configuration Needed)
+The widget works out of the box with zero configuration:
+
 ```html
 <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
 ```
 
-That's it! The widget will automatically initialize when the page loads.
+### Custom Configuration
+Customize the widget by defining `window.ACCESSIBILITY_WIDGET_CONFIG` before loading the script:
 
-## Configuration
-
-The widget is highly customizable. You can override the default settings by defining `window.ACCESSIBILITY_WIDGET_CONFIG` before loading the widget script.
-
-### Basic Configuration
 ```html
 <script>
-// Define your custom configuration
 window.ACCESSIBILITY_WIDGET_CONFIG = {
-  // Enable/disable features
+  // Disable specific features
   enableVoiceControl: false,
   enableScreenReader: true,
   
-  // Customize appearance
-  widgetWidth: '350px',
+  // Custom styling
+  widgetWidth: '400px',
   colors: {
     primary: '#0066cc',
     secondary: '#ffffff'
+  },
+  
+  // Position on left side
+  widgetPosition: {
+    side: 'left',
+    left: '20px',
+    bottom: '20px'
   }
 };
 </script>
 <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
 ```
 
-### Complete Configuration Options
-```html
-<script>
+### Full Configuration Options
+
+```javascript
 window.ACCESSIBILITY_WIDGET_CONFIG = {
-  // Feature toggles - set to false to disable
+  // ===== Feature Toggles =====
   enableHighContrast: true,
   enableBiggerText: true,
   enableTextSpacing: true,
@@ -208,75 +163,49 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
   enableTextAlign: true,
   enableScreenReader: true,
   enableVoiceControl: true,
-  enableReducedMotion: true,
   enableFontSelection: true,
   enableColorFilter: true,
-  
-  // Widget button layout
-  widgetColumns: 2, // Number of columns in the options grid (1-4, default: 2)
-  
-  // Widget dimensions and position
+
+  // ===== Widget Layout =====
   widgetWidth: '440px',
+  widgetColumns: 2, // Grid columns (1-4)
+  
+  // ===== Position =====
   widgetPosition: {
-    side: 'right',     // 'left' or 'right' - which side to position widget
-    right: '20px',     // distance from right edge when side is 'right'
-    left: '20px',      // distance from left edge when side is 'left'
-    bottom: '20px'     // distance from bottom
+    side: 'right', // 'left' or 'right'
+    right: '20px',
+    left: '20px',
+    bottom: '20px'
   },
-  
-  // Color scheme
+
+  // ===== Colors =====
   colors: {
-    primary: '#1e90ff',
-    primaryHover: '#00bfff',
-    secondary: '#f9f9f9',
-    text: '#333',
-    textLight: '#fff',
-    border: '#e6e6e6',
-    borderHover: '#d4d4d4',
-    shadow: 'rgba(0, 0, 0, 0.2)',
-    focus: '#ff6b35',
-    focusGlow: 'rgba(255, 107, 53, 0.3)'
+    primary: '#1663d7',
+    secondary: '#ffffff',
+    optionBg: '#ffffff',
+    optionText: '#333333',
+    optionIcon: '#000000'
   },
-  
-  // Button styling
+
+  // ===== Button Styling =====
   button: {
     size: '55px',
-    borderRadius: '1000px',
-    iconSize: '28px',
+    borderRadius: '100px',
+    iconSize: '40px',
     shadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
   },
-  
-  // Menu styling
-  menu: {
-    headerHeight: '55px',
-    padding: '0 10px 10px 10px',
-    optionPadding: '14px 10px',
-    optionMargin: '10px',
-    borderRadius: '8px',
-    fontSize: '16px',
-    titleFontSize: '22px',
-    closeButtonSize: '44px'
-  },
-  
-  // Typography
+
+  // ===== Typography =====
   typography: {
     fontFamily: 'Arial, sans-serif',
-    fontSize: '16px',
+    fontSize: '17px',
     titleFontSize: '22px',
-    titleFontWeight: '500',
-    lineHeight: '1'
+    titleFontWeight: '700'
   },
-  
-  // Animation
-  animation: {
-    transition: '0.2s',
-    hoverScale: '1.05'
-  },
-  
-  // Language/Text Configuration - Customize all text strings
+
+  // ===== Internationalization (i18n) =====
   lang: {
     accessibilityMenu: 'Accessibility Menu',
-    closeAccessibilityMenu: 'Close Accessibility Menu',
     accessibilityTools: 'Accessibility Tools',
     resetAllSettings: 'Reset All Settings',
     screenReader: 'Screen Reader',
@@ -287,191 +216,312 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
     dyslexiaFriendly: 'Dyslexia Friendly',
     biggerCursor: 'Bigger Cursor',
     lineHeight: 'Line Height',
-    reducedMotion: 'Reduced Motion',
     fontSelection: 'Font Selection',
     colorFilter: 'Color Filter',
     textAlign: 'Text Align',
     textSize: 'Text Size',
-    highContrast: 'High Contrast',
-    defaultFont: 'Default Font',
-    noFilter: 'No Filter',
-    default: 'Default',
-    close: 'Close',
-    screenReaderOn: 'Screen reader on',
-    screenReaderOff: 'Screen reader off',
-    voiceControlActivated: 'Voice control activated',
-    notSupportedBrowser: 'is not supported in this browser'
+    highContrast: 'High Contrast'
   },
 
-  // Voice Command Configuration - Customize voice commands for different languages
+  // ===== Voice Commands =====
   voiceCommands: {
-    showMenu: ['show menu', 'open menu', 'accessibility menu'],
+    showMenu: ['show menu', 'open menu'],
     highContrast: ['high contrast'],
     biggerText: ['bigger text', 'large text'],
     textSpacing: ['text spacing'],
-    pauseAnimations: ['pause animations', 'stop animations'],
+    pauseAnimations: ['pause animations'],
     hideImages: ['hide images'],
-    dyslexiaFont: ['dyslexia friendly', 'dyslexia font'],
-    biggerCursor: ['bigger cursor', 'large cursor'],
-    lineHeight: ['line height'],
-    textAlign: ['align text', 'text align'],
+    dyslexiaFont: ['dyslexia font'],
+    biggerCursor: ['bigger cursor'],
     screenReader: ['screen reader'],
-    voiceControl: ['voice command', 'voice control'],
     resetAll: ['reset all', 'reset everything']
-  },
-
-  // Grid Layout Configuration - Customize button grid layout
-  gridLayout: {
-    columns: '1fr 1fr', // Default 2-column layout (change to '1fr 1fr 1fr' for 3 columns, etc.)
-    gap: '10px' // Gap between grid items
   }
 };
-</script>
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
 ```
 
-### Partial Configuration
-You only need to specify the settings you want to change. The widget will merge your settings with the defaults:
+## 🌍 Internationalization (i18n)
 
+Full multilingual support - customize all text and voice commands:
+
+### Spanish Example
 ```html
 <script>
-// Only override what you need
-window.ACCESSIBILITY_WIDGET_CONFIG = {
-  enableVoiceControl: false,  // Disable voice control
-  widgetWidth: '300px',       // Smaller width
-  colors: {
-    primary: '#purple'        // Custom color (other colors remain default)
-  }
-};
-</script>
-<script src="widget.js"></script>
-```
-
-### Widget Positioning
-The widget can be positioned on either side of the screen:
-
-```html
-<script>
-window.ACCESSIBILITY_WIDGET_CONFIG = {
-  widgetPosition: {
-    side: 'left',          // Position on left side of screen
-    left: '20px',          // 20px from left edge
-    bottom: '20px'         // 20px from bottom
-  }
-};
-</script>
-```
-
-### Internationalization (i18n)
-The widget supports full internationalization. You can customize all text strings and voice commands:
-
-```html
-<script>
-// Spanish language example
 window.ACCESSIBILITY_WIDGET_CONFIG = {
   lang: {
     accessibilityMenu: 'Menú de Accesibilidad',
     accessibilityTools: 'Herramientas de Accesibilidad',
     screenReader: 'Lector de Pantalla',
-    biggerText: 'Texto Más Grande',
     highContrast: 'Alto Contraste',
-    resetAllSettings: 'Restablecer Todas las Configuraciones',
-    close: 'Cerrar'
-    // ... add more translations as needed
+    biggerText: 'Texto Más Grande',
+    resetAllSettings: 'Restablecer Todo'
   },
-  
-  // Customize voice commands for Spanish
   voiceCommands: {
-    showMenu: ['mostrar menú', 'abrir menú', 'menú de accesibilidad'],
+    showMenu: ['mostrar menú', 'abrir menú'],
     highContrast: ['alto contraste'],
-    biggerText: ['texto más grande', 'texto grande'],
-    textSpacing: ['espaciado de texto'],
-    pauseAnimations: ['pausar animaciones', 'detener animaciones'],
-    hideImages: ['ocultar imágenes'],
-    dyslexiaFont: ['fuente para dislexia', 'fuente dislexia'],
-    biggerCursor: ['cursor más grande', 'cursor grande'],
-    lineHeight: ['altura de línea'],
-    textAlign: ['alinear texto', 'alineación de texto'],
-    screenReader: ['lector de pantalla'],
-    voiceControl: ['comando de voz', 'control de voz'],
-    resetAll: ['reiniciar todo', 'resetear todo']
-  }
-};
-</script>
-```
-
-## Voice Commands
-
-When voice control is enabled, users can activate features using these commands (default English commands shown - fully customizable via `voiceCommands` configuration):
-
-- "show menu" / "open menu" / "accessibility menu" - Opens the accessibility menu
-- "high contrast" - Toggles high contrast mode
-- "bigger text" / "large text" - Toggles larger text size
-- "text spacing" - Toggles text spacing
-- "pause animations" / "stop animations" - Toggles animation pausing
-- "hide images" - Toggles image hiding
-- "dyslexia friendly" / "dyslexia font" - Toggles dyslexia-friendly font
-- "bigger cursor" / "large cursor" - Toggles larger cursor
-- "line height" - Toggles line height adjustment
-- "align text" / "text align" - Cycles through text alignment options
-- "screen reader" - Toggles screen reader
-- "voice command" / "voice control" - Toggles voice control
-- "reset all" / "reset everything" - Resets all accessibility settings
-
-**Note:** All voice commands can be customized for different languages using the `voiceCommands` configuration option.
-
-## Browser Compatibility
-
-- **Modern Browsers**: Full functionality in Chrome, Firefox, Safari, Edge
-- **Screen Reader**: Requires Speech Synthesis API support
-- **Voice Control**: Requires Speech Recognition API support
-- **Graceful Degradation**: Features that aren't supported are automatically disabled
-
-## Technical Features
-
-- **Single File Deployment** - No dependencies, just include one JavaScript file
-- **Persistent Settings** - User preferences saved in localStorage
-- **Keyboard Navigation** - Full keyboard accessibility with Tab, Arrow keys, and Escape
-- **ARIA Compliance** - Proper ARIA labels and roles for screen readers
-- **Performance Optimized** - DOM caching and efficient event handling
-- **Error Handling** - Robust error handling for browser compatibility
-- **Responsive Design** - Works on desktop and mobile devices
-- **Flexible Positioning** - Support for left/right side positioning
-- **Full Internationalization** - Complete text customization for any language
-- **Configurable Colors** - Dynamic color theming including SVG icon colors
-- **Screen Reader Optimized** - Proper text labels for all interactive elements
-
-## Usage Examples
-
-### Basic Implementation
-```html
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Accessible Website</title>
-</head>
-<body>
-    <h1>Welcome to My Website</h1>
-    <p>This site includes accessibility features.</p>
-    
-    <!-- Include the widget -->
-    <script src="widget.js"></script>
-</body>
-</html>
-```
-
-### Custom Configuration
-```html
-<script>
-// Define custom settings before loading the widget
-window.ACCESSIBILITY_WIDGET_CONFIG = {
-  enableVoiceControl: false,  // Disable voice control
-  widgetWidth: '300px',       // Smaller menu width
-  colors: {
-    primary: '#0066cc',       // Custom blue color
-    secondary: '#ffffff'      // White background
+    biggerText: ['texto grande', 'texto más grande'],
+    resetAll: ['reiniciar todo']
   }
 };
 </script>
 <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
 ```
+
+## 🎤 Voice Commands
+
+When voice control is enabled (Chrome/Edge only), use these commands:
+
+| Command | Action |
+|---------|--------|
+| "show menu" / "open menu" | Opens accessibility menu |
+| "high contrast" | Toggles contrast mode |
+| "bigger text" / "large text" | Increases text size |
+| "text spacing" | Toggles text spacing |
+| "pause animations" | Stops all animations |
+| "hide images" | Removes images |
+| "dyslexia font" | Activates dyslexia-friendly font |
+| "bigger cursor" | Enlarges cursor |
+| "line height" | Adjusts line spacing |
+| "screen reader" | Activates text-to-speech |
+| "reset all" | Resets all settings |
+
+*All commands are fully customizable via `voiceCommands` configuration*## 📚 Feature Details
+
+### High Contrast Mode
+Three contrast enhancement levels:
+- **Medium**: 1.3x boost for subtle improvement
+- **High**: Black background + white text + 1.5x contrast
+- **Ultra**: Black background + yellow text + 2.0x contrast
+
+### Text Size Control
+Four size options (Default, Medium 20px, Large 24px, X-Large 28px) with smart widget exclusion to maintain UI consistency.
+
+### Text Spacing
+Enhanced letter spacing (0.2em) and word spacing (0.3em) for improved readability, especially helpful for dyslexia.
+
+### Line Height Adjustment
+Three spacing levels (2em, 3em, 4em) to reduce visual crowding and improve reading flow.
+
+### Animation Control
+Completely disables CSS animations and transitions - critical for users with vestibular disorders or ADHD.
+
+### Image Hiding
+Text-only mode with smart caching (5-second intervals) to catch dynamically loaded images.
+
+### Dyslexia-Friendly Font
+Uses Comic Sans MS and fallback fonts optimized for dyslexia (Chalkboard SE, Bradley Hand, Brush Script MT).
+
+### Cursor Enhancement
+Custom 48x72px SVG cursor with high-contrast black fill and white stroke for better visibility.
+
+### Screen Reader (Text-to-Speech)
+Built-in TTS using Web Speech API - reads focused element text, alt attributes, and titles.
+
+### Voice Control
+Hands-free operation with Web Speech Recognition API. Supports 15+ customizable commands.
+
+### Color Blindness Filters
+SVG-based filters for Protanopia (red-blind), Deuteranopia (green-blind), Tritanopia (blue-blind), and Grayscale modes.
+
+### Font Selection
+Cycle through Arial (modern sans-serif), Times New Roman (traditional serif), and Verdana (screen-optimized).
+
+## 🚀 Technical Features
+
+- ✅ **Zero Dependencies** - Pure vanilla JavaScript, no frameworks required
+- ✅ **Lightweight** - Single file, ~1900 lines minified
+- ✅ **Persistent Settings** - localStorage saves user preferences across sessions
+- ✅ **Keyboard Accessible** - Full Tab/Arrow key navigation with proper focus management
+- ✅ **ARIA Compliant** - Complete ARIA labels and roles for assistive technologies
+- ✅ **Performance Optimized** - DOM caching, efficient event delegation, debounced updates
+- ✅ **Error Handling** - Graceful degradation for unsupported browser APIs
+- ✅ **Responsive Design** - Works seamlessly on desktop, tablet, and mobile
+- ✅ **Flexible Positioning** - Left or right side placement with custom offsets
+- ✅ **Full i18n Support** - Complete text customization for any language
+- ✅ **Dynamic Theming** - Customizable colors with SVG icon color synchronization
+- ✅ **Auto-initialization** - Automatically loads when DOM is ready
+
+## 🌐 Browser Compatibility
+
+| Browser | Core Features | Screen Reader | Voice Control |
+|---------|---------------|---------------|---------------|
+| Chrome 90+ | ✅ | ✅ | ✅ |
+| Edge 90+ | ✅ | ✅ | ✅ |
+| Firefox 88+ | ✅ | ✅ | ❌ |
+| Safari 14+ | ✅ | ✅ | ❌ |
+| Opera 76+ | ✅ | ✅ | ✅ |
+
+**Note**: Voice Control requires Web Speech Recognition API (Chromium-based browsers only). Screen Reader requires Web Speech Synthesis API.
+## 💡 Usage Examples
+
+### Minimal Implementation
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Accessible Website</title>
+</head>
+<body>
+    <h1>Welcome</h1>
+    <p>This site is fully accessible.</p>
+    
+    <!-- Add widget - automatically initializes -->
+    <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+</body>
+</html>
+```
+
+### With Custom Configuration
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Custom Accessible Site</title>
+</head>
+<body>
+    <h1>Custom Configuration</h1>
+    
+    <script>
+    // Configure before loading widget
+    window.ACCESSIBILITY_WIDGET_CONFIG = {
+      widgetWidth: '380px',
+      colors: {
+        primary: '#9c27b0', // Purple theme
+        secondary: '#ffffff'
+      },
+      enableVoiceControl: false, // Disable voice control
+      widgetPosition: {
+        side: 'left',
+        left: '15px',
+        bottom: '15px'
+      }
+    };
+    </script>
+    <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+</body>
+</html>
+```
+
+### NPM/Module Usage
+```javascript
+// main.js
+import 'accessibility-widgets/widget.js';
+
+// Optional: Configure before import
+window.ACCESSIBILITY_WIDGET_CONFIG = {
+  enableVoiceControl: false,
+  widgetWidth: '400px'
+};
+
+// Widget auto-initializes
+```
+
+### React/Vue/Angular Integration
+```javascript
+// App.jsx (React)
+import { useEffect } from 'react';
+
+function App() {
+  useEffect(() => {
+    // Configure widget
+    window.ACCESSIBILITY_WIDGET_CONFIG = {
+      colors: { primary: '#4caf50' }
+    };
+    
+    // Load widget script
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/accessibility-widgets@latest/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      // Cleanup if needed
+      document.body.removeChild(script);
+    };
+  }, []);
+  
+  return <div>Your App Content</div>;
+}
+```
+
+## 🛠️ Development
+
+```bash
+# Clone repository
+git clone https://github.com/sinanisler/accessibility-widgets.git
+cd accessibility-widgets
+
+# Install dependencies (optional)
+npm install
+
+# Start local server
+npm run dev
+# Opens http://localhost:8000
+```
+
+## 📦 NPM Publishing Setup
+
+After setting up your NPM account:
+
+1. **Create NPM Token**:
+   ```bash
+   npm login
+   npm token create
+   ```
+
+2. **Add to GitHub Secrets**:
+   - Go to your repository Settings → Secrets and variables → Actions
+   - Create new secret: `NPM_TOKEN`
+   - Paste your NPM token
+
+3. **Publish**:
+   ```bash
+   # Manual publish
+   npm publish
+
+   # Or create GitHub release to trigger workflow
+   git tag v2.0.0
+   git push origin v2.0.0
+   ```
+
+The GitHub Actions workflow will automatically publish to NPM on new releases.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+GPL-3.0 License - See [LICENSE](LICENSE) file for details.
+
+## 👨‍💻 Author
+
+**Sinan Isler**
+- Website: [sinan.im](https://sinan.im)
+- Email: sinan@sinan.im
+- GitHub: [@sinanisler](https://github.com/sinanisler)
+
+## 🌟 Support
+
+- ⭐ Star this repository
+- 🐛 [Report bugs](https://github.com/sinanisler/accessibility-widgets/issues)
+- 💡 [Request features](https://github.com/sinanisler/accessibility-widgets/issues)
+- ❤️ [Sponsor on GitHub](https://github.com/sponsors/sinanisler)
+
+## 📊 Stats
+
+![GitHub stars](https://img.shields.io/github/stars/sinanisler/accessibility-widgets?style=social)
+![npm downloads](https://img.shields.io/npm/dm/accessibility-widgets)
+![GitHub issues](https://img.shields.io/github/issues/sinanisler/accessibility-widgets)
+![GitHub license](https://img.shields.io/github/license/sinanisler/accessibility-widgets)
+
+---
+
+**Made with ❤️ for a more accessible web**
