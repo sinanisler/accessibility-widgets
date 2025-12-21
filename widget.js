@@ -63,16 +63,16 @@ const DEFAULT_WIDGET_CONFIG = {
     optionMargin: '10px',
     borderRadius: '8px',
     fontSize: '16px',
-    titleFontSize: '22px',
+    titleFontSize: '16px',
     closeButtonSize: '44px'
   },
 
   // Typography
   typography: {
     fontFamily: 'Arial, sans-serif',
-    fontSize: '16px',
+    fontSize: '17px',
     titleFontSize: '22px',
-    titleFontWeight: '500',
+    titleFontWeight: '700',
     lineHeight: '1'
   },
 
