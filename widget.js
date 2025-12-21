@@ -569,6 +569,26 @@ const pageStyles = `
     filter: grayscale(100%) !important;
   }
   
+  /* Saturation Filters */
+  .snn-saturation-low {
+    filter: none !important;
+  }
+  .snn-saturation-low body > *:not(#snn-accessibility-widget-container) {
+    filter: saturate(0.5) !important;
+  }
+  .snn-saturation-high {
+    filter: none !important;
+  }
+  .snn-saturation-high body > *:not(#snn-accessibility-widget-container) {
+    filter: saturate(10) !important;
+  }
+  .snn-saturation-none {
+    filter: none !important;
+  }
+  .snn-saturation-none body > *:not(#snn-accessibility-widget-container) {
+    filter: grayscale(100%) saturate(0) !important;
+  }
+  
   /* Protect widget container from page styles */
   #snn-accessibility-widget-container,
   #snn-accessibility-widget-container * {
@@ -598,6 +618,7 @@ const icons = {
   voiceControl: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M32 44a12 12 0 0012-12V20a12 12 0 10-24 0v12a12 12 0 0012 12z" fill="#333"/><path d="M20 32h24v4H20z" fill="#555"/><path d="M32 48v8" stroke="#555" stroke-width="4" stroke-linecap="round"/></svg>`,
   fontSelection: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="40" font-family="serif" font-size="24" text-anchor="middle" fill="#333">Aa</text><path d="M8 48h48v2H8z"/></svg>`,
   colorFilter: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="#333" stroke-width="2"/><path d="M32 8a24 24 0 000 48V8z" fill="#f00" opacity="0.3"/><path d="M32 8a24 24 0 000 48" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="4,2"/></svg>`,
+  saturation: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="20" cy="32" r="12" fill="#ff0000" opacity="0.7"/><circle cx="32" cy="32" r="12" fill="#00ff00" opacity="0.7"/><circle cx="44" cy="32" r="12" fill="#0000ff" opacity="0.7"/></svg>`,
   reducedMotion: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect x="16" y="24" width="8" height="16" fill="#333"/><rect x="28" y="24" width="8" height="16" fill="#333"/><rect x="40" y="24" width="8" height="16" fill="#333"/></svg>`,
 };
 
@@ -739,6 +760,14 @@ function applySettings() {
     domCache.documentElement.classList.add(`snn-filter-${selectedFilter}`);
   }
 
+  // Handle saturation filters
+  const saturationClasses = ['snn-saturation-low', 'snn-saturation-high', 'snn-saturation-none'];
+  domCache.documentElement.classList.remove(...saturationClasses);
+  const selectedSaturation = localStorage.getItem('saturation');
+  if (selectedSaturation) {
+    domCache.documentElement.classList.add(`snn-saturation-${selectedSaturation}`);
+  }
+
   // Handle text alignment
   const alignClasses = ['snn-text-align-left', 'snn-text-align-center', 'snn-text-align-right'];
   domCache.body.classList.remove(...alignClasses);
@@ -840,6 +869,7 @@ function resetAccessibilitySettings() {
     'voiceControl',
     'fontSelection',
     'colorFilter',
+    'saturation',
   ];
   keys.forEach((key) => localStorage.removeItem(key));
 
@@ -867,7 +897,10 @@ function resetAccessibilitySettings() {
     'snn-filter-protanopia',
     'snn-filter-deuteranopia',
     'snn-filter-tritanopia',
-    'snn-filter-grayscale'
+    'snn-filter-grayscale',
+    'snn-saturation-low',
+    'snn-saturation-high',
+    'snn-saturation-none'
   ];
   documentClasses.forEach(cls => document.documentElement.classList.remove(cls));
 
@@ -1065,6 +1098,10 @@ function updateActionButtonStatus(button, buttonText, optionsConfig) {
     const currentLineHeight = localStorage.getItem('lineHeight');
     const heights = ['2em', '3em', '4em'];
     currentIndex = currentLineHeight ? heights.indexOf(currentLineHeight) : -1;
+  } else if (buttonText.includes('Saturation')) {
+    const currentSaturation = localStorage.getItem('saturation');
+    const saturations = ['low', 'high', 'none'];
+    currentIndex = currentSaturation ? saturations.indexOf(currentSaturation) : -1;
   }
   
   // Update step indicators
@@ -1118,6 +1155,32 @@ function handleFontSelection() {
     localStorage.setItem('fontSelection', selectedFont);
     domCache.body.classList.add(`snn-font-${selectedFont}`);
     return selectedFont.charAt(0).toUpperCase() + selectedFont.slice(1);
+  }
+}
+
+// Saturation handler with 3 states (low, high, none/grayscale)
+function handleSaturation() {
+  const saturations = ['low', 'high', 'none'];
+  const currentSaturation = localStorage.getItem('saturation') || 'default';
+  const currentIndex = saturations.indexOf(currentSaturation);
+  const nextIndex = (currentIndex + 1) % (saturations.length + 1); // +1 for default
+
+  // Remove all saturation classes in one operation
+  const saturationClasses = ['snn-saturation-low', 'snn-saturation-high', 'snn-saturation-none'];
+  domCache.documentElement.classList.remove(...saturationClasses);
+
+  if (nextIndex === saturations.length) {
+    // Default saturation
+    localStorage.removeItem('saturation');
+    return 'Default';
+  } else {
+    const selectedSaturation = saturations[nextIndex];
+    localStorage.setItem('saturation', selectedSaturation);
+    domCache.documentElement.classList.add(`snn-saturation-${selectedSaturation}`);
+    if (selectedSaturation === 'none') {
+      return 'No Saturation';
+    }
+    return selectedSaturation.charAt(0).toUpperCase() + selectedSaturation.slice(1) + ' Saturation';
   }
 }
 
@@ -1599,6 +1662,15 @@ function createAccessibilityMenu() {
       actionFunction: handleFontSelection,
       icon: icons.fontSelection,
       enabled: WIDGET_CONFIG.enableFontSelection,
+      optionsConfig: { count: 3 }
+    },
+    {
+      order: 7.5,
+      type: 'action',
+      text: 'Saturation',
+      actionFunction: handleSaturation,
+      icon: icons.saturation,
+      enabled: true,
       optionsConfig: { count: 3 }
     },
     {
