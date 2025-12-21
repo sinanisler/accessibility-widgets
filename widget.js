@@ -1,6 +1,6 @@
 /*
 ===========================================
-  ACCESSIBILITY WIDGET - SHADOW DOM VERSION
+  ACCESSIBILITY WIDGET
   A comprehensive web accessibility tool
 ===========================================
 */
@@ -40,16 +40,11 @@ const DEFAULT_WIDGET_CONFIG = {
 
   // Colors
   colors: {
-    primary: '#000000',
-    primaryHover: '#00bfff',
-    secondary: '#f9f9f9',
-    text: '#333',
-    textLight: '#fff',
-    border: '#e6e6e6',
-    borderHover: '#d4d4d4',
-    shadow: 'rgba(0, 0, 0, 0.2)',
-    focus: '#ff6b35',
-    focusGlow: 'rgba(255, 107, 53, 0.3)'
+    primary: '#1663d7',           // Header bg, main button bg, active border, close hover bg
+    secondary: '#ffffff',         // Main button icon color
+    optionBg: '#ffffff',         // Option button background
+    optionText: '#333333',       // Option button text color
+    optionIcon: '#000000'        // Option button icon color
   },
 
   // Button styling
@@ -205,14 +200,14 @@ const widgetStyles = `
   }
   
   #snn-accessibility-button:focus {
-    outline: 2px solid ${WIDGET_CONFIG.colors.textLight};
+    outline: 2px solid ${WIDGET_CONFIG.colors.secondary};
     outline-offset: 2px;
   }
   
   #snn-accessibility-button svg {
     width: ${WIDGET_CONFIG.button.iconSize};
     height: ${WIDGET_CONFIG.button.iconSize};
-    fill: ${WIDGET_CONFIG.colors.textLight};
+    fill: ${WIDGET_CONFIG.colors.secondary};
     pointer-events: none;
   }
   
@@ -237,9 +232,9 @@ const widgetStyles = `
     align-items: center;
     padding: ${WIDGET_CONFIG.menu.optionPadding};
     width: 100%;
-    background-color: #ffffff;
-    color: ${WIDGET_CONFIG.colors.primary};
-    border: 2px solid #ffffff;
+    background-color: ${WIDGET_CONFIG.colors.optionBg};
+    color: ${WIDGET_CONFIG.colors.optionText};
+    border: 2px solid ${WIDGET_CONFIG.colors.optionBg};
     cursor: pointer;
     border-radius: ${WIDGET_CONFIG.menu.borderRadius};
     transition: background-color ${WIDGET_CONFIG.animation.transition}, border-color ${WIDGET_CONFIG.animation.transition};
@@ -263,7 +258,7 @@ const widgetStyles = `
     margin-right: 12px;
     width: ${WIDGET_CONFIG.button.iconSize};
     height: ${WIDGET_CONFIG.button.iconSize};
-    fill: ${WIDGET_CONFIG.colors.primary};
+    fill: ${WIDGET_CONFIG.colors.optionIcon};
     flex-shrink: 0;
   }
   
@@ -281,7 +276,7 @@ const widgetStyles = `
     background: none;
     border: none;
     font-size: ${WIDGET_CONFIG.menu.closeButtonSize};
-    color: ${WIDGET_CONFIG.colors.textLight};
+    color: ${WIDGET_CONFIG.colors.secondary};
     cursor: pointer;
     margin-left: auto;
     line-height: ${WIDGET_CONFIG.typography.lineHeight};
@@ -302,12 +297,12 @@ const widgetStyles = `
   }
   
   .snn-close:focus {
-    outline: solid 2px ${WIDGET_CONFIG.colors.textLight};
+    outline: solid 2px ${WIDGET_CONFIG.colors.secondary};
   }
   
   .snn-close:hover {
-    color: ${WIDGET_CONFIG.colors.text};
-    background: ${WIDGET_CONFIG.colors.secondary};
+    color: ${WIDGET_CONFIG.colors.secondary};
+    background: ${WIDGET_CONFIG.colors.primary};
   }
   
   .snn-header {
@@ -336,7 +331,7 @@ const widgetStyles = `
     padding: ${WIDGET_CONFIG.menu.optionPadding};
     width: 100%;
     background-color: #343434;
-    color: ${WIDGET_CONFIG.colors.textLight};
+    color: ${WIDGET_CONFIG.colors.secondary};
     border: none;
     cursor: pointer;
     border-radius: ${WIDGET_CONFIG.menu.borderRadius};
@@ -360,7 +355,7 @@ const widgetStyles = `
   .snn-title {
     margin: 0;
     font-size: ${WIDGET_CONFIG.menu.titleFontSize};
-    color: ${WIDGET_CONFIG.colors.textLight};
+    color: ${WIDGET_CONFIG.colors.secondary};
     line-height: ${WIDGET_CONFIG.typography.lineHeight} !important;
     margin-left: 5px;
     font-weight: ${WIDGET_CONFIG.typography.titleFontWeight};
@@ -498,6 +493,15 @@ const pageStyles = `
   }
   .snn-filter-grayscale body > *:not(#snn-accessibility-widget-container) {
     filter: grayscale(100%) !important;
+  }
+  .snn-reduced-motion * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .snn-reduced-motion *::before {
+    animation: none !important;
+    transition: none !important;
+  }
   .snn-reduced-motion *::after {
     animation: none !important;
     transition: none !important;
