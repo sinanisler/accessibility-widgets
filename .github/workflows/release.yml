@@ -140,21 +140,7 @@ jobs:
           tag_name: "v${{ steps.new_version.outputs.new_version }}"
           name: "Accessibility Widgets v${{ steps.new_version.outputs.new_version }}"
           body: |
-            # 🎉 Accessibility Widgets v${{ steps.new_version.outputs.new_version }}
-            
-            A comprehensive, lightweight accessibility widget that enhances web accessibility for all users.
-            
-            ## 📦 Installation
-            
-            ### CDN (Recommended)
-            ```html
-            <script src="https://cdn.jsdelivr.net/gh/sinanisler/accessibility-widgets@v${{ steps.new_version.outputs.new_version }}/widget.js"></script>
-            ```
-            
-            ### NPM
-            ```bash
-            npm install accessibility-widgets@${{ steps.new_version.outputs.new_version }}
-            ```
+            # Changelog
             
             ${{ steps.changelog.outputs.changelog }}
             
