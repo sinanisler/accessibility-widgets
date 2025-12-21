@@ -599,7 +599,7 @@ function applySettings() {
   const settings = [
     { key: 'biggerCursor', className: 'snn-bigger-cursor' },
     { key: 'biggerText', className: 'snn-bigger-text' },
-    { key: 'highContrast', className: 'snn-high-contrast', target: domCache.documentElement },
+    { key: 'highContrast', className: 'snn-high-contrast' },
     { key: 'dyslexiaFont', className: 'snn-dyslexia-font' },
     { key: 'lineHeight', className: 'snn-line-height' },
     { key: 'textAlign', className: 'snn-text-align' },
@@ -681,10 +681,10 @@ function applySettings() {
 
   // Handle high contrast
   const contrastClasses = ['snn-high-contrast-medium', 'snn-high-contrast-high', 'snn-high-contrast-ultra'];
-  domCache.documentElement.classList.remove(...contrastClasses);
+  domCache.body.classList.remove(...contrastClasses);
   const selectedContrast = localStorage.getItem('highContrast');
   if (selectedContrast) {
-    domCache.documentElement.classList.add(`snn-high-contrast-${selectedContrast}`);
+    domCache.body.classList.add(`snn-high-contrast-${selectedContrast}`);
   }
 
   // Handle images with cached query
@@ -768,18 +768,18 @@ function resetAccessibilitySettings() {
   ];
   cssClasses.forEach(cls => document.body.classList.remove(cls));
 
-  const documentClasses = [
-    'snn-high-contrast',
+  const bodyClasses2 = [
     'snn-high-contrast-medium',
     'snn-high-contrast-high',
-    'snn-high-contrast-ultra',
+    'snn-high-contrast-ultra'
+  ];
+  bodyClasses2.forEach(cls => document.body.classList.remove(cls));
+
+  const documentClasses = [
     'snn-filter-protanopia',
     'snn-filter-deuteranopia',
     'snn-filter-tritanopia',
-    'snn-filter-grayscale',
-    'snn-text-align-left',
-    'snn-text-align-center',
-    'snn-text-align-right'
+    'snn-filter-grayscale'
   ];
   documentClasses.forEach(cls => document.documentElement.classList.remove(cls));
 
@@ -1049,7 +1049,7 @@ function handleHighContrast() {
 
   // Remove all contrast classes
   const contrastClasses = ['snn-high-contrast-medium', 'snn-high-contrast-high', 'snn-high-contrast-ultra'];
-  domCache.documentElement.classList.remove(...contrastClasses);
+  domCache.body.classList.remove(...contrastClasses);
 
   if (nextIndex === contrastLevels.length) {
     // Default contrast
@@ -1058,7 +1058,7 @@ function handleHighContrast() {
   } else {
     const selectedContrast = contrastLevels[nextIndex];
     localStorage.setItem('highContrast', selectedContrast);
-    domCache.documentElement.classList.add(`snn-high-contrast-${selectedContrast}`);
+    domCache.body.classList.add(`snn-high-contrast-${selectedContrast}`);
     return selectedContrast.charAt(0).toUpperCase() + selectedContrast.slice(1);
   }
 }
