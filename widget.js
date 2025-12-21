@@ -1,8 +1,6 @@
-/*
+/* 
 ===========================================
   ACCESSIBILITY WIDGET
-  A comprehensive web accessibility tool
-  Updated: Enhanced Text Spacing, Line Height, and Pause Animations
 ===========================================
 */
 
