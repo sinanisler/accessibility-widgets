@@ -605,7 +605,8 @@ const widgetStyles = `
     position: fixed;
     top: 0;
     ${WIDGET_CONFIG.widgetPosition.side}: 0;
-    width: ${WIDGET_CONFIG.widgetWidth};
+    max-width: ${WIDGET_CONFIG.widgetWidth};
+    width:100%;
     height: 100vh;
     overflow-y: auto;
     background-color: #e2e2e2;
@@ -614,6 +615,7 @@ const widgetStyles = `
     font-family: ${WIDGET_CONFIG.typography.fontFamily};
     z-index: 999999;
     scrollbar-width: thin;
+    line-height:1 !important;
   }
   
   .snn-accessibility-option {
@@ -781,7 +783,7 @@ const widgetStyles = `
   }
   
   .snn-content {
-    padding: 20px;
+    padding: 20px 20px 0px 20px;
   }
   
   .snn-language-selector {
@@ -789,7 +791,7 @@ const widgetStyles = `
     background: white;
     color: black;
     border: none;
-    padding: 12px;
+    padding: 14px;
     font-size: 16px;
     font-family: ${WIDGET_CONFIG.typography.fontFamily};
     border-radius: 5px;
