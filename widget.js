@@ -552,6 +552,7 @@ function injectPageStyles() {
   const svgFilters = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgFilters.style.position = 'absolute';
   svgFilters.style.width = '0';
+  svgFilters.setAttribute('class', 'snn-accessibility-filters');
   svgFilters.style.height = '0';
   svgFilters.innerHTML = `
     <defs>
