@@ -7,6 +7,393 @@
 */
 
 // ===========================================
+// TRANSLATIONS
+// ===========================================
+
+const TRANSLATIONS = {
+  en: {
+    accessibilityMenu: 'Accessibility Menu',
+    closeAccessibilityMenu: 'Close Accessibility Menu',
+    accessibilityTools: 'Accessibility Tools',
+    resetAllSettings: 'Reset All Settings',
+    screenReader: 'Screen Reader',
+    voiceCommand: 'Voice Command',
+    textSpacing: 'Text Spacing',
+    pauseAnimations: 'Pause Animations',
+    hideImages: 'Hide Images',
+    dyslexiaFriendly: 'Dyslexia Friendly',
+    biggerCursor: 'Bigger Cursor',
+    lineHeight: 'Line Height',
+    fontSelection: 'Font Selection',
+    colorFilter: 'Color Filter',
+    textAlign: 'Text Align',
+    textSize: 'Text Size',
+    highContrast: 'High Contrast',
+    defaultFont: 'Default Font',
+    noFilter: 'No Filter',
+    default: 'Default',
+    screenReaderOn: 'Screen reader on',
+    screenReaderOff: 'Screen reader off',
+    voiceControlActivated: 'Voice control activated',
+    notSupportedBrowser: 'is not supported in this browser',
+    close: 'Close',
+    reset: 'Reset',
+    saturation: 'Saturation',
+    selectLanguage: 'Select Language'
+  },
+  de: {
+    accessibilityMenu: 'Barrierefreiheitsmenü',
+    closeAccessibilityMenu: 'Barrierefreiheitsmenü schließen',
+    accessibilityTools: 'Barrierefreiheitswerkzeuge',
+    resetAllSettings: 'Alle Einstellungen zurücksetzen',
+    screenReader: 'Screenreader',
+    voiceCommand: 'Sprachbefehl',
+    textSpacing: 'Textabstand',
+    pauseAnimations: 'Animationen pausieren',
+    hideImages: 'Bilder ausblenden',
+    dyslexiaFriendly: 'Legasthenie-freundlich',
+    biggerCursor: 'Größerer Cursor',
+    lineHeight: 'Zeilenhöhe',
+    fontSelection: 'Schriftauswahl',
+    colorFilter: 'Farbfilter',
+    textAlign: 'Textausrichtung',
+    textSize: 'Textgröße',
+    highContrast: 'Hoher Kontrast',
+    defaultFont: 'Standardschrift',
+    noFilter: 'Kein Filter',
+    default: 'Standard',
+    screenReaderOn: 'Screenreader ein',
+    screenReaderOff: 'Screenreader aus',
+    voiceControlActivated: 'Sprachsteuerung aktiviert',
+    notSupportedBrowser: 'wird in diesem Browser nicht unterstützt',
+    close: 'Schließen',
+    reset: 'Zurücksetzen',
+    saturation: 'Sättigung',
+    selectLanguage: 'Sprache wählen'
+  },
+  es: {
+    accessibilityMenu: 'Menú de Accesibilidad',
+    closeAccessibilityMenu: 'Cerrar Menú de Accesibilidad',
+    accessibilityTools: 'Herramientas de Accesibilidad',
+    resetAllSettings: 'Restablecer Todas las Configuraciones',
+    screenReader: 'Lector de Pantalla',
+    voiceCommand: 'Comando de Voz',
+    textSpacing: 'Espaciado de Texto',
+    pauseAnimations: 'Pausar Animaciones',
+    hideImages: 'Ocultar Imágenes',
+    dyslexiaFriendly: 'Amigable para Dislexia',
+    biggerCursor: 'Cursor Más Grande',
+    lineHeight: 'Altura de Línea',
+    fontSelection: 'Selección de Fuente',
+    colorFilter: 'Filtro de Color',
+    textAlign: 'Alineación de Texto',
+    textSize: 'Tamaño de Texto',
+    highContrast: 'Alto Contraste',
+    defaultFont: 'Fuente Predeterminada',
+    noFilter: 'Sin Filtro',
+    default: 'Predeterminado',
+    screenReaderOn: 'Lector de pantalla activado',
+    screenReaderOff: 'Lector de pantalla desactivado',
+    voiceControlActivated: 'Control de voz activado',
+    notSupportedBrowser: 'no es compatible con este navegador',
+    close: 'Cerrar',
+    reset: 'Restablecer',
+    saturation: 'Saturación',
+    selectLanguage: 'Seleccionar Idioma'
+  },
+  it: {
+    accessibilityMenu: 'Menu Accessibilità',
+    closeAccessibilityMenu: 'Chiudi Menu Accessibilità',
+    accessibilityTools: 'Strumenti di Accessibilità',
+    resetAllSettings: 'Ripristina Tutte le Impostazioni',
+    screenReader: 'Lettore Schermo',
+    voiceCommand: 'Comando Vocale',
+    textSpacing: 'Spaziatura Testo',
+    pauseAnimations: 'Pausa Animazioni',
+    hideImages: 'Nascondi Immagini',
+    dyslexiaFriendly: 'Adatto alla Dislessia',
+    biggerCursor: 'Cursore Più Grande',
+    lineHeight: 'Altezza Linea',
+    fontSelection: 'Selezione Font',
+    colorFilter: 'Filtro Colore',
+    textAlign: 'Allineamento Testo',
+    textSize: 'Dimensione Testo',
+    highContrast: 'Alto Contrasto',
+    defaultFont: 'Font Predefinito',
+    noFilter: 'Nessun Filtro',
+    default: 'Predefinito',
+    screenReaderOn: 'Lettore schermo attivo',
+    screenReaderOff: 'Lettore schermo disattivo',
+    voiceControlActivated: 'Controllo vocale attivato',
+    notSupportedBrowser: 'non è supportato in questo browser',
+    close: 'Chiudi',
+    reset: 'Ripristina',
+    saturation: 'Saturazione',
+    selectLanguage: 'Seleziona Lingua'
+  },
+  fr: {
+    accessibilityMenu: 'Menu Accessibilité',
+    closeAccessibilityMenu: 'Fermer le Menu Accessibilité',
+    accessibilityTools: 'Outils d\'Accessibilité',
+    resetAllSettings: 'Réinitialiser Tous les Paramètres',
+    screenReader: 'Lecteur d\'Écran',
+    voiceCommand: 'Commande Vocale',
+    textSpacing: 'Espacement du Texte',
+    pauseAnimations: 'Mettre en Pause les Animations',
+    hideImages: 'Masquer les Images',
+    dyslexiaFriendly: 'Convivial pour la Dyslexie',
+    biggerCursor: 'Curseur Plus Grand',
+    lineHeight: 'Hauteur de Ligne',
+    fontSelection: 'Sélection de Police',
+    colorFilter: 'Filtre de Couleur',
+    textAlign: 'Alignement du Texte',
+    textSize: 'Taille du Texte',
+    highContrast: 'Contraste Élevé',
+    defaultFont: 'Police par Défaut',
+    noFilter: 'Aucun Filtre',
+    default: 'Par Défaut',
+    screenReaderOn: 'Lecteur d\'écran activé',
+    screenReaderOff: 'Lecteur d\'écran désactivé',
+    voiceControlActivated: 'Contrôle vocal activé',
+    notSupportedBrowser: 'n\'est pas pris en charge dans ce navigateur',
+    close: 'Fermer',
+    reset: 'Réinitialiser',
+    saturation: 'Saturation',
+    selectLanguage: 'Sélectionner la Langue'
+  },
+  ru: {
+    accessibilityMenu: 'Меню Доступности',
+    closeAccessibilityMenu: 'Закрыть Меню Доступности',
+    accessibilityTools: 'Инструменты Доступности',
+    resetAllSettings: 'Сбросить Все Настройки',
+    screenReader: 'Программа Чтения с Экрана',
+    voiceCommand: 'Голосовая Команда',
+    textSpacing: 'Межбуквенный Интервал',
+    pauseAnimations: 'Приостановить Анимацию',
+    hideImages: 'Скрыть Изображения',
+    dyslexiaFriendly: 'Для Дислексии',
+    biggerCursor: 'Увеличенный Курсор',
+    lineHeight: 'Высота Строки',
+    fontSelection: 'Выбор Шрифта',
+    colorFilter: 'Цветовой Фильтр',
+    textAlign: 'Выравнивание Текста',
+    textSize: 'Размер Текста',
+    highContrast: 'Высокая Контрастность',
+    defaultFont: 'Шрифт по Умолчанию',
+    noFilter: 'Без Фильтра',
+    default: 'По Умолчанию',
+    screenReaderOn: 'Программа чтения включена',
+    screenReaderOff: 'Программа чтения выключена',
+    voiceControlActivated: 'Голосовое управление активировано',
+    notSupportedBrowser: 'не поддерживается в этом браузере',
+    close: 'Закрыть',
+    reset: 'Сбросить',
+    saturation: 'Насыщенность',
+    selectLanguage: 'Выберите Язык'
+  },
+  tr: {
+    accessibilityMenu: 'Erişilebilirlik Menüsü',
+    closeAccessibilityMenu: 'Erişilebilirlik Menüsünü Kapat',
+    accessibilityTools: 'Erişilebilirlik Araçları',
+    resetAllSettings: 'Tüm Ayarları Sıfırla',
+    screenReader: 'Ekran Okuyucu',
+    voiceCommand: 'Sesli Komut',
+    textSpacing: 'Metin Aralığı',
+    pauseAnimations: 'Animasyonları Duraklat',
+    hideImages: 'Resimleri Gizle',
+    dyslexiaFriendly: 'Disleksi Dostu',
+    biggerCursor: 'Daha Büyük İmleç',
+    lineHeight: 'Satır Yüksekliği',
+    fontSelection: 'Yazı Tipi Seçimi',
+    colorFilter: 'Renk Filtresi',
+    textAlign: 'Metin Hizalama',
+    textSize: 'Metin Boyutu',
+    highContrast: 'Yüksek Kontrast',
+    defaultFont: 'Varsayılan Yazı Tipi',
+    noFilter: 'Filtre Yok',
+    default: 'Varsayılan',
+    screenReaderOn: 'Ekran okuyucu açık',
+    screenReaderOff: 'Ekran okuyucu kapalı',
+    voiceControlActivated: 'Sesli kontrol etkinleştirildi',
+    notSupportedBrowser: 'bu tarayıcıda desteklenmiyor',
+    close: 'Kapat',
+    reset: 'Sıfırla',
+    saturation: 'Doygunluk',
+    selectLanguage: 'Dil Seçin'
+  },
+  ar: {
+    accessibilityMenu: 'قائمة إمكانية الوصول',
+    closeAccessibilityMenu: 'إغلاق قائمة إمكانية الوصول',
+    accessibilityTools: 'أدوات إمكانية الوصول',
+    resetAllSettings: 'إعادة تعيين جميع الإعدادات',
+    screenReader: 'قارئ الشاشة',
+    voiceCommand: 'الأمر الصوتي',
+    textSpacing: 'تباعد النص',
+    pauseAnimations: 'إيقاف الرسوم المتحركة مؤقتًا',
+    hideImages: 'إخفاء الصور',
+    dyslexiaFriendly: 'صديق لعسر القراءة',
+    biggerCursor: 'مؤشر أكبر',
+    lineHeight: 'ارتفاع الخط',
+    fontSelection: 'اختيار الخط',
+    colorFilter: 'مرشح الألوان',
+    textAlign: 'محاذاة النص',
+    textSize: 'حجم النص',
+    highContrast: 'تباين عالي',
+    defaultFont: 'الخط الافتراضي',
+    noFilter: 'بدون مرشح',
+    default: 'افتراضي',
+    screenReaderOn: 'قارئ الشاشة مفعّل',
+    screenReaderOff: 'قارئ الشاشة معطل',
+    voiceControlActivated: 'تم تفعيل التحكم الصوتي',
+    notSupportedBrowser: 'غير مدعوم في هذا المتصفح',
+    close: 'إغلاق',
+    reset: 'إعادة تعيين',
+    saturation: 'التشبع',
+    selectLanguage: 'اختر اللغة'
+  },
+  hi: {
+    accessibilityMenu: 'पहुँच मेनू',
+    closeAccessibilityMenu: 'पहुँच मेनू बंद करें',
+    accessibilityTools: 'पहुँच उपकरण',
+    resetAllSettings: 'सभी सेटिंग्स रीसेट करें',
+    screenReader: 'स्क्रीन रीडर',
+    voiceCommand: 'वॉयस कमांड',
+    textSpacing: 'टेक्स्ट स्पेसिंग',
+    pauseAnimations: 'एनिमेशन रोकें',
+    hideImages: 'चित्र छिपाएँ',
+    dyslexiaFriendly: 'डिस्लेक्सिया के अनुकूल',
+    biggerCursor: 'बड़ा कर्सर',
+    lineHeight: 'लाइन की ऊँचाई',
+    fontSelection: 'फ़ॉन्ट चयन',
+    colorFilter: 'रंग फ़िल्टर',
+    textAlign: 'टेक्स्ट संरेखण',
+    textSize: 'टेक्स्ट का आकार',
+    highContrast: 'उच्च कंट्रास्ट',
+    defaultFont: 'डिफ़ॉल्ट फ़ॉन्ट',
+    noFilter: 'कोई फ़िल्टर नहीं',
+    default: 'डिफ़ॉल्ट',
+    screenReaderOn: 'स्क्रीन रीडर चालू',
+    screenReaderOff: 'स्क्रीन रीडर बंद',
+    voiceControlActivated: 'वॉयस नियंत्रण सक्रिय',
+    notSupportedBrowser: 'इस ब्राउज़र में समर्थित नहीं है',
+    close: 'बंद करें',
+    reset: 'रीसेट करें',
+    saturation: 'संतृप्ति',
+    selectLanguage: 'भाषा चुनें'
+  },
+  'zh-cn': {
+    accessibilityMenu: '辅助功能菜单',
+    closeAccessibilityMenu: '关闭辅助功能菜单',
+    accessibilityTools: '辅助功能工具',
+    resetAllSettings: '重置所有设置',
+    screenReader: '屏幕阅读器',
+    voiceCommand: '语音命令',
+    textSpacing: '文本间距',
+    pauseAnimations: '暂停动画',
+    hideImages: '隐藏图片',
+    dyslexiaFriendly: '阅读障碍友好',
+    biggerCursor: '更大的光标',
+    lineHeight: '行高',
+    fontSelection: '字体选择',
+    colorFilter: '颜色滤镜',
+    textAlign: '文本对齐',
+    textSize: '文本大小',
+    highContrast: '高对比度',
+    defaultFont: '默认字体',
+    noFilter: '无滤镜',
+    default: '默认',
+    screenReaderOn: '屏幕阅读器已开启',
+    screenReaderOff: '屏幕阅读器已关闭',
+    voiceControlActivated: '语音控制已激活',
+    notSupportedBrowser: '此浏览器不支持',
+    close: '关闭',
+    reset: '重置',
+    saturation: '饱和度',
+    selectLanguage: '选择语言'
+  },
+  jp: {
+    accessibilityMenu: 'アクセシビリティメニュー',
+    closeAccessibilityMenu: 'アクセシビリティメニューを閉じる',
+    accessibilityTools: 'アクセシビリティツール',
+    resetAllSettings: 'すべての設定をリセット',
+    screenReader: 'スクリーンリーダー',
+    voiceCommand: '音声コマンド',
+    textSpacing: 'テキスト間隔',
+    pauseAnimations: 'アニメーション一時停止',
+    hideImages: '画像を非表示',
+    dyslexiaFriendly: 'ディスレクシア対応',
+    biggerCursor: '大きいカーソル',
+    lineHeight: '行の高さ',
+    fontSelection: 'フォント選択',
+    colorFilter: 'カラーフィルター',
+    textAlign: 'テキスト配置',
+    textSize: 'テキストサイズ',
+    highContrast: 'ハイコントラスト',
+    defaultFont: 'デフォルトフォント',
+    noFilter: 'フィルターなし',
+    default: 'デフォルト',
+    screenReaderOn: 'スクリーンリーダーがオン',
+    screenReaderOff: 'スクリーンリーダーがオフ',
+    voiceControlActivated: '音声制御が有効',
+    notSupportedBrowser: 'このブラウザではサポートされていません',
+    close: '閉じる',
+    reset: 'リセット',
+    saturation: '彩度',
+    selectLanguage: '言語を選択'
+  }
+};
+
+// Language detection and management
+let currentLanguage = 'en';
+
+function detectBrowserLanguage() {
+  const browserLang = (navigator.language || navigator.userLanguage).toLowerCase();
+  
+  // Direct match
+  if (TRANSLATIONS[browserLang]) {
+    return browserLang;
+  }
+  
+  // Try language code only (e.g., 'en' from 'en-US')
+  const langCode = browserLang.split('-')[0];
+  if (TRANSLATIONS[langCode]) {
+    return langCode;
+  }
+  
+  // Special case for Chinese
+  if (browserLang.includes('zh')) {
+    if (browserLang.includes('cn') || browserLang.includes('hans')) {
+      return 'zh-cn';
+    }
+  }
+  
+  // Default to English
+  return 'en';
+}
+
+function setLanguage(lang) {
+  if (TRANSLATIONS[lang]) {
+    currentLanguage = lang;
+    localStorage.setItem('accessibilityWidgetLanguage', lang);
+    return true;
+  }
+  return false;
+}
+
+function getTranslation(key) {
+  return TRANSLATIONS[currentLanguage][key] || TRANSLATIONS['en'][key] || key;
+}
+
+// Initialize language from localStorage or detect from browser
+const savedLanguage = localStorage.getItem('accessibilityWidgetLanguage');
+if (savedLanguage && TRANSLATIONS[savedLanguage]) {
+  currentLanguage = savedLanguage;
+} else {
+  currentLanguage = detectBrowserLanguage();
+  localStorage.setItem('accessibilityWidgetLanguage', currentLanguage);
+}
+
+// ===========================================
 // CONFIGURATION VARIABLES
 // ===========================================
 
@@ -241,7 +628,7 @@ const widgetStyles = `
     transition: background-color ${WIDGET_CONFIG.animation.transition}, border-color ${WIDGET_CONFIG.animation.transition};
     line-height: ${WIDGET_CONFIG.typography.lineHeight} !important;
     gap: 5px;
-    min-height: 110px;
+    min-height: 105px;
   }
   
   .snn-accessibility-option:hover {
@@ -391,6 +778,25 @@ const widgetStyles = `
   
   .snn-content {
     padding: 20px;
+  }
+  
+  .snn-language-selector {
+    width: 100%;
+    background: white;
+    color: black;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    font-family: ${WIDGET_CONFIG.typography.fontFamily};
+    border-radius: 5px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    outline: none;
+  }
+  
+  .snn-language-selector:focus {
+    outline: 2px solid ${WIDGET_CONFIG.colors.primary};
+    outline-offset: 2px;
   }
   
   .snn-options-grid {
@@ -835,7 +1241,7 @@ function createAccessibilityButton() {
   const button = document.createElement('button');
   button.id = 'snn-accessibility-button';
   button.innerHTML = icons.buttonsvg;
-  button.setAttribute('aria-label', WIDGET_CONFIG.lang.accessibilityMenu);
+  button.setAttribute('aria-label', getTranslation('accessibilityMenu'));
 
   button.addEventListener('click', function () {
     toggleMenu();
@@ -962,7 +1368,7 @@ function createToggleButton(
   // Check if feature is supported
   if (requiresFeature && !requiresFeature.isSupported) {
     button.disabled = true;
-    button.setAttribute('title', `${buttonText} ${WIDGET_CONFIG.lang.notSupportedBrowser}`);
+    button.setAttribute('title', `${buttonText} ${getTranslation('notSupportedBrowser')}`);
     button.style.opacity = '0.5';
     return button;
   }
@@ -1148,7 +1554,7 @@ function handleFontSelection() {
   if (nextIndex === fonts.length) {
     // Default font
     localStorage.removeItem('fontSelection');
-    return WIDGET_CONFIG.lang.defaultFont;
+    return getTranslation('defaultFont');
   } else {
     const selectedFont = fonts[nextIndex];
     localStorage.setItem('fontSelection', selectedFont);
@@ -1197,7 +1603,7 @@ function handleColorFilter() {
   if (nextIndex === filters.length) {
     // No filter
     localStorage.removeItem('colorFilter');
-    return WIDGET_CONFIG.lang.noFilter;
+    return getTranslation('noFilter');
   } else {
     const selectedFilter = filters[nextIndex];
     localStorage.setItem('colorFilter', selectedFilter);
@@ -1220,7 +1626,7 @@ function handleTextAlign() {
   if (nextIndex === alignments.length) {
     // Default alignment
     localStorage.removeItem('textAlign');
-    return WIDGET_CONFIG.lang.default;
+    return getTranslation('default');
   } else {
     const selectedAlign = alignments[nextIndex];
     localStorage.setItem('textAlign', selectedAlign);
@@ -1243,7 +1649,7 @@ function handleBiggerText() {
   if (nextIndex === textSizes.length) {
     // Default text size
     localStorage.removeItem('biggerText');
-    return WIDGET_CONFIG.lang.default;
+    return getTranslation('default');
   } else {
     const selectedSize = textSizes[nextIndex];
     localStorage.setItem('biggerText', selectedSize);
@@ -1266,7 +1672,7 @@ function handleHighContrast() {
   if (nextIndex === contrastLevels.length) {
     // Default contrast
     localStorage.removeItem('highContrast');
-    return WIDGET_CONFIG.lang.default;
+    return getTranslation('default');
   } else {
     const selectedContrast = contrastLevels[nextIndex];
     localStorage.setItem('highContrast', selectedContrast);
@@ -1289,7 +1695,7 @@ function handleTextSpacing() {
   if (nextIndex === spacings.length) {
     // Default
     localStorage.removeItem('textSpacing');
-    return WIDGET_CONFIG.lang.default;
+    return getTranslation('default');
   } else {
     const selectedSpacing = spacings[nextIndex];
     localStorage.setItem('textSpacing', selectedSpacing);
@@ -1312,8 +1718,8 @@ function handleLineHeight() {
   if (nextIndex === heights.length) {
     // Default
     localStorage.removeItem('lineHeight');
-    return WIDGET_CONFIG.lang.default;
-  } else {
+    return getTranslation('default');
+  } else{
     const selectedHeight = heights[nextIndex];
     localStorage.setItem('lineHeight', selectedHeight);
     domCache.body.classList.add(`snn-line-height-${selectedHeight}`);
@@ -1349,7 +1755,7 @@ const screenReader = {
   },
   toggle: function (isActive) {
     if (!screenReader.isSupported) {
-      console.warn(`Speech synthesis ${WIDGET_CONFIG.lang.notSupportedBrowser}`);
+      console.warn(`Speech synthesis ${getTranslation('notSupportedBrowser')}`);
       return false;
     }
 
@@ -1359,7 +1765,7 @@ const screenReader = {
     try {
       if (isActive) {
         document.addEventListener('focusin', screenReader.handleFocus);
-        const feedbackSpeech = new SpeechSynthesisUtterance(WIDGET_CONFIG.lang.screenReaderOn);
+        const feedbackSpeech = new SpeechSynthesisUtterance(getTranslation('screenReaderOn'));
         feedbackSpeech.lang = 'en-US';
         feedbackSpeech.onerror = function (event) {
           console.warn('Speech synthesis feedback error:', event.error);
@@ -1368,7 +1774,7 @@ const screenReader = {
       } else {
         document.removeEventListener('focusin', screenReader.handleFocus);
         window.speechSynthesis.cancel();
-        const feedbackSpeech = new SpeechSynthesisUtterance(WIDGET_CONFIG.lang.screenReaderOff);
+        const feedbackSpeech = new SpeechSynthesisUtterance(getTranslation('screenReaderOff'));
         feedbackSpeech.lang = 'en-US';
         feedbackSpeech.onerror = function (event) {
           console.warn('Speech synthesis feedback error:', event.error);
@@ -1393,7 +1799,7 @@ const voiceControl = {
   maxRetries: 3,
   toggle: function (isActive) {
     if (!voiceControl.isSupported) {
-      console.warn(`Speech Recognition API ${WIDGET_CONFIG.lang.notSupportedBrowser}`);
+      console.warn(`Speech Recognition API ${getTranslation('notSupportedBrowser')}`);
       return false;
     }
 
@@ -1430,7 +1836,7 @@ const voiceControl = {
       voiceControl.recognition.continuous = false;
 
       voiceControl.recognition.onstart = function () {
-        console.log(WIDGET_CONFIG.lang.voiceControlActivated);
+        console.log(getTranslation('voiceControlActivated'));
         voiceControl.retryCount = 0;
       };
 
@@ -1552,20 +1958,20 @@ function createAccessibilityMenu() {
   const title = document.createElement('div');
   title.classList.add('snn-title');
   title.id = 'snn-accessibility-title';
-  title.textContent = WIDGET_CONFIG.lang.accessibilityTools;
+  title.textContent = getTranslation('accessibilityTools');
 
   // Create reset button
   const resetButton = document.createElement('button');
   resetButton.classList.add('snn-reset-button');
-  resetButton.innerHTML = `${icons.resetAll}<span class="snn-tooltip">${WIDGET_CONFIG.lang.reset}</span>`;
-  resetButton.setAttribute('aria-label', WIDGET_CONFIG.lang.resetAllSettings);
+  resetButton.innerHTML = `${icons.resetAll}<span class="snn-tooltip">${getTranslation('reset')}</span>`;
+  resetButton.setAttribute('aria-label', getTranslation('resetAllSettings'));
   resetButton.addEventListener('click', resetAccessibilitySettings);
 
   // Create close button
   const closeButton = document.createElement('button');
   closeButton.className = 'snn-close';
-  closeButton.innerHTML = `<span class="snn-tooltip">${WIDGET_CONFIG.lang.close}</span>`;
-  closeButton.setAttribute('aria-label', WIDGET_CONFIG.lang.closeAccessibilityMenu);
+  closeButton.innerHTML = `<span class="snn-tooltip">${getTranslation('close')}</span>`;
+  closeButton.setAttribute('aria-label', getTranslation('closeAccessibilityMenu'));
 
   closeButton.addEventListener('click', function () {
     closeMenu();
@@ -1587,6 +1993,45 @@ function createAccessibilityMenu() {
   const content = document.createElement('div');
   content.classList.add('snn-content');
 
+  // Create language selector dropdown
+  const languageSelector = document.createElement('select');
+  languageSelector.classList.add('snn-language-selector');
+  languageSelector.setAttribute('aria-label', getTranslation('selectLanguage'));
+  
+  const languages = [
+    { code: 'en', name: 'English' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'es', name: 'Español' },
+    { code: 'it', name: 'Italiano' },
+    { code: 'fr', name: 'Français' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'tr', name: 'Türkçe' },
+    { code: 'ar', name: 'العربية' },
+    { code: 'hi', name: 'हिन्दी' },
+    { code: 'zh-cn', name: '简体中文' },
+    { code: 'jp', name: '日本語' }
+  ];
+  
+  languages.forEach(lang => {
+    const option = document.createElement('option');
+    option.value = lang.code;
+    option.textContent = lang.name;
+    if (lang.code === currentLanguage) {
+      option.selected = true;
+    }
+    languageSelector.appendChild(option);
+  });
+  
+  languageSelector.addEventListener('change', function(e) {
+    const newLang = e.target.value;
+    if (setLanguage(newLang)) {
+      // Recreate the menu with new language
+      updateMenuLanguage();
+    }
+  });
+  
+  content.appendChild(languageSelector);
+
   // Create grid wrapper for accessibility options
   const optionsGrid = document.createElement('div');
   optionsGrid.classList.add('snn-options-grid');
@@ -1601,7 +2046,7 @@ function createAccessibilityMenu() {
     {
       order: 1,
       type: 'action',
-      text: WIDGET_CONFIG.lang.textSize,
+      text: getTranslation('textSize'),
       actionFunction: handleBiggerText,
       icon: icons.biggerText,
       enabled: WIDGET_CONFIG.enableBiggerText,
@@ -1610,7 +2055,7 @@ function createAccessibilityMenu() {
     {
       order: 2,
       type: 'action',
-      text: WIDGET_CONFIG.lang.highContrast,
+      text: getTranslation('highContrast'),
       actionFunction: handleHighContrast,
       icon: icons.highContrast,
       enabled: WIDGET_CONFIG.enableHighContrast,
@@ -1619,7 +2064,7 @@ function createAccessibilityMenu() {
     {
       order: 3,
       type: 'action',
-      text: WIDGET_CONFIG.lang.textAlign,
+      text: getTranslation('textAlign'),
       actionFunction: handleTextAlign,
       icon: icons.textAlign,
       enabled: WIDGET_CONFIG.enableTextAlign,
@@ -1628,7 +2073,7 @@ function createAccessibilityMenu() {
     {
       order: 4,
       type: 'action',
-      text: WIDGET_CONFIG.lang.colorFilter,
+      text: getTranslation('colorFilter'),
       actionFunction: handleColorFilter,
       icon: icons.colorFilter,
       enabled: WIDGET_CONFIG.enableColorFilter,
@@ -1639,7 +2084,7 @@ function createAccessibilityMenu() {
     {
       order: 5,
       type: 'action', // Changed from toggle to action
-      text: WIDGET_CONFIG.lang.textSpacing,
+      text: getTranslation('textSpacing'),
       actionFunction: handleTextSpacing,
       icon: icons.textSpacing,
       enabled: WIDGET_CONFIG.enableTextSpacing,
@@ -1648,7 +2093,7 @@ function createAccessibilityMenu() {
     {
       order: 6,
       type: 'action', // Changed from toggle to action
-      text: WIDGET_CONFIG.lang.lineHeight,
+      text: getTranslation('lineHeight'),
       actionFunction: handleLineHeight,
       icon: icons.lineHeight,
       enabled: WIDGET_CONFIG.enableLineHeight,
@@ -1657,7 +2102,7 @@ function createAccessibilityMenu() {
     {
       order: 7,
       type: 'action',
-      text: WIDGET_CONFIG.lang.fontSelection,
+      text: getTranslation('fontSelection'),
       actionFunction: handleFontSelection,
       icon: icons.fontSelection,
       enabled: WIDGET_CONFIG.enableFontSelection,
@@ -1666,7 +2111,7 @@ function createAccessibilityMenu() {
     {
       order: 7.5,
       type: 'action',
-      text: 'Saturation',
+      text: getTranslation('saturation'),
       actionFunction: handleSaturation,
       icon: icons.saturation,
       enabled: true,
@@ -1675,7 +2120,7 @@ function createAccessibilityMenu() {
     {
       order: 8,
       type: 'toggle',
-      text: WIDGET_CONFIG.lang.dyslexiaFriendly,
+      text: getTranslation('dyslexiaFriendly'),
       key: 'dyslexiaFont',
       className: 'snn-dyslexia-font',
       icon: icons.dyslexiaFont,
@@ -1684,7 +2129,7 @@ function createAccessibilityMenu() {
     {
       order: 9,
       type: 'toggle',
-      text: WIDGET_CONFIG.lang.biggerCursor,
+      text: getTranslation('biggerCursor'),
       key: 'biggerCursor',
       className: 'snn-bigger-cursor',
       icon: icons.biggerCursor,
@@ -1693,7 +2138,7 @@ function createAccessibilityMenu() {
     {
       order: 10,
       type: 'toggle',
-      text: WIDGET_CONFIG.lang.hideImages,
+      text: getTranslation('hideImages'),
       key: 'hideImages',
       icon: icons.hideImages,
       customToggleFunction: toggleHideImages,
@@ -1704,7 +2149,7 @@ function createAccessibilityMenu() {
     {
       order: 11,
       type: 'toggle',
-      text: WIDGET_CONFIG.lang.pauseAnimations,
+      text: getTranslation('pauseAnimations'),
       key: 'pauseAnimations',
       className: 'snn-pause-animations',
       icon: icons.pauseAnimations,
@@ -1715,7 +2160,7 @@ function createAccessibilityMenu() {
     {
       order: 98,
       type: 'toggle',
-      text: WIDGET_CONFIG.lang.screenReader,
+      text: getTranslation('screenReader'),
       key: 'screenReader',
       customToggleFunction: screenReader.toggle,
       icon: icons.screenReader,
@@ -1725,7 +2170,7 @@ function createAccessibilityMenu() {
     {
       order: 99,
       type: 'toggle',
-      text: WIDGET_CONFIG.lang.voiceCommand,
+      text: getTranslation('voiceCommand'),
       key: 'voiceControl',
       customToggleFunction: voiceControl.toggle,
       icon: icons.voiceControl,
@@ -1767,6 +2212,37 @@ function createAccessibilityMenu() {
   menu.appendChild(content);
 
   shadowRoot.appendChild(menu);
+}
+
+// Update menu language without recreating everything
+function updateMenuLanguage() {
+  const menu = shadowRoot.getElementById('snn-accessibility-menu');
+  if (!menu) return;
+  
+  const wasOpen = menu.style.display === 'block';
+  
+  // Remove old menu
+  menu.remove();
+  
+  // Clear cache
+  menuCache.menu = null;
+  menuCache.closeButton = null;
+  keyboardCache.focusableElements = null;
+  
+  // Recreate menu
+  createAccessibilityMenu();
+  
+  // Update button aria-label
+  const mainButton = shadowRoot.getElementById('snn-accessibility-button');
+  if (mainButton) {
+    mainButton.setAttribute('aria-label', getTranslation('accessibilityMenu'));
+  }
+  
+  // Reopen if it was open
+  if (wasOpen) {
+    menuCache.init();
+    openMenu();
+  }
 }
 
 // ===========================================
