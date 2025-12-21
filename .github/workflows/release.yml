@@ -1,0 +1,181 @@
+name: Release Accessibility Widget
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Full history for changelog generation
+
+      - name: Get current version from package.json
+        id: get_version
+        run: |
+          version=$(grep -oP '"version":\s*"\K[0-9.]+' package.json)
+          echo "Current version: $version"
+          echo "current_version=$version" >> $GITHUB_OUTPUT
+          echo "CURRENT_VERSION=$version" >> $GITHUB_ENV
+
+      - name: Determine if release is needed
+        id: should_release
+        run: |
+          commit_msg="${{ github.event.head_commit.message }}"
+          echo "Commit message: $commit_msg"
+          
+          if [[ "$commit_msg" =~ release ]]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "SHOULD_RELEASE=true" >> $GITHUB_ENV
+          else
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "SHOULD_RELEASE=false" >> $GITHUB_ENV
+            echo "ℹ️ Commit does not contain 'release' keyword - skipping release"
+          fi
+
+      - name: Calculate new version
+        id: new_version
+        if: steps.should_release.outputs.should_release == 'true'
+        run: |
+          current="${{ steps.get_version.outputs.current_version }}"
+          
+          IFS='.' read -ra parts <<< "$current"
+          major="${parts[0]:-2}"
+          minor="${parts[1]:-0}"
+          
+          # Increment minor version (2.0 -> 2.1 -> 2.2, etc.)
+          minor=$((minor + 1))
+          
+          new_version="$major.$minor"
+          echo "New version will be: $new_version"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
+
+      - name: Check if version already exists
+        id: check_tag
+        if: steps.should_release.outputs.should_release == 'true'
+        run: |
+          new_version="${{ steps.new_version.outputs.new_version }}"
+          if git rev-parse "v$new_version" >/dev/null 2>&1; then
+            echo "Tag v$new_version already exists!"
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag v$new_version does not exist, proceeding..."
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update version in package.json
+        if: steps.should_release.outputs.should_release == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          current="${{ steps.get_version.outputs.current_version }}"
+          new="${{ steps.new_version.outputs.new_version }}"
+          
+          # Update package.json version
+          sed -i "s/\"version\": \"$current\"/\"version\": \"$new\"/" package.json
+          
+          echo "Updated version from $current to $new in package.json"
+
+      - name: Generate changelog
+        id: changelog
+        if: steps.should_release.outputs.should_release == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          # Get the latest tag or use initial commit if no tags exist
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          
+          echo "## What's Changed" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          
+          # Get commits since last tag
+          git log $latest_tag..HEAD --pretty=format:"- %s (%h)" --no-merges >> CHANGELOG.md
+          
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/$latest_tag...v${{ steps.new_version.outputs.new_version }}" >> CHANGELOG.md
+          
+          # Output for release body
+          cat CHANGELOG.md
+          
+          # Save changelog for release
+          {
+            echo 'changelog<<EOF'
+            cat CHANGELOG.md
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - name: Commit version bump
+        if: steps.should_release.outputs.should_release == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add package.json
+          git commit -m "chore: bump version to ${{ steps.new_version.outputs.new_version }}"
+          git push
+
+      - name: Create release package
+        if: steps.should_release.outputs.should_release == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          mkdir -p accessibility-widgets
+          cp widget.js accessibility-widgets/
+          cp README.md accessibility-widgets/
+          cp LICENSE accessibility-widgets/
+          cp package.json accessibility-widgets/
+          
+          zip -r accessibility-widgets-v${{ steps.new_version.outputs.new_version }}.zip accessibility-widgets
+          rm -rf accessibility-widgets
+          
+          # Verify zip was created
+          ls -lh accessibility-widgets-v${{ steps.new_version.outputs.new_version }}.zip
+
+      - name: Create GitHub Release
+        if: steps.should_release.outputs.should_release == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: accessibility-widgets-v${{ steps.new_version.outputs.new_version }}.zip
+          tag_name: "v${{ steps.new_version.outputs.new_version }}"
+          name: "Accessibility Widgets v${{ steps.new_version.outputs.new_version }}"
+          body: |
+            # 🎉 Accessibility Widgets v${{ steps.new_version.outputs.new_version }}
+            
+            A comprehensive, lightweight accessibility widget that enhances web accessibility for all users.
+            
+            ## 📦 Installation
+            
+            ### CDN (Recommended)
+            ```html
+            <script src="https://cdn.jsdelivr.net/gh/sinanisler/accessibility-widgets@v${{ steps.new_version.outputs.new_version }}/widget.js"></script>
+            ```
+            
+            ### NPM
+            ```bash
+            npm install accessibility-widgets@${{ steps.new_version.outputs.new_version }}
+            ```
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: steps.should_release.outputs.should_release == 'true'
+        run: |
+          if [ "${{ steps.check_tag.outputs.tag_exists }}" = "true" ]; then
+            echo "⚠️ Release skipped - version v${{ steps.new_version.outputs.new_version }} already exists"
+          else
+            echo "✅ Successfully created release v${{ steps.new_version.outputs.new_version }}"
+            echo "📦 Widget package attached to release"
+            echo "🔄 Available via CDN and npm"
+          fi
+
+      - name: Skip Release Info
+        if: steps.should_release.outputs.should_release == 'false'
+        run: |
+          echo "ℹ️ No release triggered. To create a release, include 'release' in your commit message."
+          echo "Example: git commit -m 'feat: new feature release'"
