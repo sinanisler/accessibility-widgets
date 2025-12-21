@@ -235,7 +235,7 @@ const widgetStyles = `
     width: 100%;
     background-color: ${WIDGET_CONFIG.colors.optionBg};
     color: ${WIDGET_CONFIG.colors.optionText};
-    border: 2px solid ${WIDGET_CONFIG.colors.optionBg};
+    border: 3px solid ${WIDGET_CONFIG.colors.optionBg};
     cursor: pointer;
     border-radius: ${WIDGET_CONFIG.menu.borderRadius};
     transition: background-color ${WIDGET_CONFIG.animation.transition}, border-color ${WIDGET_CONFIG.animation.transition};
@@ -379,7 +379,6 @@ const widgetStyles = `
   .snn-header {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
     padding: 10px;
     background: ${WIDGET_CONFIG.colors.primary};
     height: ${WIDGET_CONFIG.menu.headerHeight};
@@ -391,7 +390,7 @@ const widgetStyles = `
   }
   
   .snn-content {
-    padding: 0 20px 10px 20px;
+    padding: 20px;
   }
   
   .snn-options-grid {
@@ -1104,9 +1103,9 @@ function updateActionButtonStatus(button, buttonText, optionsConfig) {
     currentIndex = currentSaturation ? saturations.indexOf(currentSaturation) : -1;
   }
   
-  // Update step indicators
+  // Update step indicators - show all previous steps as active
   steps.forEach((step, index) => {
-    if (index === currentIndex) {
+    if (index <= currentIndex) {
       step.classList.add('active');
     } else {
       step.classList.remove('active');
