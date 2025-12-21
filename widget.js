@@ -391,7 +391,7 @@ const widgetStyles = `
   }
   
   .snn-content {
-    padding: 0 10px 10px 10px;
+    padding: 0 20px 10px 20px;
   }
   
   .snn-options-grid {
