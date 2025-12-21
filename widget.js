@@ -565,6 +565,9 @@ const widgetStyles = `
     ${WIDGET_CONFIG.widgetPosition.side}: ${WIDGET_CONFIG.widgetPosition[WIDGET_CONFIG.widgetPosition.side]} !important;
     bottom: ${WIDGET_CONFIG.widgetPosition.bottom} !important;
     z-index: 9999;
+    background:${WIDGET_CONFIG.colors.primary};
+    padding:5px;
+    border-radius:100%;
   }
   
   #snn-accessibility-button {
@@ -579,6 +582,7 @@ const widgetStyles = `
     display: flex;
     justify-content: center;
     align-items: center;
+    border:solid 4px white;
   }
   
   #snn-accessibility-button:hover {
