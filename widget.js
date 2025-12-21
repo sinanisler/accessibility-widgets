@@ -371,18 +371,18 @@ const widgetStyles = `
 const pageStyles = `
   /* High Contrast Modes */
   .snn-high-contrast-medium {
-    filter: contrast(1.3) !important;
+    filter: none !important;
   }
-  .snn-high-contrast-medium * {
+  .snn-high-contrast-medium *:not(#snn-accessibility-widget-container):not(#snn-accessibility-widget-container *) {
     filter: contrast(1.3) !important;
   }
   
   .snn-high-contrast-high {
     background-color: #000 !important;
     color: #fff !important;
-    filter: contrast(1.5) !important;
+    filter: none !important;
   }
-  .snn-high-contrast-high * {
+  .snn-high-contrast-high *:not(#snn-accessibility-widget-container):not(#snn-accessibility-widget-container *) {
     background-color: #000 !important;
     color: #fff !important;
     filter: contrast(1.5) !important;
@@ -391,9 +391,9 @@ const pageStyles = `
   .snn-high-contrast-ultra {
     background-color: #000 !important;
     color: #ffff00 !important;
-    filter: contrast(2.0) !important;
+    filter: none !important;
   }
-  .snn-high-contrast-ultra * {
+  .snn-high-contrast-ultra *:not(#snn-accessibility-widget-container):not(#snn-accessibility-widget-container *) {
     background-color: #000 !important;
     color: #ffff00 !important;
     filter: contrast(2.0) !important;
@@ -476,27 +476,39 @@ const pageStyles = `
   
   /* Color Filters */
   .snn-filter-protanopia {
+    filter: none !important;
+  }
+  .snn-filter-protanopia body > *:not(#snn-accessibility-widget-container) {
     filter: url('#protanopia-filter') !important;
   }
   .snn-filter-deuteranopia {
+    filter: none !important;
+  }
+  .snn-filter-deuteranopia body > *:not(#snn-accessibility-widget-container) {
     filter: url('#deuteranopia-filter') !important;
   }
   .snn-filter-tritanopia {
+    filter: none !important;
+  }
+  .snn-filter-tritanopia body > *:not(#snn-accessibility-widget-container) {
     filter: url('#tritanopia-filter') !important;
   }
   .snn-filter-grayscale {
+    filter: none !important;
+  }
+  .snn-filter-grayscale body > *:not(#snn-accessibility-widget-container) {
     filter: grayscale(100%) !important;
-  }
-  
-  /* Reduced Motion */
-  .snn-reduced-motion * {
-    animation: none !important;
-    transition: none !important;
-  }
-  .snn-reduced-motion *::before,
   .snn-reduced-motion *::after {
     animation: none !important;
     transition: none !important;
+  }
+  
+  /* Protect widget container from page styles */
+  #snn-accessibility-widget-container,
+  #snn-accessibility-widget-container * {
+    filter: none !important;
+    background-color: initial !important;
+    color: initial !important;
   }
 `;
 
