@@ -109,7 +109,8 @@ const DEFAULT_WIDGET_CONFIG = {
     screenReaderOff: 'Screen reader off',
     voiceControlActivated: 'Voice control activated',
     notSupportedBrowser: 'is not supported in this browser',
-    close: 'Close'
+    close: 'Close',
+    reset: 'Reset'
   },
 
   // Voice Command Configuration - Developers can customize commands for different languages
@@ -272,18 +273,20 @@ const widgetStyles = `
     flex: 1;
   }
   
-  .snn-close {
+  .snn-close, .snn-reset-button {
     background: none;
     border: none;
     font-size: ${WIDGET_CONFIG.menu.closeButtonSize};
     color: ${WIDGET_CONFIG.colors.secondary};
     cursor: pointer;
-    margin-left: auto;
     line-height: ${WIDGET_CONFIG.typography.lineHeight};
     border-radius: ${WIDGET_CONFIG.button.borderRadius};
     width: ${WIDGET_CONFIG.menu.closeButtonSize};
     height: ${WIDGET_CONFIG.menu.closeButtonSize};
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .snn-close::before {
@@ -296,13 +299,57 @@ const widgetStyles = `
     line-height: 1;
   }
   
-  .snn-close:focus {
+  .snn-reset-button svg {
+    width: 22px;
+    height: 22px;
+    fill: ${WIDGET_CONFIG.colors.secondary};
+  }
+  
+  .snn-close:focus, .snn-reset-button:focus {
     outline: solid 2px ${WIDGET_CONFIG.colors.secondary};
   }
   
-  .snn-close:hover {
+  .snn-close:hover, .snn-reset-button:hover {
     color: ${WIDGET_CONFIG.colors.secondary};
-    background: ${WIDGET_CONFIG.colors.primary};
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Tooltip styles */
+  .snn-tooltip {
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1000;
+  }
+  
+  .snn-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid rgba(0, 0, 0, 0.8);
+  }
+  
+  .snn-close:hover .snn-tooltip,
+  .snn-close:focus .snn-tooltip,
+  .snn-reset-button:hover .snn-tooltip,
+  .snn-reset-button:focus .snn-tooltip {
+    opacity: 1;
   }
   
   .snn-header {
@@ -316,33 +363,11 @@ const widgetStyles = `
     top: 0;
     z-index: 10;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 8px;
   }
   
   .snn-content {
     padding: 0 10px 10px 10px;
-  }
-  
-  .snn-reset-button {
-    font-size: ${WIDGET_CONFIG.menu.fontSize};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 10px;
-    padding: ${WIDGET_CONFIG.menu.optionPadding};
-    width: 100%;
-    background-color: #343434;
-    color: ${WIDGET_CONFIG.colors.secondary};
-    border: none;
-    cursor: pointer;
-    border-radius: ${WIDGET_CONFIG.menu.borderRadius};
-    transition: background-color ${WIDGET_CONFIG.animation.transition};
-    line-height: ${WIDGET_CONFIG.typography.lineHeight} !important;
-    font-weight: 500;
-    gap: 8px;
-  }
-  
-  .snn-reset-button:hover {
-    background-color: #cc3333;
   }
   
   .snn-options-grid {
@@ -359,6 +384,7 @@ const widgetStyles = `
     line-height: ${WIDGET_CONFIG.typography.lineHeight} !important;
     margin-left: 5px;
     font-weight: ${WIDGET_CONFIG.typography.titleFontWeight};
+    flex: 1;
   }
 `;
 
@@ -532,7 +558,7 @@ const icons = {
   lineHeight: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M16 16h32v4H16zm0 12h32v4H16zm0 12h32v4H16zm0 12h32v4H16zM8 8l8 8-8 8V8zm0 32l8 8-8 8V40z"/></svg>`,
   textAlign: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M10 16h44v4H10zm0 12h44v4H10zm0 12h44v4H10zm0 12h44v4H10z"/></svg>`,
   screenReader: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M16 24 L24 24 L32 16 L32 48 L24 40 L16 40 Z" fill="#333" stroke="#555" stroke-width="2"/><path d="M36 20 C42 24, 42 40, 36 44" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M36 12 C48 24, 48 40, 36 52" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"/><rect x="28" y="48" width="8" height="8" fill="#ccc"/></svg>`,
-  resetAll: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M8 12l4-4 4 4-1.41 1.41L12 10.83l-2.59 2.58z" transform="rotate(45 12 12)"/></svg>`,
+  resetAll: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 17" width="100%" height="100%"><g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round" stroke-width="1.84"><path d="M16.20106 8c0 .9667-.189683 1.8872-.5324673 2.7251-.3427843.8372-.8386698 1.5911-1.4517524 2.2246-.6130825.6335-1.3426846 1.1459-2.152902 1.5001-.8108948.3542-1.70172746.5502-2.6372711.5502-.93554365 0-1.8263763-.196-2.63727112-.5502-.81021738-.3542-1.53981948-.8666-2.15290203-1.5001M2.6522744 8c0-.9667.189683-1.8872.53246728-2.7251.34278427-.8372.83866982-1.5911 1.45175237-2.2246.61308255-.6335 1.34268465-1.1459 2.15290203-1.5001C7.6002909 1.196 8.49112355 1 9.4266672 1c.93554364 0 1.8263763.196 2.6372711.5502.8102174.3542 1.5398195.8666 2.152902 1.5001"></path><path stroke-linejoin="round" d="m4.92576062 6.96092-2.48958935 1.484L1 5.87242m13.0125924 2.93832 2.3886509-1.652L18 9.62694"></path></g></svg>`,
   voiceControl: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M32 44a12 12 0 0012-12V20a12 12 0 10-24 0v12a12 12 0 0012 12z" fill="#333"/><path d="M20 32h24v4H20z" fill="#555"/><path d="M32 48v8" stroke="#555" stroke-width="4" stroke-linecap="round"/></svg>`,
   fontSelection: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="40" font-family="serif" font-size="24" text-anchor="middle" fill="#333">Aa</text><path d="M8 48h48v2H8z"/></svg>`,
   colorFilter: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="24" fill="none" stroke="#333" stroke-width="2"/><path d="M32 8a24 24 0 000 48V8z" fill="#f00" opacity="0.3"/><path d="M32 8a24 24 0 000 48" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="4,2"/></svg>`,
@@ -1313,10 +1339,18 @@ function createAccessibilityMenu() {
   title.id = 'snn-accessibility-title';
   title.textContent = WIDGET_CONFIG.lang.accessibilityTools;
 
+  // Create reset button
+  const resetButton = document.createElement('button');
+  resetButton.classList.add('snn-reset-button');
+  resetButton.innerHTML = `${icons.resetAll}<span class="snn-tooltip">${WIDGET_CONFIG.lang.reset}</span>`;
+  resetButton.setAttribute('aria-label', WIDGET_CONFIG.lang.resetAllSettings);
+  resetButton.addEventListener('click', resetAccessibilitySettings);
+
+  // Create close button
   const closeButton = document.createElement('button');
   closeButton.className = 'snn-close';
-  closeButton.innerHTML = '';
-  closeButton.setAttribute('title', WIDGET_CONFIG.lang.closeAccessibilityMenu);
+  closeButton.innerHTML = `<span class="snn-tooltip">${WIDGET_CONFIG.lang.close}</span>`;
+  closeButton.setAttribute('aria-label', WIDGET_CONFIG.lang.closeAccessibilityMenu);
 
   closeButton.addEventListener('click', function () {
     closeMenu();
@@ -1330,20 +1364,13 @@ function createAccessibilityMenu() {
   });
 
   header.appendChild(title);
+  header.appendChild(resetButton);
   header.appendChild(closeButton);
   menu.appendChild(header);
 
   // Create content wrapper
   const content = document.createElement('div');
   content.classList.add('snn-content');
-
-  // Create reset button (outside grid, full width)
-  const resetButton = document.createElement('button');
-  resetButton.innerHTML = `<span class="snn-icon">${icons.resetAll}</span><span class="snn-button-text">${WIDGET_CONFIG.lang.resetAllSettings}</span>`;
-  resetButton.setAttribute('aria-label', WIDGET_CONFIG.lang.resetAllSettings);
-  resetButton.classList.add('snn-reset-button');
-  resetButton.addEventListener('click', resetAccessibilitySettings);
-  content.appendChild(resetButton);
 
   // Create grid wrapper for accessibility options
   const optionsGrid = document.createElement('div');
@@ -1586,7 +1613,7 @@ let keyboardCache = {
       if (menuCache.menu) {
         this.focusableElements = {
           all: menuCache.menu.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'),
-          options: Array.from(menuCache.menu.querySelectorAll('.snn-accessibility-option, .snn-close'))
+          options: Array.from(menuCache.menu.querySelectorAll('.snn-accessibility-option, .snn-close, .snn-reset-button'))
         };
         this.lastUpdate = now;
       }
