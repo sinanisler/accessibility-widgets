@@ -274,6 +274,7 @@ const styles = `
   }
   .snn-close:hover {
     color: ${WIDGET_CONFIG.colors.text};
+    background:${WIDGET_CONFIG.colors.secondary};
   }
   .snn-header {
     display: flex;
@@ -1216,7 +1217,7 @@ function createAccessibilityMenu() {
   const header = document.createElement('div');
   header.classList.add('snn-header');
 
-  const title = document.createElement('h2');
+  const title = document.createElement('div');
   title.classList.add('snn-title');
   title.id = 'snn-accessibility-title';
   title.textContent = WIDGET_CONFIG.lang.accessibilityTools;
@@ -1259,22 +1260,6 @@ function createAccessibilityMenu() {
 
   // Add accessibility options based on configuration
   const options = [
-    {
-      text: WIDGET_CONFIG.lang.screenReader,
-      key: 'screenReader',
-      customToggleFunction: screenReader.toggle,
-      icon: icons.screenReader,
-      requiresFeature: screenReader,
-      enabled: WIDGET_CONFIG.enableScreenReader,
-    },
-    {
-      text: WIDGET_CONFIG.lang.voiceCommand,
-      key: 'voiceControl',
-      customToggleFunction: voiceControl.toggle,
-      icon: icons.voiceControl,
-      requiresFeature: voiceControl,
-      enabled: WIDGET_CONFIG.enableVoiceControl,
-    },
     {
       text: WIDGET_CONFIG.lang.textSpacing,
       key: 'textSpacing',
@@ -1366,6 +1351,33 @@ function createAccessibilityMenu() {
   if (WIDGET_CONFIG.enableHighContrast) {
     const highContrastButton = createActionButton(WIDGET_CONFIG.lang.highContrast, handleHighContrast, icons.highContrast);
     optionsGrid.appendChild(highContrastButton);
+  }
+  
+  // Add Screen Reader and Voice Command as the LAST two buttons
+  if (WIDGET_CONFIG.enableScreenReader) {
+    const screenReaderButton = createToggleButton(
+      WIDGET_CONFIG.lang.screenReader,
+      'screenReader',
+      null,
+      document.body,
+      screenReader.toggle,
+      icons.screenReader,
+      screenReader
+    );
+    optionsGrid.appendChild(screenReaderButton);
+  }
+  
+  if (WIDGET_CONFIG.enableVoiceControl) {
+    const voiceControlButton = createToggleButton(
+      WIDGET_CONFIG.lang.voiceCommand,
+      'voiceControl',
+      null,
+      document.body,
+      voiceControl.toggle,
+      icons.voiceControl,
+      voiceControl
+    );
+    optionsGrid.appendChild(voiceControlButton);
   }
 
   // Add grid to content
