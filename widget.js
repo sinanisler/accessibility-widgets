@@ -1,6 +1,6 @@
 /*
 ===========================================
-  ACCESSIBILITY WIDGET
+  ACCESSIBILITY WIDGET - SHADOW DOM VERSION
   A comprehensive web accessibility tool
 ===========================================
 */
@@ -168,14 +168,24 @@ const WIDGET_CONFIG = mergeConfigs(DEFAULT_WIDGET_CONFIG, window.ACCESSIBILITY_W
 // STYLES & VISUAL ASSETS
 // ===========================================
 
-// Generate styles using configuration variables
-const styles = `
+// Widget styles (will go inside Shadow DOM - NOT affected by page styles or accessibility features)
+const widgetStyles = `
+  :host {
+    all: initial;
+    font-family: ${WIDGET_CONFIG.typography.fontFamily};
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
   #snn-accessibility-fixed-button {
     position: fixed !important;
     ${WIDGET_CONFIG.widgetPosition.side}: ${WIDGET_CONFIG.widgetPosition[WIDGET_CONFIG.widgetPosition.side]} !important;
     bottom: ${WIDGET_CONFIG.widgetPosition.bottom} !important;
     z-index: 9999;
   }
+  
   #snn-accessibility-button {
     background: ${WIDGET_CONFIG.colors.primary};
     border: none;
@@ -189,19 +199,23 @@ const styles = `
     justify-content: center;
     align-items: center;
   }
+  
   #snn-accessibility-button:hover {
     transform: scale(${WIDGET_CONFIG.animation.hoverScale});
   }
+  
   #snn-accessibility-button:focus {
     outline: 2px solid ${WIDGET_CONFIG.colors.textLight};
     outline-offset: 2px;
   }
+  
   #snn-accessibility-button svg {
     width: ${WIDGET_CONFIG.button.iconSize};
     height: ${WIDGET_CONFIG.button.iconSize};
     fill: ${WIDGET_CONFIG.colors.textLight};
     pointer-events: none;
   }
+  
   #snn-accessibility-menu {
     position: fixed;
     top: 0;
@@ -216,6 +230,7 @@ const styles = `
     z-index: 999999;
     scrollbar-width: thin;
   }
+  
   .snn-accessibility-option {
     font-size: ${WIDGET_CONFIG.menu.fontSize};
     display: flex;
@@ -230,23 +245,38 @@ const styles = `
     transition: background-color ${WIDGET_CONFIG.animation.transition}, border-color ${WIDGET_CONFIG.animation.transition};
     line-height: ${WIDGET_CONFIG.typography.lineHeight} !important;
   }
+  
   .snn-accessibility-option:hover {
     border-color: ${WIDGET_CONFIG.colors.primary};
   }
+  
   .snn-accessibility-option.active {
     border-color: ${WIDGET_CONFIG.colors.primary};
   }
+  
+  .snn-accessibility-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
   .snn-icon {
     margin-right: 12px;
     width: ${WIDGET_CONFIG.button.iconSize};
     height: ${WIDGET_CONFIG.button.iconSize};
     fill: ${WIDGET_CONFIG.colors.primary};
+    flex-shrink: 0;
   }
+  
   .snn-icon svg {
     width: 100%;
     height: 100%;
     fill: currentColor;
   }
+  
+  .snn-button-text {
+    flex: 1;
+  }
+  
   .snn-close {
     background: none;
     border: none;
@@ -260,6 +290,7 @@ const styles = `
     height: ${WIDGET_CONFIG.menu.closeButtonSize};
     position: relative;
   }
+  
   .snn-close::before {
     content: '×';
     position: absolute;
@@ -269,13 +300,16 @@ const styles = `
     font-size: ${WIDGET_CONFIG.menu.closeButtonSize};
     line-height: 1;
   }
+  
   .snn-close:focus {
     outline: solid 2px ${WIDGET_CONFIG.colors.textLight};
   }
+  
   .snn-close:hover {
     color: ${WIDGET_CONFIG.colors.text};
-    background:${WIDGET_CONFIG.colors.secondary};
+    background: ${WIDGET_CONFIG.colors.secondary};
   }
+  
   .snn-header {
     display: flex;
     align-items: center;
@@ -323,7 +357,6 @@ const styles = `
     margin-bottom: 20px;
   }
   
-
   .snn-title {
     margin: 0;
     font-size: ${WIDGET_CONFIG.menu.titleFontSize};
@@ -332,15 +365,16 @@ const styles = `
     margin-left: 5px;
     font-weight: ${WIDGET_CONFIG.typography.titleFontWeight};
   }
-  /* Accessibility feature styles */
+`;
+
+// Page accessibility styles (will go in main document - these affect the page, NOT the widget)
+const pageStyles = `
+  /* High Contrast Modes */
   .snn-high-contrast-medium {
     filter: contrast(1.3) !important;
   }
-  .snn-high-contrast-medium *{
+  .snn-high-contrast-medium * {
     filter: contrast(1.3) !important;
-  }
-  .snn-high-contrast-medium #snn-accessibility-menu{
-    filter: contrast(0.8) !important;
   }
   
   .snn-high-contrast-high {
@@ -348,13 +382,10 @@ const styles = `
     color: #fff !important;
     filter: contrast(1.5) !important;
   }
-  .snn-high-contrast-high *{
+  .snn-high-contrast-high * {
     background-color: #000 !important;
     color: #fff !important;
     filter: contrast(1.5) !important;
-  }
-  .snn-high-contrast-high #snn-accessibility-menu{
-    filter: contrast(0.7) !important;
   }
   
   .snn-high-contrast-ultra {
@@ -362,14 +393,13 @@ const styles = `
     color: #ffff00 !important;
     filter: contrast(2.0) !important;
   }
-  .snn-high-contrast-ultra *{
+  .snn-high-contrast-ultra * {
     background-color: #000 !important;
     color: #ffff00 !important;
     filter: contrast(2.0) !important;
   }
-  .snn-high-contrast-ultra #snn-accessibility-menu{
-    filter: contrast(0.6) !important;
-  }
+  
+  /* Text Size */
   .snn-bigger-text-medium * {
     font-size: 20px !important;
   }
@@ -379,32 +409,44 @@ const styles = `
   .snn-bigger-text-xlarge * {
     font-size: 28px !important;
   }
-  .snn-text-spacing *:not(#snn-accessibility-menu *, #snn-accessibility-fixed-button *, #snn-accessibility-button *, .snn-accessibility-option *) {
+  
+  /* Text Spacing */
+  .snn-text-spacing * {
     letter-spacing: 0.2em !important;
     word-spacing: 0.3em !important;
   }
+  
+  /* Pause Animations */
   .snn-pause-animations * {
     animation: none !important;
     transition: none !important;
   }
+  
+  /* Dyslexia Font */
   .snn-dyslexia-font {
-    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Bradley Hand', Brush Script MT, fantasy !important;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Bradley Hand', 'Brush Script MT', fantasy !important;
   }
   .snn-dyslexia-font * {
-    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Bradley Hand', Brush Script MT, fantasy !important;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Bradley Hand', 'Brush Script MT', fantasy !important;
   }
-  .snn-line-height *:not(#snn-accessibility-menu *, #snn-accessibility-fixed-button *, #snn-accessibility-button *, .snn-accessibility-option *) {
+  
+  /* Line Height */
+  .snn-line-height * {
     line-height: 2.5 !important;
   }
-  .snn-text-align-left *:not(#snn-accessibility-menu *, #snn-accessibility-fixed-button *, #snn-accessibility-button *, .snn-accessibility-option *) {
+  
+  /* Text Alignment */
+  .snn-text-align-left * {
     text-align: left !important;
   }
-  .snn-text-align-center *:not(#snn-accessibility-menu *, #snn-accessibility-fixed-button *, #snn-accessibility-button *, .snn-accessibility-option *) {
+  .snn-text-align-center * {
     text-align: center !important;
   }
-  .snn-text-align-right *:not(#snn-accessibility-menu *, #snn-accessibility-fixed-button *, #snn-accessibility-button *, .snn-accessibility-option *) {
+  .snn-text-align-right * {
     text-align: right !important;
   }
+  
+  /* Bigger Cursor */
   .snn-bigger-cursor {
     cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA0OCA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNCAyVjcwTDIwIDU0SDM2TDQgMloiIGZpbGw9IiMwMDAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PC9zdmc+'), auto !important;
   }
@@ -462,7 +504,6 @@ const styles = `
 // SVG ICONS
 // ===========================================
 
-// SVG icons
 const icons = {
   buttonsvg: `<svg xmlns="http://www.w3.org/2000/svg" style="fill:white;" viewBox="0 0 24 24" width="30px" height="30px"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M20.5 6c-2.61.7-5.67 1-8.5 1s-5.89-.3-8.5-1L3 8c1.86.5 4 .83 6 1v13h2v-6h2v6h2V9c2-.17 4.14-.5 6-1l-.5-2zM12 6c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"></path></svg>`,
   highContrast: `<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#000"/><path d="M32 2a30 30 0 000 60V2z" fill="#fff"/></svg>`,
@@ -483,16 +524,19 @@ const icons = {
 };
 
 // ===========================================
-// CORE UTILITY FUNCTIONS
+// SHADOW DOM SETUP
 // ===========================================
 
-// Inject styles and SVG filters into the document
-function injectStyles() {
+let shadowRoot = null;
+
+// Inject styles into the page (NOT the widget)
+function injectPageStyles() {
   const styleSheet = document.createElement('style');
-  styleSheet.innerText = styles;
+  styleSheet.innerText = pageStyles;
+  styleSheet.id = 'snn-accessibility-page-styles';
   document.head.appendChild(styleSheet);
 
-  // Add SVG color blindness filters
+  // Add SVG color blindness filters to main document
   const svgFilters = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgFilters.style.position = 'absolute';
   svgFilters.style.width = '0';
@@ -513,8 +557,25 @@ function injectStyles() {
   document.body.appendChild(svgFilters);
 }
 
+// Create shadow DOM container
+function createShadowContainer() {
+  const container = document.createElement('div');
+  container.id = 'snn-accessibility-widget-container';
+  document.body.appendChild(container);
+
+  // Create shadow root
+  shadowRoot = container.attachShadow({ mode: 'open' });
+
+  // Add widget styles to shadow DOM
+  const styleElement = document.createElement('style');
+  styleElement.textContent = widgetStyles;
+  shadowRoot.appendChild(styleElement);
+
+  return shadowRoot;
+}
+
 // ===========================================
-// PERFORMANCE OPTIMIZATION
+// CORE UTILITY FUNCTIONS
 // ===========================================
 
 // Cache for DOM elements to improve performance
@@ -668,7 +729,7 @@ function createAccessibilityButton() {
   });
 
   buttonContainer.appendChild(button);
-  document.body.appendChild(buttonContainer);
+  shadowRoot.appendChild(buttonContainer);
 }
 
 // Reset all accessibility settings
@@ -709,12 +770,25 @@ function resetAccessibilitySettings() {
 
   const documentClasses = [
     'snn-high-contrast',
+    'snn-high-contrast-medium',
+    'snn-high-contrast-high',
+    'snn-high-contrast-ultra',
     'snn-filter-protanopia',
     'snn-filter-deuteranopia',
     'snn-filter-tritanopia',
-    'snn-filter-grayscale'
+    'snn-filter-grayscale',
+    'snn-text-align-left',
+    'snn-text-align-center',
+    'snn-text-align-right'
   ];
   documentClasses.forEach(cls => document.documentElement.classList.remove(cls));
+
+  const textSizeClasses = [
+    'snn-bigger-text-medium',
+    'snn-bigger-text-large',
+    'snn-bigger-text-xlarge'
+  ];
+  textSizeClasses.forEach(cls => document.body.classList.remove(cls));
 
   domCache.getImages().forEach((img) => (img.style.display = ''));
 
@@ -728,7 +802,7 @@ function resetAccessibilitySettings() {
 
   applySettings();
 
-  const buttons = document.querySelectorAll('#snn-accessibility-menu .snn-accessibility-option');
+  const buttons = shadowRoot.querySelectorAll('#snn-accessibility-menu .snn-accessibility-option');
   buttons.forEach((button) => {
     button.classList.remove('active');
     button.setAttribute('aria-pressed', 'false');
@@ -1143,7 +1217,7 @@ const voiceControl = {
 
     try {
       // Check for show menu commands
-      if (WIDGET_CONFIG.voiceCommands.showMenu.includes(command)) {
+      if (WIDGET_CONFIG.voiceCommands.showMenu.some(cmd => command.includes(cmd))) {
         if (!menuCache.button) menuCache.init();
         if (menuCache.button) {
           menuCache.button.click();
@@ -1152,7 +1226,7 @@ const voiceControl = {
       }
 
       // Check for reset all commands
-      if (WIDGET_CONFIG.voiceCommands.resetAll.includes(command)) {
+      if (WIDGET_CONFIG.voiceCommands.resetAll.some(cmd => command.includes(cmd))) {
         resetAccessibilitySettings();
         return;
       }
@@ -1161,27 +1235,27 @@ const voiceControl = {
       let localStorageKey = null;
 
       // Check each command group
-      if (WIDGET_CONFIG.voiceCommands.highContrast.includes(command)) {
+      if (WIDGET_CONFIG.voiceCommands.highContrast.some(cmd => command.includes(cmd))) {
         localStorageKey = 'highContrast';
-      } else if (WIDGET_CONFIG.voiceCommands.biggerText.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.biggerText.some(cmd => command.includes(cmd))) {
         localStorageKey = 'biggerText';
-      } else if (WIDGET_CONFIG.voiceCommands.textSpacing.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.textSpacing.some(cmd => command.includes(cmd))) {
         localStorageKey = 'textSpacing';
-      } else if (WIDGET_CONFIG.voiceCommands.pauseAnimations.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.pauseAnimations.some(cmd => command.includes(cmd))) {
         localStorageKey = 'pauseAnimations';
-      } else if (WIDGET_CONFIG.voiceCommands.hideImages.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.hideImages.some(cmd => command.includes(cmd))) {
         localStorageKey = 'hideImages';
-      } else if (WIDGET_CONFIG.voiceCommands.dyslexiaFont.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.dyslexiaFont.some(cmd => command.includes(cmd))) {
         localStorageKey = 'dyslexiaFont';
-      } else if (WIDGET_CONFIG.voiceCommands.biggerCursor.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.biggerCursor.some(cmd => command.includes(cmd))) {
         localStorageKey = 'biggerCursor';
-      } else if (WIDGET_CONFIG.voiceCommands.lineHeight.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.lineHeight.some(cmd => command.includes(cmd))) {
         localStorageKey = 'lineHeight';
-      } else if (WIDGET_CONFIG.voiceCommands.textAlign.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.textAlign.some(cmd => command.includes(cmd))) {
         localStorageKey = 'textAlign';
-      } else if (WIDGET_CONFIG.voiceCommands.screenReader.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.screenReader.some(cmd => command.includes(cmd))) {
         localStorageKey = 'screenReader';
-      } else if (WIDGET_CONFIG.voiceCommands.voiceControl.includes(command)) {
+      } else if (WIDGET_CONFIG.voiceCommands.voiceControl.some(cmd => command.includes(cmd))) {
         localStorageKey = 'voiceControl';
       }
 
@@ -1428,7 +1502,7 @@ function createAccessibilityMenu() {
   // Add content to menu
   menu.appendChild(content);
 
-  document.body.appendChild(menu);
+  shadowRoot.appendChild(menu);
 }
 
 // ===========================================
@@ -1441,8 +1515,8 @@ const menuCache = {
   button: null,
   closeButton: null,
   init: function () {
-    this.menu = document.getElementById('snn-accessibility-menu');
-    this.button = document.getElementById('snn-accessibility-button');
+    this.menu = shadowRoot.getElementById('snn-accessibility-menu');
+    this.button = shadowRoot.getElementById('snn-accessibility-button');
     this.closeButton = this.menu?.querySelector('.snn-close');
   }
 };
@@ -1535,7 +1609,7 @@ function handleMenuKeyboard(e) {
 
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
-    const currentIndex = elements.options.indexOf(document.activeElement);
+    const currentIndex = elements.options.indexOf(shadowRoot.activeElement);
     let nextIndex;
 
     if (e.key === 'ArrowDown') {
@@ -1554,8 +1628,16 @@ function handleMenuKeyboard(e) {
 
 // Initialize the widget
 function initAccessibilityWidget() {
-  injectStyles();
+  // Create shadow DOM first
+  createShadowContainer();
+  
+  // Inject page styles (for accessibility features)
+  injectPageStyles();
+  
+  // Apply saved settings
   applySettings();
+  
+  // Create widget UI inside shadow DOM
   createAccessibilityButton();
   createAccessibilityMenu();
 }
@@ -1570,4 +1652,3 @@ if (document.readyState === 'loading') {
 } else {
   initAccessibilityWidget();
 }
-
