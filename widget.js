@@ -21,14 +21,14 @@ const DEFAULT_WIDGET_CONFIG = {
   enableBiggerCursor: true,
   enableLineHeight: true,
   enableTextAlign: true,
-  
+
   // Advanced Features
   enableScreenReader: true,
   enableVoiceControl: true,
   enableReducedMotion: true,
   enableFontSelection: true,
   enableColorFilter: true,
-  
+
   // Widget Styling
   widgetWidth: '440px',
   widgetPosition: {
@@ -37,7 +37,7 @@ const DEFAULT_WIDGET_CONFIG = {
     left: '20px',
     bottom: '20px'
   },
-  
+
   // Colors
   colors: {
     primary: '#000000',
@@ -51,7 +51,7 @@ const DEFAULT_WIDGET_CONFIG = {
     focus: '#ff6b35',
     focusGlow: 'rgba(255, 107, 53, 0.3)'
   },
-  
+
   // Button styling
   button: {
     size: '55px',
@@ -59,7 +59,7 @@ const DEFAULT_WIDGET_CONFIG = {
     iconSize: '40px',
     shadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
   },
-  
+
   // Menu styling
   menu: {
     headerHeight: '55px',
@@ -71,7 +71,7 @@ const DEFAULT_WIDGET_CONFIG = {
     titleFontSize: '22px',
     closeButtonSize: '44px'
   },
-  
+
   // Typography
   typography: {
     fontFamily: 'Arial, sans-serif',
@@ -80,13 +80,13 @@ const DEFAULT_WIDGET_CONFIG = {
     titleFontWeight: '500',
     lineHeight: '1'
   },
-  
+
   // Animation
   animation: {
     transition: '0.2s',
     hoverScale: '1.05'
   },
-  
+
   // Language/Text Configuration
   lang: {
     accessibilityMenu: 'Accessibility Menu',
@@ -144,9 +144,9 @@ const DEFAULT_WIDGET_CONFIG = {
 // Function to deep merge user configuration with defaults
 function mergeConfigs(defaultConfig, userConfig) {
   const result = { ...defaultConfig };
-  
+
   if (!userConfig) return result;
-  
+
   for (const key in userConfig) {
     if (userConfig.hasOwnProperty(key)) {
       if (typeof userConfig[key] === 'object' && userConfig[key] !== null && !Array.isArray(userConfig[key])) {
@@ -156,7 +156,7 @@ function mergeConfigs(defaultConfig, userConfig) {
       }
     }
   }
-  
+
   return result;
 }
 
@@ -491,7 +491,7 @@ function injectStyles() {
   const styleSheet = document.createElement('style');
   styleSheet.innerText = styles;
   document.head.appendChild(styleSheet);
-  
+
   // Add SVG color blindness filters
   const svgFilters = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svgFilters.style.position = 'absolute';
@@ -523,7 +523,7 @@ const domCache = {
   documentElement: document.documentElement,
   images: null,
   lastImageUpdate: 0,
-  getImages: function() {
+  getImages: function () {
     const now = Date.now();
     if (!this.images || now - this.lastImageUpdate > 5000) {
       this.images = document.querySelectorAll('img');
@@ -659,7 +659,7 @@ function createAccessibilityButton() {
   button.addEventListener('click', function () {
     toggleMenu();
   });
-  
+
   button.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -769,17 +769,17 @@ function createToggleButton(
   button.addEventListener('click', function () {
     handleToggle();
   });
-  
+
   button.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleToggle();
     }
   });
-  
+
   function handleToggle() {
     const newIsActive = localStorage.getItem(localStorageKey) !== 'true';
-    
+
     // If there's a custom toggle function, call it and check if it succeeded
     if (customToggleFunction) {
       const success = customToggleFunction(newIsActive);
@@ -788,7 +788,7 @@ function createToggleButton(
         return;
       }
     }
-    
+
     localStorage.setItem(localStorageKey, newIsActive);
     button.setAttribute('aria-pressed', newIsActive);
 
@@ -814,10 +814,10 @@ function createActionButton(buttonText, actionFunction, iconSVG) {
   button.innerHTML = `<span class="snn-icon">${iconSVG}</span><span class="snn-button-text">${buttonText}: <span class="snn-status">${WIDGET_CONFIG.lang.default}</span></span>`;
   button.setAttribute('aria-label', buttonText);
   button.classList.add('snn-accessibility-option');
-  
+
   // Update initial status
   updateActionButtonStatus(button, buttonText, actionFunction);
-  
+
   button.addEventListener('click', function () {
     const result = actionFunction();
     if (result) {
@@ -825,7 +825,7 @@ function createActionButton(buttonText, actionFunction, iconSVG) {
       statusSpan.textContent = result;
     }
   });
-  
+
   button.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -836,14 +836,14 @@ function createActionButton(buttonText, actionFunction, iconSVG) {
       }
     }
   });
-  
+
   return button;
 }
 
 // Update action button status on page load
 function updateActionButtonStatus(button, buttonText, actionFunction) {
   const statusSpan = button.querySelector('.snn-status');
-  
+
   if (buttonText.includes('Font')) {
     const currentFont = localStorage.getItem('fontSelection');
     statusSpan.textContent = currentFont ? currentFont.charAt(0).toUpperCase() + currentFont.slice(1) : WIDGET_CONFIG.lang.default;
@@ -880,11 +880,11 @@ function handleFontSelection() {
   const currentFont = localStorage.getItem('fontSelection') || 'default';
   const currentIndex = fonts.indexOf(currentFont);
   const nextIndex = (currentIndex + 1) % (fonts.length + 1); // +1 for default
-  
+
   // Remove all font classes in one operation
   const fontClasses = ['snn-font-arial', 'snn-font-times', 'snn-font-verdana'];
   domCache.body.classList.remove(...fontClasses);
-  
+
   if (nextIndex === fonts.length) {
     // Default font
     localStorage.removeItem('fontSelection');
@@ -903,11 +903,11 @@ function handleColorFilter() {
   const currentFilter = localStorage.getItem('colorFilter') || 'none';
   const currentIndex = filters.indexOf(currentFilter);
   const nextIndex = (currentIndex + 1) % (filters.length + 1); // +1 for none
-  
+
   // Remove all filter classes in one operation
   const filterClasses = ['snn-filter-protanopia', 'snn-filter-deuteranopia', 'snn-filter-tritanopia', 'snn-filter-grayscale'];
   domCache.documentElement.classList.remove(...filterClasses);
-  
+
   if (nextIndex === filters.length) {
     // No filter
     localStorage.removeItem('colorFilter');
@@ -926,11 +926,11 @@ function handleTextAlign() {
   const currentAlign = localStorage.getItem('textAlign') || 'none';
   const currentIndex = alignments.indexOf(currentAlign);
   const nextIndex = (currentIndex + 1) % (alignments.length + 1); // +1 for none
-  
+
   // Remove all alignment classes
   const alignClasses = ['snn-text-align-left', 'snn-text-align-center', 'snn-text-align-right'];
   domCache.body.classList.remove(...alignClasses);
-  
+
   if (nextIndex === alignments.length) {
     // Default alignment
     localStorage.removeItem('textAlign');
@@ -949,11 +949,11 @@ function handleBiggerText() {
   const currentSize = localStorage.getItem('biggerText') || 'none';
   const currentIndex = textSizes.indexOf(currentSize);
   const nextIndex = (currentIndex + 1) % (textSizes.length + 1); // +1 for none
-  
+
   // Remove all text size classes
   const textClasses = ['snn-bigger-text-medium', 'snn-bigger-text-large', 'snn-bigger-text-xlarge'];
   domCache.body.classList.remove(...textClasses);
-  
+
   if (nextIndex === textSizes.length) {
     // Default text size
     localStorage.removeItem('biggerText');
@@ -972,11 +972,11 @@ function handleHighContrast() {
   const currentContrast = localStorage.getItem('highContrast') || 'none';
   const currentIndex = contrastLevels.indexOf(currentContrast);
   const nextIndex = (currentIndex + 1) % (contrastLevels.length + 1); // +1 for none
-  
+
   // Remove all contrast classes
   const contrastClasses = ['snn-high-contrast-medium', 'snn-high-contrast-high', 'snn-high-contrast-ultra'];
   domCache.documentElement.classList.remove(...contrastClasses);
-  
+
   if (nextIndex === contrastLevels.length) {
     // Default contrast
     localStorage.removeItem('highContrast');
@@ -1005,7 +1005,7 @@ const screenReader = {
           window.speechSynthesis.cancel();
           const speech = new SpeechSynthesisUtterance(content);
           speech.lang = 'en-US';
-          speech.onerror = function(event) {
+          speech.onerror = function (event) {
             console.warn('Speech synthesis error:', event.error);
           };
           window.speechSynthesis.speak(speech);
@@ -1020,16 +1020,16 @@ const screenReader = {
       console.warn(`Speech synthesis ${WIDGET_CONFIG.lang.notSupportedBrowser}`);
       return false;
     }
-    
+
     screenReader.active = isActive;
     localStorage.setItem('screenReader', isActive);
-    
+
     try {
       if (isActive) {
         document.addEventListener('focusin', screenReader.handleFocus);
         const feedbackSpeech = new SpeechSynthesisUtterance(WIDGET_CONFIG.lang.screenReaderOn);
         feedbackSpeech.lang = 'en-US';
-        feedbackSpeech.onerror = function(event) {
+        feedbackSpeech.onerror = function (event) {
           console.warn('Speech synthesis feedback error:', event.error);
         };
         window.speechSynthesis.speak(feedbackSpeech);
@@ -1038,7 +1038,7 @@ const screenReader = {
         window.speechSynthesis.cancel();
         const feedbackSpeech = new SpeechSynthesisUtterance(WIDGET_CONFIG.lang.screenReaderOff);
         feedbackSpeech.lang = 'en-US';
-        feedbackSpeech.onerror = function(event) {
+        feedbackSpeech.onerror = function (event) {
           console.warn('Speech synthesis feedback error:', event.error);
         };
         window.speechSynthesis.speak(feedbackSpeech);
@@ -1047,7 +1047,7 @@ const screenReader = {
       console.warn('Screen reader toggle error:', error);
       return false;
     }
-    
+
     return true;
   },
 };
@@ -1064,10 +1064,10 @@ const voiceControl = {
       console.warn(`Speech Recognition API ${WIDGET_CONFIG.lang.notSupportedBrowser}`);
       return false;
     }
-    
+
     voiceControl.isActive = isActive;
     localStorage.setItem('voiceControl', isActive);
-    
+
     try {
       if (isActive) {
         voiceControl.startListening();
@@ -1082,14 +1082,14 @@ const voiceControl = {
       console.warn('Voice control toggle error:', error);
       return false;
     }
-    
+
     return true;
   },
   startListening: function () {
     if (!voiceControl.isSupported) {
       return;
     }
-    
+
     try {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       voiceControl.recognition = new SpeechRecognition();
@@ -1140,7 +1140,7 @@ const voiceControl = {
   },
   handleVoiceCommand: function (command) {
     console.log(`Received command: ${command}`);
-    
+
     try {
       // Check for show menu commands
       if (WIDGET_CONFIG.voiceCommands.showMenu.includes(command)) {
@@ -1159,7 +1159,7 @@ const voiceControl = {
 
       // Build dynamic command map based on configuration
       let localStorageKey = null;
-      
+
       // Check each command group
       if (WIDGET_CONFIG.voiceCommands.highContrast.includes(command)) {
         localStorageKey = 'highContrast';
@@ -1230,7 +1230,7 @@ function createAccessibilityMenu() {
   closeButton.addEventListener('click', function () {
     closeMenu();
   });
-  
+
   closeButton.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -1310,7 +1310,7 @@ function createAccessibilityMenu() {
       enabled: WIDGET_CONFIG.enableReducedMotion,
     },
   ];
-  
+
   // Add enabled toggle options to grid
   options.forEach((option) => {
     if (option.enabled) {
@@ -1326,33 +1326,33 @@ function createAccessibilityMenu() {
       optionsGrid.appendChild(button);
     }
   });
-  
+
   // Add action buttons (font selection and color filters) to grid if enabled
   if (WIDGET_CONFIG.enableFontSelection) {
     const fontButton = createActionButton(WIDGET_CONFIG.lang.fontSelection, handleFontSelection, icons.fontSelection);
     optionsGrid.appendChild(fontButton);
   }
-  
+
   if (WIDGET_CONFIG.enableColorFilter) {
     const colorButton = createActionButton(WIDGET_CONFIG.lang.colorFilter, handleColorFilter, icons.colorFilter);
     optionsGrid.appendChild(colorButton);
   }
-  
+
   if (WIDGET_CONFIG.enableTextAlign) {
     const textAlignButton = createActionButton(WIDGET_CONFIG.lang.textAlign, handleTextAlign, icons.textAlign);
     optionsGrid.appendChild(textAlignButton);
   }
-  
+
   if (WIDGET_CONFIG.enableBiggerText) {
     const biggerTextButton = createActionButton(WIDGET_CONFIG.lang.textSize, handleBiggerText, icons.biggerText);
     optionsGrid.appendChild(biggerTextButton);
   }
-  
+
   if (WIDGET_CONFIG.enableHighContrast) {
     const highContrastButton = createActionButton(WIDGET_CONFIG.lang.highContrast, handleHighContrast, icons.highContrast);
     optionsGrid.appendChild(highContrastButton);
   }
-  
+
   // Add Screen Reader and Voice Command as the LAST two buttons
   if (WIDGET_CONFIG.enableScreenReader) {
     const screenReaderButton = createToggleButton(
@@ -1366,7 +1366,7 @@ function createAccessibilityMenu() {
     );
     optionsGrid.appendChild(screenReaderButton);
   }
-  
+
   if (WIDGET_CONFIG.enableVoiceControl) {
     const voiceControlButton = createToggleButton(
       WIDGET_CONFIG.lang.voiceCommand,
@@ -1382,7 +1382,7 @@ function createAccessibilityMenu() {
 
   // Add grid to content
   content.appendChild(optionsGrid);
-  
+
   // Add content to menu
   menu.appendChild(content);
 
@@ -1398,7 +1398,7 @@ const menuCache = {
   menu: null,
   button: null,
   closeButton: null,
-  init: function() {
+  init: function () {
     this.menu = document.getElementById('snn-accessibility-menu');
     this.button = document.getElementById('snn-accessibility-button');
     this.closeButton = this.menu?.querySelector('.snn-close');
@@ -1409,7 +1409,7 @@ const menuCache = {
 function toggleMenu() {
   if (!menuCache.menu) menuCache.init();
   const isOpen = menuCache.menu.style.display === 'block';
-  
+
   if (isOpen) {
     closeMenu();
   } else {
@@ -1421,11 +1421,11 @@ function openMenu() {
   if (!menuCache.menu) menuCache.init();
   menuCache.menu.style.display = 'block';
   menuCache.menu.setAttribute('aria-hidden', 'false');
-  
+
   if (menuCache.closeButton) {
     menuCache.closeButton.focus();
   }
-  
+
   // Add keyboard navigation
   document.addEventListener('keydown', handleMenuKeyboard);
 }
@@ -1434,11 +1434,11 @@ function closeMenu() {
   if (!menuCache.menu) menuCache.init();
   menuCache.menu.style.display = 'none';
   menuCache.menu.setAttribute('aria-hidden', 'true');
-  
+
   if (menuCache.button) {
     menuCache.button.focus();
   }
-  
+
   // Remove keyboard navigation
   document.removeEventListener('keydown', handleMenuKeyboard);
 }
@@ -1447,7 +1447,7 @@ function closeMenu() {
 let keyboardCache = {
   focusableElements: null,
   lastUpdate: 0,
-  getFocusableElements: function() {
+  getFocusableElements: function () {
     const now = Date.now();
     if (!this.focusableElements || now - this.lastUpdate > 1000) {
       if (menuCache.menu) {
@@ -1464,20 +1464,20 @@ let keyboardCache = {
 
 function handleMenuKeyboard(e) {
   if (!menuCache.menu || menuCache.menu.style.display !== 'block') return;
-  
+
   if (e.key === 'Escape') {
     e.preventDefault();
     closeMenu();
     return;
   }
-  
+
   const elements = keyboardCache.getFocusableElements();
   if (!elements) return;
-  
+
   if (e.key === 'Tab') {
     const firstElement = elements.all[0];
     const lastElement = elements.all[elements.all.length - 1];
-    
+
     if (e.shiftKey) {
       if (document.activeElement === firstElement) {
         e.preventDefault();
@@ -1490,18 +1490,18 @@ function handleMenuKeyboard(e) {
       }
     }
   }
-  
+
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
     const currentIndex = elements.options.indexOf(document.activeElement);
     let nextIndex;
-    
+
     if (e.key === 'ArrowDown') {
       nextIndex = currentIndex === elements.options.length - 1 ? 0 : currentIndex + 1;
     } else {
       nextIndex = currentIndex === 0 ? elements.options.length - 1 : currentIndex - 1;
     }
-    
+
     elements.options[nextIndex].focus();
   }
 }
