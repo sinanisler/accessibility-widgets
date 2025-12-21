@@ -230,8 +230,10 @@ const widgetStyles = `
   .snn-accessibility-option {
     font-size: ${WIDGET_CONFIG.menu.fontSize};
     display: flex;
+    flex-direction: column;
     align-items: center;
-    padding: ${WIDGET_CONFIG.menu.optionPadding};
+    justify-content: center;
+    padding: 15px 10px;
     width: 100%;
     background-color: ${WIDGET_CONFIG.colors.optionBg};
     color: ${WIDGET_CONFIG.colors.optionText};
@@ -240,6 +242,8 @@ const widgetStyles = `
     border-radius: ${WIDGET_CONFIG.menu.borderRadius};
     transition: background-color ${WIDGET_CONFIG.animation.transition}, border-color ${WIDGET_CONFIG.animation.transition};
     line-height: ${WIDGET_CONFIG.typography.lineHeight} !important;
+    gap: 10px;
+    min-height: 120px;
   }
   
   .snn-accessibility-option:hover {
@@ -256,7 +260,6 @@ const widgetStyles = `
   }
   
   .snn-icon {
-    margin-right: 12px;
     width: ${WIDGET_CONFIG.button.iconSize};
     height: ${WIDGET_CONFIG.button.iconSize};
     fill: ${WIDGET_CONFIG.colors.optionIcon};
@@ -270,7 +273,30 @@ const widgetStyles = `
   }
   
   .snn-button-text {
-    flex: 1;
+    text-align: center;
+    line-height: 1.2;
+    font-size:16px;
+    font-weight: 600;
+  }
+  
+  .snn-option-steps {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 5px;
+  }
+  
+  .snn-option-step {
+    width: 30px;
+    height: 10px;
+    border-radius: 3px;
+    background-color: #d0d0d0;
+    transition: background-color ${WIDGET_CONFIG.animation.transition};
+  }
+  
+  .snn-option-step.active {
+    background-color: ${WIDGET_CONFIG.colors.primary};
   }
   
   .snn-close, .snn-reset-button {
@@ -849,6 +875,10 @@ function resetAccessibilitySettings() {
   buttons.forEach((button) => {
     button.classList.remove('active');
     button.setAttribute('aria-pressed', 'false');
+    
+    // Reset step indicators
+    const steps = button.querySelectorAll('.snn-option-step');
+    steps.forEach(step => step.classList.remove('active'));
   });
 }
 
@@ -863,7 +893,10 @@ function createToggleButton(
   requiresFeature = null
 ) {
   const button = document.createElement('button');
-  button.innerHTML = `<span class="snn-icon">${iconSVG}</span><span class="snn-button-text">${buttonText}</span>`;
+  button.innerHTML = `
+    <span class="snn-icon">${iconSVG}</span>
+    <span class="snn-button-text">${buttonText}</span>
+  `;
   button.setAttribute('data-key', localStorageKey);
   button.setAttribute('aria-label', buttonText);
   button.classList.add('snn-accessibility-option');
@@ -926,20 +959,35 @@ function createToggleButton(
 }
 
 // Create special action buttons (for cycling through options)
-function createActionButton(buttonText, actionFunction, iconSVG) {
+function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig = null) {
   const button = document.createElement('button');
-  button.innerHTML = `<span class="snn-icon">${iconSVG}</span><span class="snn-button-text">${buttonText}: <span class="snn-status">${WIDGET_CONFIG.lang.default}</span></span>`;
+  
+  let buttonHTML = `
+    <span class="snn-icon">${iconSVG}</span>
+    <span class="snn-button-text">${buttonText}</span>
+  `;
+  
+  // Add option steps if configured
+  if (optionsConfig) {
+    buttonHTML += '<div class="snn-option-steps">';
+    for (let i = 0; i < optionsConfig.count; i++) {
+      buttonHTML += '<div class="snn-option-step"></div>';
+    }
+    buttonHTML += '</div>';
+  }
+  
+  button.innerHTML = buttonHTML;
   button.setAttribute('aria-label', buttonText);
   button.classList.add('snn-accessibility-option');
+  button.setAttribute('data-options-config', optionsConfig ? JSON.stringify(optionsConfig) : '');
 
   // Update initial status
-  updateActionButtonStatus(button, buttonText, actionFunction);
+  updateActionButtonStatus(button, buttonText, optionsConfig);
 
   button.addEventListener('click', function () {
     const result = actionFunction();
     if (result) {
-      const statusSpan = button.querySelector('.snn-status');
-      statusSpan.textContent = result;
+      updateActionButtonStatus(button, buttonText, optionsConfig);
     }
   });
 
@@ -948,8 +996,7 @@ function createActionButton(buttonText, actionFunction, iconSVG) {
       e.preventDefault();
       const result = actionFunction();
       if (result) {
-        const statusSpan = button.querySelector('.snn-status');
-        statusSpan.textContent = result;
+        updateActionButtonStatus(button, buttonText, optionsConfig);
       }
     }
   });
@@ -958,25 +1005,42 @@ function createActionButton(buttonText, actionFunction, iconSVG) {
 }
 
 // Update action button status on page load
-function updateActionButtonStatus(button, buttonText, actionFunction) {
-  const statusSpan = button.querySelector('.snn-status');
-
+function updateActionButtonStatus(button, buttonText, optionsConfig) {
+  if (!optionsConfig) return;
+  
+  const steps = button.querySelectorAll('.snn-option-step');
+  let currentIndex = -1;
+  
   if (buttonText.includes('Font')) {
     const currentFont = localStorage.getItem('fontSelection');
-    statusSpan.textContent = currentFont ? currentFont.charAt(0).toUpperCase() + currentFont.slice(1) : WIDGET_CONFIG.lang.default;
+    const fonts = ['arial', 'times', 'verdana'];
+    currentIndex = currentFont ? fonts.indexOf(currentFont) : -1;
   } else if (buttonText.includes('Color')) {
     const currentFilter = localStorage.getItem('colorFilter');
-    statusSpan.textContent = currentFilter ? currentFilter.charAt(0).toUpperCase() + currentFilter.slice(1) : WIDGET_CONFIG.lang.noFilter;
+    const filters = ['protanopia', 'deuteranopia', 'tritanopia', 'grayscale'];
+    currentIndex = currentFilter ? filters.indexOf(currentFilter) : -1;
   } else if (buttonText.includes('Text Align')) {
     const currentAlign = localStorage.getItem('textAlign');
-    statusSpan.textContent = currentAlign ? currentAlign.charAt(0).toUpperCase() + currentAlign.slice(1) : WIDGET_CONFIG.lang.default;
+    const alignments = ['left', 'center', 'right'];
+    currentIndex = currentAlign ? alignments.indexOf(currentAlign) : -1;
   } else if (buttonText.includes('Text Size')) {
     const currentSize = localStorage.getItem('biggerText');
-    statusSpan.textContent = currentSize ? (currentSize === 'xlarge' ? 'X-Large' : currentSize.charAt(0).toUpperCase() + currentSize.slice(1)) : WIDGET_CONFIG.lang.default;
+    const sizes = ['medium', 'large', 'xlarge'];
+    currentIndex = currentSize ? sizes.indexOf(currentSize) : -1;
   } else if (buttonText.includes('High Contrast')) {
     const currentContrast = localStorage.getItem('highContrast');
-    statusSpan.textContent = currentContrast ? currentContrast.charAt(0).toUpperCase() + currentContrast.slice(1) : WIDGET_CONFIG.lang.default;
+    const contrasts = ['medium', 'high', 'ultra'];
+    currentIndex = currentContrast ? contrasts.indexOf(currentContrast) : -1;
   }
+  
+  // Update step indicators
+  steps.forEach((step, index) => {
+    if (index === currentIndex) {
+      step.classList.add('active');
+    } else {
+      step.classList.remove('active');
+    }
+  });
 }
 
 // ===========================================
@@ -1390,6 +1454,7 @@ function createAccessibilityMenu() {
       actionFunction: handleBiggerText,
       icon: icons.biggerText,
       enabled: WIDGET_CONFIG.enableBiggerText,
+      optionsConfig: { count: 3 }
     },
     {
       order: 2,
@@ -1398,6 +1463,7 @@ function createAccessibilityMenu() {
       actionFunction: handleHighContrast,
       icon: icons.highContrast,
       enabled: WIDGET_CONFIG.enableHighContrast,
+      optionsConfig: { count: 3 }
     },
     {
       order: 3,
@@ -1406,6 +1472,7 @@ function createAccessibilityMenu() {
       actionFunction: handleTextAlign,
       icon: icons.textAlign,
       enabled: WIDGET_CONFIG.enableTextAlign,
+      optionsConfig: { count: 3 }
     },
     {
       order: 4,
@@ -1414,6 +1481,7 @@ function createAccessibilityMenu() {
       actionFunction: handleColorFilter,
       icon: icons.colorFilter,
       enabled: WIDGET_CONFIG.enableColorFilter,
+      optionsConfig: { count: 4 }
     },
     
     // Order 5-11: Other visual/text features
@@ -1442,6 +1510,7 @@ function createAccessibilityMenu() {
       actionFunction: handleFontSelection,
       icon: icons.fontSelection,
       enabled: WIDGET_CONFIG.enableFontSelection,
+      optionsConfig: { count: 3 }
     },
     {
       order: 8,
@@ -1522,7 +1591,7 @@ function createAccessibilityMenu() {
       let button;
       
       if (config.type === 'action') {
-        button = createActionButton(config.text, config.actionFunction, config.icon);
+        button = createActionButton(config.text, config.actionFunction, config.icon, config.optionsConfig);
       } else if (config.type === 'toggle') {
         button = createToggleButton(
           config.text,
