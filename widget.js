@@ -1094,8 +1094,12 @@ function createShadowContainer() {
 
 // Cache for DOM elements to improve performance
 const domCache = {
-  body: document.body,
-  documentElement: document.documentElement,
+  get body() {
+    return document.body;
+  },
+  get documentElement() {
+    return document.documentElement;
+  },
   images: null,
   lastImageUpdate: 0,
   getImages: function () {
@@ -1110,6 +1114,12 @@ const domCache = {
 
 // Apply saved settings from localStorage (optimized)
 function applySettings() {
+  // Check if body element exists
+  if (!domCache.body || !domCache.documentElement) {
+    console.warn('Body or document element not ready yet');
+    return;
+  }
+
   const settings = [
     { key: 'biggerCursor', className: 'snn-bigger-cursor' },
     { key: 'biggerText', className: 'snn-bigger-text' },
@@ -1144,79 +1154,121 @@ function applySettings() {
     }
   });
 
-  // Apply all class changes at once
+  // Apply all class changes at once - ONLY remove classes that start with 'snn-'
   if (bodyClassesToAdd.length > 0) {
     domCache.body.classList.add(...bodyClassesToAdd);
   }
   if (bodyClassesToRemove.length > 0) {
-    domCache.body.classList.remove(...bodyClassesToRemove);
+    // Only remove our own classes, never remove classes that don't start with 'snn-'
+    bodyClassesToRemove.forEach(className => {
+      if (className.startsWith('snn-')) {
+        domCache.body.classList.remove(className);
+      }
+    });
   }
   if (docClassesToAdd.length > 0) {
     domCache.documentElement.classList.add(...docClassesToAdd);
   }
   if (docClassesToRemove.length > 0) {
-    domCache.documentElement.classList.remove(...docClassesToRemove);
+    // Only remove our own classes, never remove classes that don't start with 'snn-'
+    docClassesToRemove.forEach(className => {
+      if (className.startsWith('snn-')) {
+        domCache.documentElement.classList.remove(className);
+      }
+    });
   }
 
-  // Handle font selection
+  // Handle font selection - only remove widget's own font classes
   const fontClasses = ['snn-font-arial', 'snn-font-times', 'snn-font-verdana'];
-  domCache.body.classList.remove(...fontClasses);
+  fontClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
   const selectedFont = localStorage.getItem('fontSelection');
   if (selectedFont) {
     domCache.body.classList.add(`snn-font-${selectedFont}`);
   }
 
-  // Handle color filters
+  // Handle color filters - only remove widget's own filter classes
   const filterClasses = ['snn-filter-protanopia', 'snn-filter-deuteranopia', 'snn-filter-tritanopia', 'snn-filter-grayscale'];
-  domCache.documentElement.classList.remove(...filterClasses);
+  filterClasses.forEach(className => {
+    if (domCache.documentElement.classList.contains(className)) {
+      domCache.documentElement.classList.remove(className);
+    }
+  });
   const selectedFilter = localStorage.getItem('colorFilter');
   if (selectedFilter) {
     domCache.documentElement.classList.add(`snn-filter-${selectedFilter}`);
   }
 
-  // Handle saturation filters
+  // Handle saturation filters - only remove widget's own saturation classes
   const saturationClasses = ['snn-saturation-low', 'snn-saturation-high', 'snn-saturation-none'];
-  domCache.documentElement.classList.remove(...saturationClasses);
+  saturationClasses.forEach(className => {
+    if (domCache.documentElement.classList.contains(className)) {
+      domCache.documentElement.classList.remove(className);
+    }
+  });
   const selectedSaturation = localStorage.getItem('saturation');
   if (selectedSaturation) {
     domCache.documentElement.classList.add(`snn-saturation-${selectedSaturation}`);
   }
 
-  // Handle text alignment
+  // Handle text alignment - only remove widget's own alignment classes
   const alignClasses = ['snn-text-align-left', 'snn-text-align-center', 'snn-text-align-right'];
-  domCache.body.classList.remove(...alignClasses);
+  alignClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
   const selectedAlign = localStorage.getItem('textAlign');
   if (selectedAlign) {
     domCache.body.classList.add(`snn-text-align-${selectedAlign}`);
   }
 
-  // Handle bigger text
+  // Handle bigger text - only remove widget's own text size classes
   const textClasses = ['snn-bigger-text-medium', 'snn-bigger-text-large', 'snn-bigger-text-xlarge'];
-  domCache.body.classList.remove(...textClasses);
+  textClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
   const selectedTextSize = localStorage.getItem('biggerText');
   if (selectedTextSize) {
     domCache.body.classList.add(`snn-bigger-text-${selectedTextSize}`);
   }
 
-  // Handle high contrast
+  // Handle high contrast - only remove widget's own contrast classes
   const contrastClasses = ['snn-high-contrast-medium', 'snn-high-contrast-high', 'snn-high-contrast-ultra'];
-  domCache.body.classList.remove(...contrastClasses);
+  contrastClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
   const selectedContrast = localStorage.getItem('highContrast');
   if (selectedContrast) {
     domCache.body.classList.add(`snn-high-contrast-${selectedContrast}`);
   }
 
-  // Handle Text Spacing (3 Levels)
+  // Handle Text Spacing (3 Levels) - only remove widget's own spacing classes
   const spacingClasses = ['snn-text-spacing-light', 'snn-text-spacing-medium', 'snn-text-spacing-heavy'];
-  domCache.body.classList.remove(...spacingClasses);
+  spacingClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
   const selectedSpacing = localStorage.getItem('textSpacing');
   if (selectedSpacing) {
     domCache.body.classList.add(`snn-text-spacing-${selectedSpacing}`);
   }
 
-  // Handle Line Height (3 Levels)
+  // Handle Line Height (3 Levels) - only remove widget's own line height classes
   const lineHeightClasses = ['snn-line-height-2em', 'snn-line-height-3em', 'snn-line-height-4em'];
-  domCache.body.classList.remove(...lineHeightClasses);
+  lineHeightClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
   const selectedLineHeight = localStorage.getItem('lineHeight');
   if (selectedLineHeight) {
     domCache.body.classList.add(`snn-line-height-${selectedLineHeight}`);
@@ -1287,7 +1339,14 @@ function resetAccessibilitySettings() {
   ];
   keys.forEach((key) => localStorage.removeItem(key));
 
-  // Remove all CSS classes
+  // Remove only widget's own CSS classes - never touch existing body/document classes
+  // Check if body and documentElement exist first
+  if (!document.body || !document.documentElement) {
+    console.warn('Body or document element not ready during reset');
+    return;
+  }
+
+  // Remove body classes only if they exist and start with 'snn-'
   const cssClasses = [
     'snn-bigger-cursor',
     'snn-bigger-text',
@@ -1296,17 +1355,30 @@ function resetAccessibilitySettings() {
     'snn-text-align',
     'snn-font-arial',
     'snn-font-times',
-    'snn-font-verdana'
-  ];
-  cssClasses.forEach(cls => document.body.classList.remove(cls));
-
-  const bodyClasses2 = [
+    'snn-font-verdana',
     'snn-high-contrast-medium',
     'snn-high-contrast-high',
-    'snn-high-contrast-ultra'
+    'snn-high-contrast-ultra',
+    'snn-bigger-text-medium',
+    'snn-bigger-text-large',
+    'snn-bigger-text-xlarge',
+    'snn-text-spacing-light',
+    'snn-text-spacing-medium',
+    'snn-text-spacing-heavy',
+    'snn-line-height-2em',
+    'snn-line-height-3em',
+    'snn-line-height-4em',
+    'snn-text-align-left',
+    'snn-text-align-center',
+    'snn-text-align-right'
   ];
-  bodyClasses2.forEach(cls => document.body.classList.remove(cls));
+  cssClasses.forEach(cls => {
+    if (document.body.classList.contains(cls)) {
+      document.body.classList.remove(cls);
+    }
+  });
 
+  // Remove document element classes only if they exist and start with 'snn-'
   const documentClasses = [
     'snn-filter-protanopia',
     'snn-filter-deuteranopia',
@@ -1316,21 +1388,11 @@ function resetAccessibilitySettings() {
     'snn-saturation-high',
     'snn-saturation-none'
   ];
-  documentClasses.forEach(cls => document.documentElement.classList.remove(cls));
-
-  const textSizeClasses = [
-    'snn-bigger-text-medium',
-    'snn-bigger-text-large',
-    'snn-bigger-text-xlarge'
-  ];
-  textSizeClasses.forEach(cls => document.body.classList.remove(cls));
-
-  // Clear Multi-level classes
-  const spacingClasses = ['snn-text-spacing-light', 'snn-text-spacing-medium', 'snn-text-spacing-heavy'];
-  spacingClasses.forEach(cls => document.body.classList.remove(cls));
-
-  const lineHeightClasses = ['snn-line-height-2em', 'snn-line-height-3em', 'snn-line-height-4em'];
-  lineHeightClasses.forEach(cls => document.body.classList.remove(cls));
+  documentClasses.forEach(cls => {
+    if (document.documentElement.classList.contains(cls)) {
+      document.documentElement.classList.remove(cls);
+    }
+  });
 
   domCache.getImages().forEach((img) => (img.style.display = ''));
 
@@ -1563,9 +1625,13 @@ function handleFontSelection() {
   const currentIndex = fonts.indexOf(currentFont);
   const nextIndex = (currentIndex + 1) % (fonts.length + 1); // +1 for default
 
-  // Remove all font classes in one operation
+  // Remove only widget's own font classes
   const fontClasses = ['snn-font-arial', 'snn-font-times', 'snn-font-verdana'];
-  domCache.body.classList.remove(...fontClasses);
+  fontClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
 
   if (nextIndex === fonts.length) {
     // Default font
@@ -1586,9 +1652,13 @@ function handleSaturation() {
   const currentIndex = saturations.indexOf(currentSaturation);
   const nextIndex = (currentIndex + 1) % (saturations.length + 1); // +1 for default
 
-  // Remove all saturation classes in one operation
+  // Remove only widget's own saturation classes
   const saturationClasses = ['snn-saturation-low', 'snn-saturation-high', 'snn-saturation-none'];
-  domCache.documentElement.classList.remove(...saturationClasses);
+  saturationClasses.forEach(className => {
+    if (domCache.documentElement.classList.contains(className)) {
+      domCache.documentElement.classList.remove(className);
+    }
+  });
 
   if (nextIndex === saturations.length) {
     // Default saturation
@@ -1612,9 +1682,13 @@ function handleColorFilter() {
   const currentIndex = filters.indexOf(currentFilter);
   const nextIndex = (currentIndex + 1) % (filters.length + 1); // +1 for none
 
-  // Remove all filter classes in one operation
+  // Remove only widget's own filter classes
   const filterClasses = ['snn-filter-protanopia', 'snn-filter-deuteranopia', 'snn-filter-tritanopia', 'snn-filter-grayscale'];
-  domCache.documentElement.classList.remove(...filterClasses);
+  filterClasses.forEach(className => {
+    if (domCache.documentElement.classList.contains(className)) {
+      domCache.documentElement.classList.remove(className);
+    }
+  });
 
   if (nextIndex === filters.length) {
     // No filter
@@ -1635,9 +1709,13 @@ function handleTextAlign() {
   const currentIndex = alignments.indexOf(currentAlign);
   const nextIndex = (currentIndex + 1) % (alignments.length + 1); // +1 for none
 
-  // Remove all alignment classes
+  // Remove only widget's own alignment classes
   const alignClasses = ['snn-text-align-left', 'snn-text-align-center', 'snn-text-align-right'];
-  domCache.body.classList.remove(...alignClasses);
+  alignClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
 
   if (nextIndex === alignments.length) {
     // Default alignment
@@ -1658,9 +1736,13 @@ function handleBiggerText() {
   const currentIndex = textSizes.indexOf(currentSize);
   const nextIndex = (currentIndex + 1) % (textSizes.length + 1); // +1 for none
 
-  // Remove all text size classes
+  // Remove only widget's own text size classes
   const textClasses = ['snn-bigger-text-medium', 'snn-bigger-text-large', 'snn-bigger-text-xlarge'];
-  domCache.body.classList.remove(...textClasses);
+  textClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
 
   if (nextIndex === textSizes.length) {
     // Default text size
@@ -1681,9 +1763,13 @@ function handleHighContrast() {
   const currentIndex = contrastLevels.indexOf(currentContrast);
   const nextIndex = (currentIndex + 1) % (contrastLevels.length + 1); // +1 for none
 
-  // Remove all contrast classes
+  // Remove only widget's own contrast classes
   const contrastClasses = ['snn-high-contrast-medium', 'snn-high-contrast-high', 'snn-high-contrast-ultra'];
-  domCache.body.classList.remove(...contrastClasses);
+  contrastClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
 
   if (nextIndex === contrastLevels.length) {
     // Default contrast
@@ -1704,9 +1790,13 @@ function handleTextSpacing() {
   const currentIndex = spacings.indexOf(currentSpacing);
   const nextIndex = (currentIndex + 1) % (spacings.length + 1); // +1 for none
 
-  // Remove all spacing classes
+  // Remove only widget's own spacing classes
   const spacingClasses = ['snn-text-spacing-light', 'snn-text-spacing-medium', 'snn-text-spacing-heavy'];
-  domCache.body.classList.remove(...spacingClasses);
+  spacingClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
 
   if (nextIndex === spacings.length) {
     // Default
@@ -1727,9 +1817,13 @@ function handleLineHeight() {
   const currentIndex = heights.indexOf(currentHeight);
   const nextIndex = (currentIndex + 1) % (heights.length + 1); // +1 for none
 
-  // Remove all line height classes
+  // Remove only widget's own line height classes
   const heightClasses = ['snn-line-height-2em', 'snn-line-height-3em', 'snn-line-height-4em'];
-  domCache.body.classList.remove(...heightClasses);
+  heightClasses.forEach(className => {
+    if (domCache.body.classList.contains(className)) {
+      domCache.body.classList.remove(className);
+    }
+  });
 
   if (nextIndex === heights.length) {
     // Default
