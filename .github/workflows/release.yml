@@ -48,11 +48,12 @@ jobs:
           IFS='.' read -ra parts <<< "$current"
           major="${parts[0]:-2}"
           minor="${parts[1]:-0}"
+          patch="${parts[2]:-0}"
           
-          # Increment minor version (2.0 -> 2.1 -> 2.2, etc.)
-          minor=$((minor + 1))
+          # Increment patch version (2.0.0 -> 2.0.1 -> 2.0.2, etc.)
+          patch=$((patch + 1))
           
-          new_version="$major.$minor"
+          new_version="$major.$minor.$patch"
           echo "New version will be: $new_version"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
           echo "NEW_VERSION=$new_version" >> $GITHUB_ENV
