@@ -1,6 +1,6 @@
 {
   "name": "accessibility-widgets",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A comprehensive, lightweight accessibility widget that enhances web accessibility for all users. Provides multiple accessibility features including screen reader support, voice control, high contrast mode, and more.",
   "main": "widget.js",
   "scripts": {
