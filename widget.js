@@ -503,19 +503,19 @@ const DEFAULT_WIDGET_CONFIG = {
 
   // Voice Command Configuration - Developers can customize commands for different languages
   voiceCommands: {
-    showMenu: ['show menu', 'open menu', 'accessibility menu'],
-    highContrast: ['high contrast'],
-    biggerText: ['bigger text', 'large text'],
-    textSpacing: ['text spacing'],
-    pauseAnimations: ['pause animations', 'stop animations'],
-    hideImages: ['hide images'],
-    dyslexiaFont: ['dyslexia friendly', 'dyslexia font'],
-    biggerCursor: ['bigger cursor', 'large cursor'],
-    lineHeight: ['line height'],
-    textAlign: ['align text', 'text align'],
-    screenReader: ['screen reader'],
-    voiceControl: ['voice command', 'voice control'],
-    resetAll: ['reset all', 'reset everything']
+    showMenu: ['show menu', 'open menu', 'accessibility menu', 'access menu'],
+    highContrast: ['high contrast', 'contrast', 'dark mode', 'increase contrast'],
+    biggerText: ['bigger text', 'large text', 'text size', 'increase text', 'bigger', 'larger text', 'text bigger', 'make text bigger', 'enlarge text'],
+    textSpacing: ['text spacing', 'spacing', 'letter spacing', 'text space'],
+    pauseAnimations: ['pause animations', 'stop animations', 'disable animations', 'no animations'],
+    hideImages: ['hide images', 'remove images', 'no images'],
+    dyslexiaFont: ['dyslexia friendly', 'dyslexia font', 'readable font', 'easy font'],
+    biggerCursor: ['bigger cursor', 'large cursor', 'cursor size', 'big cursor'],
+    lineHeight: ['line height', 'line spacing', 'space between lines', 'line space'],
+    textAlign: ['align text', 'text align', 'center text', 'alignment'],
+    screenReader: ['screen reader', 'read aloud', 'voice reader'],
+    voiceControl: ['voice command', 'voice control', 'voice commands'],
+    resetAll: ['reset all', 'reset everything', 'clear all', 'reset settings' , 'reset']
   },
 
   // Grid Layout Configuration
@@ -1521,6 +1521,7 @@ function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig =
   button.setAttribute('data-options-config', optionsConfig ? JSON.stringify(optionsConfig) : '');
   if (optionId) {
     button.setAttribute('data-accessibility-option-id', optionId);
+    button.setAttribute('data-key', optionId); // Add data-key for voice commands
   }
 
   // Update initial status
@@ -1990,62 +1991,89 @@ const voiceControl = {
     console.log(`Received command: ${command}`);
 
     try {
+      // Normalize the command by removing extra spaces and making it lowercase
+      const normalizedCommand = command.toLowerCase().trim().replace(/\s+/g, ' ');
+      
       // Check for show menu commands
-      if (WIDGET_CONFIG.voiceCommands.showMenu.some(cmd => command.includes(cmd))) {
+      if (WIDGET_CONFIG.voiceCommands.showMenu.some(cmd => normalizedCommand.includes(cmd))) {
         if (!menuCache.button) menuCache.init();
         if (menuCache.button) {
           menuCache.button.click();
+          console.log('Successfully opened menu');
         }
         return;
       }
 
       // Check for reset all commands
-      if (WIDGET_CONFIG.voiceCommands.resetAll.some(cmd => command.includes(cmd))) {
+      if (WIDGET_CONFIG.voiceCommands.resetAll.some(cmd => normalizedCommand.includes(cmd))) {
         resetAccessibilitySettings();
+        console.log('Successfully reset all settings');
         return;
       }
 
       // Build dynamic command map based on configuration
       let localStorageKey = null;
+      let matchedCommand = null;
 
-      // Check each command group
-      if (WIDGET_CONFIG.voiceCommands.highContrast.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'highContrast';
-      } else if (WIDGET_CONFIG.voiceCommands.biggerText.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'biggerText';
-      } else if (WIDGET_CONFIG.voiceCommands.textSpacing.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'textSpacing';
-      } else if (WIDGET_CONFIG.voiceCommands.pauseAnimations.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'pauseAnimations';
-      } else if (WIDGET_CONFIG.voiceCommands.hideImages.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'hideImages';
-      } else if (WIDGET_CONFIG.voiceCommands.dyslexiaFont.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'dyslexiaFont';
-      } else if (WIDGET_CONFIG.voiceCommands.biggerCursor.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'biggerCursor';
-      } else if (WIDGET_CONFIG.voiceCommands.lineHeight.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'lineHeight';
-      } else if (WIDGET_CONFIG.voiceCommands.textAlign.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'textAlign';
-      } else if (WIDGET_CONFIG.voiceCommands.screenReader.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'screenReader';
-      } else if (WIDGET_CONFIG.voiceCommands.voiceControl.some(cmd => command.includes(cmd))) {
-        localStorageKey = 'voiceControl';
+      // Check each command group with better matching
+      for (const [key, commands] of Object.entries(WIDGET_CONFIG.voiceCommands)) {
+        if (key === 'showMenu' || key === 'resetAll') continue; // Already handled above
+        
+        const isMatch = commands.some(cmd => {
+          // Check for exact matches first
+          if (normalizedCommand.includes(cmd.toLowerCase())) {
+            matchedCommand = cmd;
+            return true;
+          }
+          // Check for partial word matches (at least 3 characters)
+          const cmdWords = cmd.toLowerCase().split(' ');
+          const inputWords = normalizedCommand.split(' ');
+          return cmdWords.some(cmdWord => 
+            cmdWord.length >= 3 && inputWords.some(inputWord => 
+              inputWord.includes(cmdWord) || cmdWord.includes(inputWord)
+            )
+          );
+        });
+        
+        if (isMatch) {
+          localStorageKey = key;
+          break;
+        }
       }
 
       if (localStorageKey) {
         // Use cached menu reference if available
         if (!menuCache.menu) menuCache.init();
-        const button = menuCache.menu?.querySelector(
+        
+        // Try to find button by data-key first (toggle buttons)
+        let button = menuCache.menu?.querySelector(
           `.snn-accessibility-option[data-key='${localStorageKey}']`
         );
+        
+        // If not found, try to find by data-accessibility-option-id (action buttons)
+        if (!button) {
+          button = menuCache.menu?.querySelector(
+            `.snn-accessibility-option[data-accessibility-option-id='${localStorageKey}']`
+          );
+        }
+        
         if (button) {
           button.click();
+          console.log(`Successfully executed command: ${command} (matched: ${matchedCommand || localStorageKey})`);
         } else {
-          console.log('Button not found for command:', command);
+          console.log('Button not found for command:', command, '(key:', localStorageKey, ')');
         }
       } else {
         console.log('Command not recognized:', command);
+        // Provide helpful suggestions
+        const availableCommands = Object.values(WIDGET_CONFIG.voiceCommands).flat();
+        const suggestions = availableCommands.filter(cmd => 
+          cmd.toLowerCase().includes(normalizedCommand.split(' ')[0]) ||
+          normalizedCommand.split(' ')[0].includes(cmd.toLowerCase().split(' ')[0])
+        );
+        if (suggestions.length > 0) {
+          console.log('Did you mean one of these?', suggestions.slice(0, 3));
+        }
       }
     } catch (error) {
       console.warn('Voice command handling error:', error);
