@@ -157,28 +157,35 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
 
 ```javascript
 window.ACCESSIBILITY_WIDGET_CONFIG = {
-  // ===== Feature Toggles =====
-  enableHighContrast: true,
-  enableBiggerText: true,
-  enableTextSpacing: true,
-  enablePauseAnimations: true,
-  enableHideImages: true,
-  enableDyslexiaFont: true,
-  enableBiggerCursor: true,
-  enableLineHeight: true,
-  enableTextAlign: true,
-  enableScreenReader: true,
-  enableVoiceControl: true,
-  enableFontSelection: true,
-  enableColorFilter: true,
+  // ===== Core Feature Toggles =====
+  enableHighContrast: true,        // 3-level high contrast mode
+  enableBiggerText: true,          // 4-level text size control
+  enableTextSpacing: true,         // 3-level text spacing
+  enablePauseAnimations: true,     // Pause animations & reduced motion
+  enableHideImages: true,          // Hide images toggle
+  enableDyslexiaFont: true,        // Dyslexia-friendly fonts
+  enableBiggerCursor: true,        // Large cursor
+  enableLineHeight: true,          // 3-level line height (2em, 3em, 4em)
+  enableTextAlign: true,           // Text alignment (left, center, right)
+  
+  // ===== Advanced Features =====
+  enableScreenReader: true,        // Built-in text-to-speech
+  enableVoiceControl: true,        // Voice command control
+  enableFontSelection: true,       // Font family selection
+  enableColorFilter: true,         // Color blindness filters
 
   // ===== Widget Layout =====
   widgetWidth: '440px',
-  widgetColumns: 2, // Grid columns (1-4)
+  
+  // ===== Grid Configuration =====
+  gridLayout: {
+    columns: '1fr 1fr',            // Default 2-column grid
+    gap: '10px'                    // Gap between grid items
+  },
   
   // ===== Position =====
   widgetPosition: {
-    side: 'right', // 'left' or 'right'
+    side: 'right',                 // 'left' or 'right'
     right: '20px',
     left: '20px',
     bottom: '20px'
@@ -186,11 +193,11 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
 
   // ===== Colors =====
   colors: {
-    primary: '#1663d7',
-    secondary: '#ffffff',
-    optionBg: '#ffffff',
-    optionText: '#333333',
-    optionIcon: '#000000'
+    primary: '#1663d7',            // Header bg, main button, active borders
+    secondary: '#ffffff',          // Main button icon, header text
+    optionBg: '#ffffff',           // Option button background
+    optionText: '#333333',         // Option button text
+    optionIcon: '#000000'          // Option button icons
   },
 
   // ===== Button Styling =====
@@ -201,17 +208,37 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
     shadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
   },
 
+  // ===== Menu Styling =====
+  menu: {
+    headerHeight: '70px',
+    padding: '0 10px 10px 10px',
+    optionPadding: '20px 10px',
+    optionMargin: '10px',
+    borderRadius: '8px',
+    fontSize: '16px',
+    titleFontSize: '16px',
+    closeButtonSize: '44px'
+  },
+
   // ===== Typography =====
   typography: {
     fontFamily: 'Arial, sans-serif',
     fontSize: '17px',
     titleFontSize: '22px',
-    titleFontWeight: '700'
+    titleFontWeight: '700',
+    lineHeight: '1'
+  },
+
+  // ===== Animation =====
+  animation: {
+    transition: '0.2s',
+    hoverScale: '1.05'
   },
 
   // ===== Internationalization (i18n) =====
   lang: {
     accessibilityMenu: 'Accessibility Menu',
+    closeAccessibilityMenu: 'Close Accessibility Menu',
     accessibilityTools: 'Accessibility Tools',
     resetAllSettings: 'Reset All Settings',
     screenReader: 'Screen Reader',
@@ -226,21 +253,38 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
     colorFilter: 'Color Filter',
     textAlign: 'Text Align',
     textSize: 'Text Size',
-    highContrast: 'High Contrast'
+    highContrast: 'High Contrast',
+    defaultFont: 'Default Font',
+    noFilter: 'No Filter',
+    default: 'Default',
+    screenReaderOn: 'Screen reader on',
+    screenReaderOff: 'Screen reader off',
+    voiceControlActivated: 'Voice control activated',
+    notSupportedBrowser: 'is not supported in this browser',
+    close: 'Close',
+    reset: 'Reset',
+    saturation: 'Saturation',
+    selectLanguage: 'Select Language'
   },
 
-  // ===== Voice Commands =====
+  // ===== Voice Commands (Multi-language Support) =====
   voiceCommands: {
-    showMenu: ['show menu', 'open menu'],
-    highContrast: ['high contrast'],
-    biggerText: ['bigger text', 'large text'],
-    textSpacing: ['text spacing'],
-    pauseAnimations: ['pause animations'],
-    hideImages: ['hide images'],
-    dyslexiaFont: ['dyslexia font'],
-    biggerCursor: ['bigger cursor'],
-    screenReader: ['screen reader'],
-    resetAll: ['reset all', 'reset everything']
+    en: {
+      showMenu: ['show menu', 'open menu', 'accessibility menu', 'access menu'],
+      highContrast: ['high contrast', 'contrast', 'dark mode', 'increase contrast'],
+      biggerText: ['bigger text', 'large text', 'text size', 'increase text', 'bigger', 'larger text', 'text bigger', 'make text bigger', 'enlarge text'],
+      textSpacing: ['text spacing', 'spacing', 'letter spacing', 'text space'],
+      pauseAnimations: ['pause animations', 'stop animations', 'disable animations', 'no animations'],
+      hideImages: ['hide images', 'remove images', 'no images'],
+      dyslexiaFont: ['dyslexia friendly', 'dyslexia font', 'readable font', 'easy font'],
+      biggerCursor: ['bigger cursor', 'large cursor', 'cursor size', 'big cursor'],
+      lineHeight: ['line height', 'line spacing', 'space between lines', 'line space'],
+      textAlign: ['align text', 'text align', 'center text', 'alignment'],
+      screenReader: ['screen reader', 'read aloud', 'voice reader'],
+      voiceControl: ['voice command', 'voice control', 'voice commands'],
+      resetAll: ['reset all', 'reset everything', 'clear all', 'reset settings', 'reset']
+    },
+    // Additional languages: de, es, it, fr, ru, tr, ar, hi, zh-cn, jp available in widget
   }
 };
 ```
