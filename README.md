@@ -7,10 +7,10 @@
 <a href="https://github.com/sponsors/sinanisler">
 <img src="https://img.shields.io/badge/Consider_Supporting_My_Projects_❤-GitHub-d46" width="300" height="auto" />
 </a>
-
+<br>
 
 A comprehensive, zero-dependency accessibility widget that enhances web accessibility for all users. This lightweight, single-file JavaScript solution provides 14+ accessibility features to make your website instantly more inclusive and compliant with WCAG 2.1 AA, Section 508, and EN 301 549 standards.
-
+<br>
 <img width="1793" height="1028" alt="image" src="https://github.com/user-attachments/assets/610138f5-e60d-4297-b5e3-ea040f361209" />
 
 
