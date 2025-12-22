@@ -512,7 +512,6 @@ GPL-3.0 License - See [LICENSE](LICENSE) file for details.
 
 - ⭐ Star this repository
 - 🐛 [Report bugs](https://github.com/sinanisler/accessibility-widgets/issues)
-- 💡 [Request features](https://github.com/sinanisler/accessibility-widgets/issues)
 - ❤️ [Sponsor on GitHub](https://github.com/sponsors/sinanisler)
 
 ## 📊 Stats
