@@ -6,7 +6,7 @@
 
 A comprehensive, zero-dependency accessibility widget that enhances web accessibility for all users. This lightweight, single-file JavaScript solution provides 14+ accessibility features to make your website instantly more inclusive and compliant with WCAG 2.1 AA, Section 508, and EN 301 549 standards.
 
-<img width="1277" height="989" alt="image" src="https://github.com/user-attachments/assets/f6abe245-9d92-4f53-941c-06b77bde1cac" />
+<img width="1793" height="1028" alt="image" src="https://github.com/user-attachments/assets/610138f5-e60d-4297-b5e3-ea040f361209" />
 
 
 ## ⚡ Quick Start
