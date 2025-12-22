@@ -1,12 +1,12 @@
-/*  
-===========================================
+/* ===========================================
+
   ACCESSIBILITY WIDGET
 
   github.com/sinanisler/accessibility-widgets
 
-  npmjs.com/package/accessibility-widgets
-===========================================
-*/
+  github.com/sponsors/sinanisler
+
+=========================================== */
 
 // ===========================================
 // TRANSLATIONS
