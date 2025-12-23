@@ -1377,7 +1377,7 @@ const DEFAULT_WIDGET_CONFIG = {
       colorFilter: ['renk filtresi', 'renk körü', 'filtre'],
       screenReader: ['ekran okuyucu', 'sesli oku', 'ses okuyucu'],
       voiceControl: ['sesli komut', 'sesli kontrol', 'sesli komutlar'],
-      resetAll: ['hepsini sıfırla', 'tümünü sıfırla', 'hepsini temizle', 'ayarları sıfırla']
+      resetAll: ['hepsini sıfırla', 'tümünü sıfırla', 'hepsini temizle', 'ayarları sıfırla','sıfırla']
     },
     ar: {
       showMenu: ['إظهار القائمة', 'فتح القائمة', 'قائمة إمكانية الوصول', 'قائمة الوصول'],
