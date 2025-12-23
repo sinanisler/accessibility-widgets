@@ -1,4 +1,4 @@
-# Accessibility Widgets
+# Accessibility Widgets 
 
 [![npm version](https://badge.fury.io/js/accessibility-widgets.svg)](https://www.npmjs.com/package/accessibility-widgets)
 [![License: GPL](https://img.shields.io/badge/License-GPL-blue.svg)](https://opensource.org/licenses/GPL-3.0)
