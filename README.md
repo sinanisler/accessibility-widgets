@@ -16,7 +16,7 @@ A comprehensive, zero-dependency accessibility widget that enhances web accessib
 <br><br>
 
 
-<img width="1793" height="1028" alt="image" src="https://github.com/user-attachments/assets/610138f5-e60d-4297-b5e3-ea040f361209" />
+<img width="1793" height="auto" alt="image" src="https://github.com/user-attachments/assets/610138f5-e60d-4297-b5e3-ea040f361209" />
 
 ## Supported Language List
 
