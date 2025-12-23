@@ -14,6 +14,11 @@ A comprehensive, zero-dependency accessibility widget that enhances web accessib
 
 <img width="1793" height="1028" alt="image" src="https://github.com/user-attachments/assets/610138f5-e60d-4297-b5e3-ea040f361209" />
 
+## Supported Language List
+
+English, Deutsch, Español, Italiano, Français, Русский, Türkçe, العربية, हिन्दी, 简体中文, 日本語, Português, বাংলা, 한국어, Tiếng Việt, Bahasa Indonesia, ไทย, Polski, Nederlands, Ελληνικά, Svenska, Norsk, Dansk, Suomi, Čeština, Magyar, Română, עברית, فارسی, اردو, ਪੰਜਾਬੀ, मराठी, తెలుగు, தமிழ், Bahasa Melayu, Filipino
+
+
 
 ## ⚡ Quick Start
 
