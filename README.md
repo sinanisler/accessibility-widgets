@@ -27,8 +27,8 @@ English, Deutsch, Español, Italiano, Français, Русский, Türkçe, ال�
 ## ⚡ Quick Start
 
 ```html
-<!-- Include the widget - That's it! -->
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+<!-- Load widget close to the </body> - That's it! -->
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 ```
 
 Or install via NPM:
@@ -95,11 +95,12 @@ require('accessibility-widgets');
 
 ### CDN (Fastest)
 ```html
-<!-- unpkg CDN -->
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
-
 <!-- jsdelivr CDN -->
 <script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
+
+
+<!-- unpkg CDN -->
+<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
 ```
 
 ### NPM
