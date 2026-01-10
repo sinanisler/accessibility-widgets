@@ -2,7 +2,6 @@
 
 [![npm version](https://badge.fury.io/js/accessibility-widgets.svg)](https://www.npmjs.com/package/accessibility-widgets)
 [![License: GPL](https://img.shields.io/badge/License-GPL-blue.svg)](https://opensource.org/licenses/GPL-3.0)
-[![CDN](https://img.shields.io/badge/CDN-unpkg-orange.svg)](https://unpkg.com/accessibility-widgets)
 [![](https://data.jsdelivr.com/v1/package/npm/accessibility-widgets/badge)](https://www.jsdelivr.com/package/npm/accessibility-widgets)
 
 <a href="https://github.com/sponsors/sinanisler">
