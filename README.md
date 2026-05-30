@@ -100,7 +100,7 @@ require('accessibility-widgets');
 
 
 <!-- unpkg CDN -->
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 ```
 
 ### NPM
@@ -129,7 +129,7 @@ require('accessibility-widgets/widget.js');
 The widget works out of the box with zero configuration:
 
 ```html
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 ```
 
 ### Custom Configuration
@@ -157,7 +157,7 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
   }
 };
 </script>
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 ```
 
 ### Full Configuration Options
@@ -320,7 +320,7 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
   }
 };
 </script>
-<script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 ```
 
 ## 🎤 Voice Commands
@@ -423,7 +423,7 @@ Cycle through Arial (modern sans-serif), Times New Roman (traditional serif), an
     <p>This site is fully accessible.</p>
     
     <!-- Add widget - automatically initializes -->
-    <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 </body>
 </html>
 ```
@@ -455,7 +455,7 @@ Cycle through Arial (modern sans-serif), Times New Roman (traditional serif), an
       }
     };
     </script>
-    <script src="https://unpkg.com/accessibility-widgets@latest/widget.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 </body>
 </html>
 ```
