@@ -98,9 +98,6 @@ require('accessibility-widgets');
 <!-- jsdelivr CDN -->
 <script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 
-
-<!-- unpkg CDN -->
-<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
 ```
 
 ### NPM
