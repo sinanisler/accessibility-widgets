@@ -1133,7 +1133,20 @@ function setLanguage(lang) {
 }
 
 function getTranslation(key) {
-  return TRANSLATIONS[currentLanguage][key] || TRANSLATIONS['en'][key] || key;
+  // Check current language translations first
+  if (TRANSLATIONS[currentLanguage] && TRANSLATIONS[currentLanguage][key]) {
+    return TRANSLATIONS[currentLanguage][key];
+  }
+  // Fallback to user-configured lang overrides
+  if (WIDGET_CONFIG.lang && WIDGET_CONFIG.lang[key]) {
+    return WIDGET_CONFIG.lang[key];
+  }
+  // Fallback to English translations
+  if (TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) {
+    return TRANSLATIONS['en'][key];
+  }
+  // Last resort: return the key itself
+  return key;
 }
 
 // Initialize language from localStorage or detect from browser
@@ -2211,6 +2224,19 @@ const widgetStyles = `
     word-spacing: 2px !important;
     text-align: left;
   }
+  
+  /* Screen-reader-only utility for live announcements */
+  .snn-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 `;
 
 // Page accessibility styles (will go in main document - these affect the page, NOT the widget)
@@ -2470,12 +2496,33 @@ function createShadowContainer() {
   styleElement.textContent = widgetStyles;
   shadowRoot.appendChild(styleElement);
 
+  // Create aria-live region for screen reader announcements
+  const liveRegion = document.createElement('div');
+  liveRegion.id = 'snn-live-region';
+  liveRegion.setAttribute('aria-live', 'polite');
+  liveRegion.setAttribute('aria-atomic', 'true');
+  liveRegion.classList.add('snn-sr-only');
+  shadowRoot.appendChild(liveRegion);
+
   return shadowRoot;
 }
 
 // ===========================================
 // CORE UTILITY FUNCTIONS
 // ===========================================
+
+// Announce a change to screen reader users via the live region
+function announceChange(message) {
+  if (!shadowRoot) return;
+  const liveRegion = shadowRoot.getElementById('snn-live-region');
+  if (!liveRegion) return;
+  // Clear then set to ensure announcement even for repeated messages
+  liveRegion.textContent = '';
+  // Use requestAnimationFrame to ensure DOM update before setting new text
+  requestAnimationFrame(() => {
+    liveRegion.textContent = message;
+  });
+}
 
 // Cache for DOM elements to improve performance
 const domCache = {
@@ -2800,6 +2847,9 @@ function resetAccessibilitySettings() {
     const steps = button.querySelectorAll('.snn-option-step');
     steps.forEach(step => step.classList.remove('active'));
   });
+
+  // Announce reset to screen reader users
+  announceChange(getTranslation('resetAllSettings'));
 }
 
 // Create toggle buttons for accessibility options
@@ -2877,6 +2927,9 @@ function createToggleButton(
         targetElement.classList.remove(className);
       }
     }
+
+    // Announce change to screen reader users
+    announceChange(buttonText);
   }
 
   return button;
@@ -2916,6 +2969,7 @@ function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig =
     const result = actionFunction();
     if (result) {
       updateActionButtonStatus(button, optionId, optionsConfig);
+      announceChange(buttonText + ': ' + result);
     }
   });
 
@@ -2925,6 +2979,7 @@ function createActionButton(buttonText, actionFunction, iconSVG, optionsConfig =
       const result = actionFunction();
       if (result) {
         updateActionButtonStatus(button, optionId, optionsConfig);
+        announceChange(buttonText + ': ' + result);
       }
     }
   });
@@ -3383,6 +3438,11 @@ const voiceControl = {
     }
 
     try {
+      // Abort any existing recognition instance before creating a new one
+      if (voiceControl.recognition) {
+        try { voiceControl.recognition.abort(); } catch (e) { /* ignore */ }
+        voiceControl.recognition = null;
+      }
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       voiceControl.recognition = new SpeechRecognition();
       voiceControl.recognition.interimResults = false;
