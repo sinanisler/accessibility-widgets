@@ -17,7 +17,7 @@ A comprehensive, zero-dependency accessibility widget that enhances web accessib
 
 
 
-## ⚡ Quick Start
+## ⚡ Quick Easy Install
 
 Add widget script close to the ```</body>``` - That's it!
 
