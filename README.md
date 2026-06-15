@@ -16,20 +16,23 @@ A comprehensive, zero-dependency accessibility widget that enhances web accessib
 <br><br>
 
 
+
+## ⚡ Quick Start
+
+Add widget script close to the ```</body>``` - That's it!
+
+```html
+
+<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
+```
+
+
 <img width="1793" height="auto" alt="image" src="https://github.com/user-attachments/assets/610138f5-e60d-4297-b5e3-ea040f361209" />
 
 ## Supported Language List
 
 English, Deutsch, Español, Italiano, Français, Русский, Türkçe, العربية, हिन्दी, 简体中文, 日本語, Português, বাংলা, 한국어, Tiếng Việt, Bahasa Indonesia, ไทย, Polski, Nederlands, Ελληνικά, Svenska, Norsk, Dansk, Suomi, Čeština, Magyar, Română, עברית, فارسی, اردو, ਪੰਜਾਬੀ, मराठी, తెలుగు, தமிழ், Bahasa Melayu, Filipino
 
-
-
-## ⚡ Quick Start
-
-```html
-<!-- Load widget close to the </body> - That's it! -->
-<script src="https://cdn.jsdelivr.net/npm/accessibility-widgets@latest/widget.js"></script>
-```
 
 Or install via NPM:
 
