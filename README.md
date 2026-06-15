@@ -9,7 +9,7 @@
 </a>
 <br><br>
 
-A comprehensive, zero-dependency accessibility widget that enhances web accessibility for all users. This lightweight, single-file JavaScript solution provides 14+ accessibility features to make your website instantly more inclusive and compliant with WCAG 2.1 AA, Section 508, and EN 301 549 standards.
+A comprehensive, zero-dependency accessibility widget that enhances web accessibility for all users. This lightweight, single-file JavaScript solution provides 16+ accessibility features to make your website instantly more inclusive and compliant with WCAG 2.1 AA, Section 508, and EN 301 549 standards.
 <br><br>
 
 > **Note**: This widget helps meet accessibility criteria but does not guarantee full compliance. Complete WCAG/Section 508 compliance requires proper HTML semantics, ARIA attributes, manual testing, and user validation.
@@ -53,39 +53,41 @@ require('accessibility-widgets');
 - **High Contrast Mode** - 3 levels (Medium 1.3x, High 1.5x, Ultra 2.0x) for improved visibility
 - **Text Size Control** - 4 size options (Default, Medium 20px, Large 24px, X-Large 28px)
 - **Line Height Adjustment** - 3 spacing levels (2em, 3em, 4em) for better readability
-- **Text Spacing** - Enhanced letter (0.2em) and word spacing (0.3em)
+- **Text Spacing** - 3 levels (Light 0.1em/0.5em, Medium 0.15em/1em, Heavy 0.25em/2em letter/word spacing)
 - **Text Alignment** - Left, Center, or Right alignment options
-- **Bigger Cursor** - High-contrast 48x72px cursor with SVG rendering
+- **Bigger Cursor** - High-contrast ~29×44px SVG cursor for better visibility
 - **Hide Images** - Text-only mode for focused reading or bandwidth saving
+- **Saturation Control** - 3 levels (Low 0.5x, High 10x, None/grayscale) for color intensity adjustment
 
 ### 🧠 Cognitive Support
 - **Dyslexia-Friendly Font** - Comic Sans MS and other dyslexia-optimized fonts
 - **Font Selection** - Choose between Arial, Times New Roman, or Verdana
-- **Animation Control** - Pause all animations and transitions
-- **Reduced Motion** - Motion sensitivity support for vestibular disorders
+- **Animation Control** - Pause all animations, transitions, and reduced motion (bundled feature for vestibular disorders)
 
 ### ♿ Assistive Technology
 - **Screen Reader** - Built-in text-to-speech using Web Speech API
-- **Voice Control** - Hands-free navigation with 15+ voice commands
+- **Voice Control** - Hands-free navigation with 16 voice commands
 - **Color Blindness Filters** - Protanopia, Deuteranopia, Tritanopia, and Grayscale modes
 - **Keyboard Navigation** - Full Tab/Arrow key support with proper focus indicators
 
 ## 📊 Compliance & Standards
 
-### WCAG 2.1 AA Coverage
+### WCAG 2.1 AA & AAA Coverage
+
+*Note: Some criteria below are AAA-level (1.4.6, 1.4.8, 2.3.3, 2.5.5). The core widget targets AA conformance.*
 
 | Feature | WCAG Criteria | EU EN 301 549 | US Section 508 |
 |---------|---------------|---------------|----------------|
-| High Contrast Mode | ✅ 1.4.3, 1.4.6 | ✅ | ✅ |
+| High Contrast Mode | ✅ 1.4.3, 1.4.6 (AAA) | ✅ | ✅ |
 | Text Size Adjustment | ✅ 1.4.4 | ✅ | ✅ |
 | Text Spacing | ✅ 1.4.12 | ✅ | ✅ |
 | Line Height Adjustment | ✅ 1.4.12 | ✅ | ✅ |
-| Text Alignment | ✅ 1.4.8 | ✅ | ✅ |
-| Cursor Enhancement | ✅ 2.5.5 | ✅ | ✅ |
-| Pause Animations | ✅ 2.2.2, 2.3.3 | ✅ | ✅ |
-| Reduced Motion | ✅ 2.3.3 | ✅ | ✅ |
+| Text Alignment | ✅ 1.4.8 (AAA) | ✅ | ✅ |
+| Cursor Enhancement | ✅ 2.5.5 (AAA) | ✅ | ✅ |
+| Pause Animations | ✅ 2.2.2, 2.3.3 (AAA) | ✅ | ✅ |
+| Saturation Control | ✅ 1.4.1 | ✅ | ✅ |
 | Hide Images | ✅ 1.1.1 | ✅ | ✅ |
-| Dyslexia-Friendly Font | ✅ 1.4.8 | ✅ | ✅ |
+| Dyslexia-Friendly Font | ✅ 1.4.8 (AAA) | ✅ | ✅ |
 | Screen Reader | ✅ 4.1.3 | ✅ | ✅ |
 | Voice Control | ⚠️ Browser API | ⚠️ | ⚠️ |
 | Color Filters | ✅ 1.4.1 | ✅ | ✅ |
@@ -313,10 +315,12 @@ window.ACCESSIBILITY_WIDGET_CONFIG = {
     resetAllSettings: 'Restablecer Todo'
   },
   voiceCommands: {
-    showMenu: ['mostrar menú', 'abrir menú'],
-    highContrast: ['alto contraste'],
-    biggerText: ['texto grande', 'texto más grande'],
-    resetAll: ['reiniciar todo']
+    es: {
+      showMenu: ['mostrar menú', 'abrir menú'],
+      highContrast: ['alto contraste'],
+      biggerText: ['texto grande', 'texto más grande'],
+      resetAll: ['reiniciar todo']
+    }
   }
 };
 </script>
@@ -338,7 +342,12 @@ When voice control is enabled (Chrome/Edge only), use these commands:
 | "dyslexia font" | Activates dyslexia-friendly font |
 | "bigger cursor" | Enlarges cursor |
 | "line height" | Adjusts line spacing |
+| "text align" | Cycles text alignment (left/center/right) |
+| "saturation" | Cycles saturation (low/high/none) |
+| "font selection" / "change font" | Cycles font family |
+| "color filter" | Cycles color blindness filters |
 | "screen reader" | Activates text-to-speech |
+| "voice command" / "voice control" | Toggles voice control on/off |
 | "reset all" | Resets all settings |
 
 *All commands are fully customizable via `voiceCommands` configuration*## 📚 Feature Details
@@ -353,13 +362,16 @@ Three contrast enhancement levels:
 Four size options (Default, Medium 20px, Large 24px, X-Large 28px) with smart widget exclusion to maintain UI consistency.
 
 ### Text Spacing
-Enhanced letter spacing (0.2em) and word spacing (0.3em) for improved readability, especially helpful for dyslexia.
+Three spacing levels for improved readability, especially helpful for dyslexia:
+- **Light**: letter-spacing 0.1em, word-spacing 0.5em
+- **Medium**: letter-spacing 0.15em, word-spacing 1em
+- **Heavy**: letter-spacing 0.25em, word-spacing 2em
 
 ### Line Height Adjustment
 Three spacing levels (2em, 3em, 4em) to reduce visual crowding and improve reading flow.
 
 ### Animation Control
-Completely disables CSS animations and transitions - critical for users with vestibular disorders or ADHD.
+Completely disables CSS animations and transitions (including `::before`/`::after` pseudo-elements). Also provides reduced motion support — critical for users with vestibular disorders or ADHD.
 
 ### Image Hiding
 Text-only mode with smart caching (5-second intervals) to catch dynamically loaded images.
@@ -368,16 +380,22 @@ Text-only mode with smart caching (5-second intervals) to catch dynamically load
 Uses Comic Sans MS and fallback fonts optimized for dyslexia (Chalkboard SE, Bradley Hand, Brush Script MT).
 
 ### Cursor Enhancement
-Custom 48x72px SVG cursor with high-contrast black fill and white stroke for better visibility.
+Custom ~29×44px SVG cursor with high-contrast black fill and white stroke for better visibility.
 
 ### Screen Reader (Text-to-Speech)
 Built-in TTS using Web Speech API - reads focused element text, alt attributes, and titles.
 
 ### Voice Control
-Hands-free operation with Web Speech Recognition API. Supports 15+ customizable commands.
+Hands-free operation with Web Speech Recognition API. Supports 16 customizable commands.
 
 ### Color Blindness Filters
 SVG-based filters for Protanopia (red-blind), Deuteranopia (green-blind), Tritanopia (blue-blind), and Grayscale modes.
+
+### Saturation Control
+Three saturation levels for color intensity adjustment:
+- **Low**: 0.5x saturation for reduced color intensity
+- **High**: 10x saturation for boosted color vibrancy
+- **None**: Full grayscale (desaturated) display
 
 ### Font Selection
 Cycle through Arial (modern sans-serif), Times New Roman (traditional serif), and Verdana (screen-optimized).
