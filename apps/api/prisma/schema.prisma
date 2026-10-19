@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  users     User[]
+  sites     Site[]
+  licenses  License[]
+}
+
+model User {
+  id             String       @id @default(cuid())
+  email          String       @unique
+  name           String?
+  role           String       @default("admin")
+  passwordHash   String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  versions       ConfigVersion[]
+}
+
+model Site {
+  id             String          @id @default(cuid())
+  name           String
+  domain         String
+  siteKey        String          @unique
+  organizationId String
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  config         WidgetConfig?
+  versions       ConfigVersion[]
+  scans          ScanReport[]
+  events         UsageEvent[]
+  createdAt      DateTime        @default(now())
+}
+
+model License {
+  id             String       @id @default(cuid())
+  plan           String       @default("starter")
+  status         String       @default("active")
+  domains        String       @default("*")
+  expiresAt      DateTime?
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+}
+
+model WidgetConfig {
+  id                 String   @id @default(cuid())
+  siteId             String   @unique
+  site               Site     @relation(fields: [siteId], references: [id])
+  json               String   @default("{}")
+  draftJson          String   @default("{}")
+  publishedVersionId String?
+  updatedAt          DateTime @updatedAt
+}
+
+model ConfigVersion {
+  id          String   @id @default(cuid())
+  siteId      String
+  site        Site     @relation(fields: [siteId], references: [id])
+  json        String
+  note        String?
+  createdById String?
+  createdBy   User?    @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model ScanReport {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id])
+  url       String
+  score     Int
+  json      String
+  createdAt DateTime @default(now())
+}
+
+model UsageEvent {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id])
+  event     String
+  featureId String?
+  path      String?
+  createdAt DateTime @default(now())
+}

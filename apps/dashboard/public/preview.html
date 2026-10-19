@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>معاينة الودجت</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Tajawal, system-ui, sans-serif;
+        margin: 0;
+        line-height: 1.7;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      header {
+        background: linear-gradient(135deg, #4f46e5, #0ea5e9);
+        color: #fff;
+        padding: 1.5rem 1.25rem;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+      section {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      a { color: #2563eb; }
+      .hint {
+        position: fixed;
+        top: 8px;
+        inset-inline-start: 8px;
+        background: #111827;
+        color: #fff;
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        z-index: 10;
+        opacity: 0.7;
+      }
+    </style>
+    <script>
+      window.ACCESSIBILITY_WIDGET_CONFIG = {
+        language: "ar",
+        enableAnalytics: false,
+        persistPreferences: false,
+      };
+      window.__MUNEER_PREVIEW__ = true;
+    </script>
+  </head>
+  <body>
+    <div class="hint">معاينة حية</div>
+    <header>
+      <h1>صفحة معاينة</h1>
+      <p>جرّب إعدادات الأدمن مباشرة على هذه الصفحة.</p>
+    </header>
+    <main>
+      <section>
+        <h2>نص تجريبي</h2>
+        <p>
+          إمكانية الوصول الرقمي تجعل المحتوى قابلاً للاستخدام من قبل الجميع.
+          استخدم الزر العائم لتجربة الخصائص.
+        </p>
+        <p><a href="#more">رابط تجريبي</a> و<strong>نص عريض</strong>.</p>
+      </section>
+      <section id="more">
+        <h2>عنوان ثانٍ</h2>
+        <p>محتوى إضافي لاختبار التباين وتكبير النص ودليل القراءة.</p>
+        <button type="button">زر تجريبي</button>
+      </section>
+    </main>
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var allowedOrigins = [
+          window.location.origin,
+          "http://127.0.0.1:5173",
+          "http://localhost:5173",
+        ];
+        var widgetSrc = "http://127.0.0.1:5173/src/index.ts";
+        try {
+          var requested = new URL(params.get("widget") || widgetSrc, window.location.href);
+          if (allowedOrigins.indexOf(requested.origin) !== -1) widgetSrc = requested.href;
+        } catch (e) {}
+        var s = document.createElement("script");
+        if (widgetSrc.endsWith(".ts") || widgetSrc.includes("5173")) {
+          s.type = "module";
+        }
+        s.src = widgetSrc;
+        document.body.appendChild(s);
+      })();
+    </script>
+  </body>
+</html>

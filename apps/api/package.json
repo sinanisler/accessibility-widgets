@@ -1,0 +1,36 @@
+{
+  "name": "@a11y/api",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup src/server.ts --format esm --clean",
+    "start": "node dist/server.js",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "echo \"ok\"",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@a11y/core": "workspace:*",
+    "@a11y/scanner": "workspace:*",
+    "@hono/node-server": "^1.14.1",
+    "@node-rs/argon2": "^2.2.2",
+    "@prisma/client": "^6.5.0",
+    "hono": "^4.7.5",
+    "jose": "^6.2.12",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "prisma": "^6.5.0",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.1"
+  }
+}

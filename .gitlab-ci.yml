@@ -1,0 +1,70 @@
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+stages:
+  - quality
+  - test
+  - secret-detection
+  - build
+
+variables:
+  PNPM_HOME: /root/.local/share/pnpm
+  PNPM_STORE_PATH: "$CI_PROJECT_DIR/.pnpm-store"
+  SECRET_DETECTION_ENABLED: "true"
+
+# Kept off `default` so the SAST/secret-detection analyzer images are not affected.
+.node:
+  image: node:20
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@10.22.0 --activate
+    - pnpm config set store-dir "$PNPM_STORE_PATH"
+    - pnpm install --frozen-lockfile
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+
+sast:
+  stage: test
+
+secret_detection:
+  stage: secret-detection
+
+lint_typecheck:
+  extends: .node
+  stage: quality
+  needs: []
+  script:
+    - pnpm --filter @a11y/core build
+    - pnpm typecheck
+  allow_failure: true
+
+test:
+  extends: .node
+  stage: quality
+  needs: []
+  script:
+    - pnpm --filter @a11y/core build
+    - pnpm --filter @a11y/core test
+    - pnpm --filter @a11y/widget test
+    - pnpm --filter @a11y/scanner test
+    - pnpm --filter @a11y/api test
+
+build:
+  extends: .node
+  stage: build
+  needs: ["test"]
+  script:
+    - pnpm --filter @a11y/core build
+    - pnpm --filter @a11y/fonts build
+    - pnpm --filter @a11y/widget build
+    - pnpm --filter @a11y/scanner build
+    - node scripts/check-widget-size.mjs
+  artifacts:
+    paths:
+      - packages/widget/dist
+    expire_in: 1 week
