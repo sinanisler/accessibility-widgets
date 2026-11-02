@@ -11,7 +11,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["Tajawal", "system-ui", "sans-serif"],
+        sans: ["IBM Plex Sans Arabic", "system-ui", "sans-serif"],
       },
     },
   },

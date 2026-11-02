@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ar" dir="rtl">
       <head>
         <link
-          href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap"
           rel="stylesheet"
         />
       </head>

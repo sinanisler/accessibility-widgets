@@ -25,7 +25,7 @@ export function panelStyles(opts: {
 
   return `
 :host { all: initial; }
-* { box-sizing: border-box; font-family: Tajawal, system-ui, -apple-system, sans-serif; }
+* { box-sizing: border-box; font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
