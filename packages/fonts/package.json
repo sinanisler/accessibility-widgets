@@ -15,8 +15,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"no tests\"",
-    "lint": "echo \"ok\""
+    "test": "echo \"no tests\""
   },
   "devDependencies": {
     "tsup": "^8.4.0",

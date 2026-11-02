@@ -12,7 +12,6 @@
     "db:generate": "prisma generate",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "echo \"ok\"",
     "postinstall": "prisma generate"
   },
   "dependencies": {

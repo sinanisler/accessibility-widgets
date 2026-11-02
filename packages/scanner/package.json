@@ -12,8 +12,7 @@
     "build": "tsup src/index.ts src/cli.ts --format esm --dts --clean",
     "cli": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "lint": "echo \"ok\""
+    "test": "vitest run"
   },
   "dependencies": {
     "@a11y/core": "workspace:*",

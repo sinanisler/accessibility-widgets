@@ -15,7 +15,7 @@ variables:
 
 # Kept off `default` so the SAST/secret-detection analyzer images are not affected.
 .node:
-  image: node:20
+  image: node:22
   before_script:
     - corepack enable
     - corepack prepare pnpm@10.22.0 --activate
@@ -40,8 +40,8 @@ lint_typecheck:
   needs: []
   script:
     - pnpm --filter @a11y/core build
+    - pnpm lint
     - pnpm typecheck
-  allow_failure: true
 
 test:
   extends: .node
@@ -54,6 +54,15 @@ test:
     - pnpm --filter @a11y/scanner test
     - pnpm --filter @a11y/api test
 
+e2e:
+  extends: .node
+  stage: test
+  needs: []
+  script:
+    - pnpm --filter @a11y/core build
+    - pnpm --filter @a11y/widget exec playwright install --with-deps chromium
+    - pnpm test:e2e
+
 build:
   extends: .node
   stage: build
@@ -63,6 +72,7 @@ build:
     - pnpm --filter @a11y/fonts build
     - pnpm --filter @a11y/widget build
     - pnpm --filter @a11y/scanner build
+    - pnpm --filter @a11y/dashboard build
     - node scripts/check-widget-size.mjs
   artifacts:
     paths:
