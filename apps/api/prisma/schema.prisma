@@ -22,6 +22,7 @@ model User {
   name           String?
   role           String       @default("admin")
   passwordHash   String
+  tokenVersion   Int          @default(0)
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
   createdAt      DateTime     @default(now())

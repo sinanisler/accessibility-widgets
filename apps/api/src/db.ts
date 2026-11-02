@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { DEFAULT_WIDGET_CONFIG, mergeWidgetConfig } from "@a11y/core";
+import { mergeWidgetConfig } from "@a11y/core";
 import { hashPassword } from "./password.js";
 
 export const prisma = new PrismaClient();
@@ -18,6 +18,9 @@ export async function ensureSeed(): Promise<void> {
     return;
   }
 
+  if (process.env.NODE_ENV === "production" && !process.env.SEED_ADMIN_PASSWORD) {
+    throw new Error("SEED_ADMIN_PASSWORD must be set to create the first admin in production");
+  }
   const passwordHash = await hashPassword(process.env.SEED_ADMIN_PASSWORD || "admin123");
   const initialConfig = mergeWidgetConfig({
     language: "ar",
@@ -59,5 +62,4 @@ export async function ensureSeed(): Promise<void> {
     },
   });
 
-  void DEFAULT_WIDGET_CONFIG;
 }

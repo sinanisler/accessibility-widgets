@@ -1,25 +1,32 @@
 import { createHash, randomBytes } from "node:crypto";
-import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
+import { secureHeaders } from "hono/secure-headers";
 import { z } from "zod";
 import {
   checkPrimaryContrast,
   mergeWidgetConfig,
   widgetConfigSchema,
 } from "@a11y/core";
-import { ensureSeed, prisma } from "./db.js";
+import { prisma } from "./db.js";
 import {
   assertSiteAccess,
   canWrite,
   clearSessionCookie,
   createSessionToken,
+  readRequestToken,
+  readSessionUser,
   requireAuth,
   setSessionCookie,
   verifyPassword,
+  verifyPasswordOrWaste,
   type AppVariables,
 } from "./auth.js";
-import { clientKey, rateLimit } from "./rate-limit.js";
+import { normalizeDomain, originAllowed } from "./domains.js";
+import { clientIp, clientKey, rateLimit } from "./rate-limit.js";
+import { scanTargetError } from "./scan-target.js";
 
 const app = new Hono<{ Variables: AppVariables }>();
 
@@ -46,7 +53,11 @@ app.use(
   }),
 );
 
+app.use("*", secureHeaders({ crossOriginResourcePolicy: "cross-origin" }));
+app.use("*", bodyLimit({ maxSize: 1024 * 1024 }));
+
 app.onError((err, c) => {
+  if (err instanceof HTTPException) return err.getResponse();
   if (err instanceof z.ZodError) {
     return c.json({ error: "Invalid request", details: err.flatten() }, 400);
   }
@@ -68,21 +79,17 @@ function parseConfigJson(raw: string | null | undefined) {
   }
 }
 
-function hostAllowed(originOrReferer: string, domain: string, licenseDomains: string): boolean {
-  if (licenseDomains === "*") return true;
-  if (!originOrReferer) return true;
-  try {
-    const host = new URL(originOrReferer).hostname;
-    return host === domain || host.endsWith(`.${domain}`);
-  } catch {
-    return false;
-  }
+/** A license counts only while active and unexpired. */
+function activeLicense<T extends { status: string; expiresAt: Date | null }>(licenses: T[]): T | undefined {
+  const now = Date.now();
+  return licenses.find(
+    (l) => l.status === "active" && (!l.expiresAt || l.expiresAt.getTime() > now),
+  );
 }
 
 app.get("/v1/config/:siteKey", async (c) => {
   const siteKey = c.req.param("siteKey");
-  const ip = c.req.header("x-forwarded-for") || "local";
-  if (!rateLimit(clientKey(ip, "config"), 120, 60_000)) {
+  if (!rateLimit(clientKey(clientIp(c), "config"), 120, 60_000)) {
     return c.json({ error: "Rate limit exceeded" }, 429);
   }
 
@@ -92,11 +99,11 @@ app.get("/v1/config/:siteKey", async (c) => {
   });
   if (!site) return c.json({ error: "Site not found" }, 404);
 
-  const license = site.organization.licenses.find((l) => l.status === "active");
+  const license = activeLicense(site.organization.licenses);
   if (!license) return c.json({ error: "No active license" }, 403);
 
-  const host = c.req.header("origin") || c.req.header("referer") || "";
-  if (host && !hostAllowed(host, site.domain, license.domains)) {
+  const origin = c.req.header("origin") || c.req.header("referer") || "";
+  if (!originAllowed(origin, site.domain, license.domains)) {
     return c.json({ error: "Domain not allowed" }, 403);
   }
 
@@ -114,55 +121,62 @@ const eventsSchema = z.object({
   events: z
     .array(
       z.object({
-        siteKey: z.string(),
-        event: z.string(),
-        featureId: z.string().optional(),
-        timestamp: z.string().optional(),
-        path: z.string().optional(),
+        siteKey: z.string().max(128),
+        event: z.enum(["widget_init", "feature_toggle", "reset"]),
+        featureId: z.string().max(64).optional(),
+        timestamp: z.string().max(40).optional(),
+        path: z.string().max(512).optional(),
       }),
     )
     .max(50),
 });
 
-app.post("/v1/events", async (c) => {
-  const ip = c.req.header("x-forwarded-for") || "local";
-  if (!rateLimit(clientKey(ip, "events"), 60, 60_000)) {
+app.post("/v1/events", bodyLimit({ maxSize: 64 * 1024 }), async (c) => {
+  if (!rateLimit(clientKey(clientIp(c), "events"), 60, 60_000)) {
     return c.json({ error: "Rate limit exceeded" }, 429);
   }
 
   const body = eventsSchema.parse(await c.req.json());
-  for (const ev of body.events) {
-    const site = await prisma.site.findUnique({
-      where: { siteKey: ev.siteKey },
-      include: { organization: { include: { licenses: true } } },
-    });
-    if (!site) continue;
-    const license = site.organization.licenses.find((l) => l.status === "active");
-    const host = c.req.header("origin") || c.req.header("referer") || "";
-    if (license && host && !hostAllowed(host, site.domain, license.domains)) continue;
-    await prisma.usageEvent.create({
-      data: {
-        siteId: site.id,
-        event: ev.event,
-        featureId: ev.featureId,
-        path: ev.path,
-      },
-    });
+  const siteKeys = [...new Set(body.events.map((ev) => ev.siteKey))];
+  const sites = await prisma.site.findMany({
+    where: { siteKey: { in: siteKeys } },
+    include: { organization: { include: { licenses: true } } },
+  });
+
+  const origin = c.req.header("origin") || c.req.header("referer") || "";
+  const siteIds = new Map<string, string>();
+  for (const site of sites) {
+    const license = activeLicense(site.organization.licenses);
+    if (license && originAllowed(origin, site.domain, license.domains)) {
+      siteIds.set(site.siteKey, site.id);
+    }
   }
-  return c.json({ accepted: body.events.length });
+
+  const rows = body.events.flatMap((ev) => {
+    const siteId = siteIds.get(ev.siteKey);
+    return siteId ? [{ siteId, event: ev.event, featureId: ev.featureId, path: ev.path }] : [];
+  });
+  if (rows.length) await prisma.usageEvent.createMany({ data: rows });
+  return c.json({ accepted: rows.length });
 });
 
 app.post("/v1/auth/login", async (c) => {
-  const ip = c.req.header("x-forwarded-for") || "local";
-  if (!rateLimit(clientKey(ip, "login"), 10, 60_000)) {
+  if (!rateLimit(clientKey(clientIp(c), "login"), 10, 60_000)) {
     return c.json({ error: "Rate limit exceeded" }, 429);
   }
   const body = z
-    .object({ email: z.string().email(), password: z.string().min(1) })
+    .object({ email: z.string().max(254).email(), password: z.string().min(1).max(256) })
     .parse(await c.req.json());
+  const email = body.email.toLowerCase();
+  if (!rateLimit(clientKey(email, "login-account"), 20, 5 * 60_000)) {
+    return c.json({ error: "Rate limit exceeded" }, 429);
+  }
 
-  const user = await prisma.user.findUnique({ where: { email: body.email.toLowerCase() } });
-  if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
+  const user = await prisma.user.findUnique({ where: { email } });
+  const passwordOk = user
+    ? await verifyPassword(body.password, user.passwordHash)
+    : await verifyPasswordOrWaste(body.password);
+  if (!user || !passwordOk) {
     return c.json({ error: "Invalid credentials" }, 401);
   }
 
@@ -173,12 +187,20 @@ app.post("/v1/auth/login", async (c) => {
     organizationId: user.organizationId,
     name: user.name,
   };
-  const token = await createSessionToken(authUser);
+  const token = await createSessionToken(authUser, user.tokenVersion);
   setSessionCookie(c, token);
   return c.json({ user: authUser, token });
 });
 
 app.post("/v1/auth/logout", async (c) => {
+  const session = await readSessionUser(readRequestToken(c));
+  if (session) {
+    // Bumping the version revokes every token issued to this user so far.
+    await prisma.user.updateMany({
+      where: { id: session.id },
+      data: { tokenVersion: { increment: 1 } },
+    });
+  }
   clearSessionCookie(c);
   return c.json({ ok: true });
 });
@@ -220,16 +242,18 @@ app.post("/v1/sites", requireAuth, async (c) => {
 
   const body = z
     .object({
-      name: z.string().min(1),
-      domain: z.string().min(1),
+      name: z.string().trim().min(1).max(120),
+      domain: z.string().min(1).max(253),
     })
     .parse(await c.req.json());
+  const domain = normalizeDomain(body.domain);
+  if (!domain) return c.json({ error: "Invalid domain" }, 400);
 
   const initial = mergeWidgetConfig({ language: "ar" });
   const site = await prisma.site.create({
     data: {
       name: body.name,
-      domain: body.domain,
+      domain,
       siteKey: `sk_${randomBytes(12).toString("hex")}`,
       organizationId: user.organizationId,
       config: {
@@ -301,6 +325,10 @@ app.post("/v1/sites/:id/config/publish", async (c) => {
   if (!current) return c.json({ error: "No config" }, 404);
 
   const draft = parseConfigJson(current.draftJson);
+  const contrast = checkPrimaryContrast(draft.colors);
+  if (!contrast.passesAa) {
+    return c.json({ error: "Contrast check failed", contrast }, 400);
+  }
   const version = await prisma.configVersion.create({
     data: {
       siteId: site.id,
@@ -397,26 +425,6 @@ app.post("/v1/sites/:id/config/kill-switch", async (c) => {
   return c.json({ enabled: body.enabled, published, draft });
 });
 
-/** Legacy alias — updates draft only for write roles. */
-app.put("/v1/sites/:id/config", async (c) => {
-  const user = c.get("user");
-  if (!canWrite(user.role)) return c.json({ error: "Forbidden" }, 403);
-  const site = await assertSiteAccess(user, c.req.param("id"));
-  if (!site) return c.json({ error: "Not found" }, 404);
-
-  const raw = await c.req.json();
-  const parsed = widgetConfigSchema.safeParse(raw);
-  if (!parsed.success) return c.json({ error: "Invalid config", details: parsed.error.flatten() }, 400);
-  const draft = mergeWidgetConfig(parsed.data);
-
-  const config = await prisma.widgetConfig.upsert({
-    where: { siteId: site.id },
-    create: { siteId: site.id, json: JSON.stringify(draft), draftJson: JSON.stringify(draft) },
-    update: { draftJson: JSON.stringify(draft) },
-  });
-  return c.json(config);
-});
-
 app.get("/v1/sites/:id/analytics", async (c) => {
   const user = c.get("user");
   const site = await assertSiteAccess(user, c.req.param("id"));
@@ -458,47 +466,30 @@ app.get("/v1/scans", async (c) => {
 app.post("/v1/scans", async (c) => {
   const user = c.get("user");
   if (!canWrite(user.role)) return c.json({ error: "Forbidden" }, 403);
-  const ip = c.req.header("x-forwarded-for") || "local";
-  if (!rateLimit(clientKey(ip, "scans"), 5, 60_000)) {
+  if (!rateLimit(clientKey(clientIp(c), "scans"), 5, 60_000)) {
     return c.json({ error: "Rate limit exceeded" }, 429);
   }
 
   const body = z
-    .object({ siteId: z.string(), url: z.string().url() })
+    .object({ siteId: z.string(), url: z.string().max(2048) })
     .parse(await c.req.json());
 
   const site = await assertSiteAccess(user, body.siteId);
   if (!site) return c.json({ error: "Not found" }, 404);
 
-  let target: URL;
-  try {
-    target = new URL(body.url);
-  } catch {
-    return c.json({ error: "Invalid URL" }, 400);
-  }
-  if (!["http:", "https:"].includes(target.protocol)) {
-    return c.json({ error: "Invalid protocol" }, 400);
-  }
-  const host = target.hostname;
-  if (
-    host === "localhost" ||
-    host.startsWith("127.") ||
-    host.startsWith("10.") ||
-    host.startsWith("192.168.") ||
-    host.startsWith("169.254.") ||
-    /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
-    host === "0.0.0.0" ||
-    host.startsWith("[") ||
-    host.endsWith(".local")
-  ) {
-    // Allow localhost only for the site's own domain in development
-    if (site.domain !== "localhost" && process.env.NODE_ENV === "production") {
-      return c.json({ error: "Internal hosts are not allowed" }, 400);
-    }
-  }
+  const refused = await scanTargetError(body.url, site.domain);
+  if (refused) return c.json({ error: refused }, 400);
 
   const { scanUrl } = await import("@a11y/scanner");
-  const report = await scanUrl(body.url);
+  let report;
+  try {
+    report = await scanUrl(body.url, {
+      isAllowed: async (url) => !(await scanTargetError(url, site.domain)),
+    });
+  } catch (err) {
+    console.error(err);
+    return c.json({ error: "Scan target unreachable" }, 422);
+  }
   const saved = await prisma.scanReport.create({
     data: {
       siteId: body.siteId,
@@ -517,13 +508,6 @@ app.get("/v1/users", async (c) => {
     include: { organization: true },
   });
   return c.json(users.map(({ passwordHash: _, ...u }) => u));
-});
-
-const port = Number(process.env.PORT || 8787);
-
-await ensureSeed();
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`API listening on http://127.0.0.1:${port}`);
 });
 
 export default app;

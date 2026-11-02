@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import type { Context, Next } from "hono";
 import { getCookie, setCookie, deleteCookie } from "hono/cookie";
 import { prisma } from "./db.js";
-export { hashPassword, verifyPassword } from "./password.js";
+export { hashPassword, verifyPassword, verifyPasswordOrWaste } from "./password.js";
 
 const COOKIE_NAME = "muneer_session";
 if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
@@ -24,13 +24,14 @@ export type AppVariables = {
   user: AuthUser;
 };
 
-export async function createSessionToken(user: AuthUser): Promise<string> {
+export async function createSessionToken(user: AuthUser, tokenVersion = 0): Promise<string> {
   return new SignJWT({
     sub: user.id,
     email: user.email,
     role: user.role,
     organizationId: user.organizationId,
     name: user.name,
+    tv: tokenVersion,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -38,7 +39,9 @@ export async function createSessionToken(user: AuthUser): Promise<string> {
     .sign(JWT_SECRET);
 }
 
-export async function readSessionUser(token: string): Promise<AuthUser | null> {
+export async function readSessionUser(
+  token: string,
+): Promise<(AuthUser & { tokenVersion: number }) | null> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
     if (!payload.sub || typeof payload.email !== "string") return null;
@@ -48,6 +51,7 @@ export async function readSessionUser(token: string): Promise<AuthUser | null> {
       role: String(payload.role || "viewer"),
       organizationId: String(payload.organizationId || ""),
       name: typeof payload.name === "string" ? payload.name : null,
+      tokenVersion: typeof payload.tv === "number" ? payload.tv : 0,
     };
   } catch {
     return null;
@@ -68,14 +72,28 @@ export function clearSessionCookie(c: Context): void {
   deleteCookie(c, COOKIE_NAME, { path: "/" });
 }
 
-export async function requireAuth(c: Context<{ Variables: AppVariables }>, next: Next) {
-  const token =
+export function readRequestToken(c: Context): string {
+  return (
     getCookie(c, COOKIE_NAME) ||
     c.req.header("authorization")?.replace(/^Bearer\s+/i, "") ||
-    "";
-  const user = token ? await readSessionUser(token) : null;
-  if (!user) return c.json({ error: "Unauthorized" }, 401);
-  c.set("user", user);
+    ""
+  );
+}
+
+/** The database decides the role and whether the token is still valid; the JWT only identifies. */
+export async function requireAuth(c: Context<{ Variables: AppVariables }>, next: Next) {
+  const session = await readSessionUser(readRequestToken(c));
+  const user = session ? await prisma.user.findUnique({ where: { id: session.id } }) : null;
+  if (!session || !user || user.tokenVersion !== session.tokenVersion) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  c.set("user", {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    organizationId: user.organizationId,
+    name: user.name,
+  });
   await next();
 }
 

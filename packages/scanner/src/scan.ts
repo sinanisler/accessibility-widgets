@@ -1,18 +1,8 @@
 import { chromium } from "playwright";
 import axeCore from "axe-core";
 import { runArabicRules } from "./arabic-rules.js";
+import { scoreFromIssues } from "./score.js";
 import type { ScanIssue, ScanReport, Severity } from "./types.js";
-
-function scoreFromIssues(issues: ScanIssue[]): number {
-  const weights: Record<Severity, number> = {
-    critical: 15,
-    serious: 8,
-    moderate: 3,
-    minor: 1,
-  };
-  const penalty = issues.reduce((sum, i) => sum + (weights[i.impact] ?? 1), 0);
-  return Math.max(0, Math.min(100, 100 - penalty));
-}
 
 function summarize(issues: ScanIssue[]): Record<Severity, number> {
   const summary: Record<Severity, number> = {
@@ -25,11 +15,19 @@ function summarize(issues: ScanIssue[]): Record<Severity, number> {
   return summary;
 }
 
-export async function scanUrl(url: string): Promise<ScanReport> {
+export interface ScanOptions {
+  /** Consulted for the final URL after redirects; a refusal aborts before any report is built. */
+  isAllowed?: (url: string) => Promise<boolean>;
+}
+
+export async function scanUrl(url: string, options: ScanOptions = {}): Promise<ScanReport> {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
   try {
     await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+    if (options.isAllowed && !(await options.isAllowed(page.url()))) {
+      throw new Error("Scan redirected to a disallowed host");
+    }
 
     await page.addScriptTag({ content: axeCore.source });
     const axeResults = await page.evaluate(async () => {
