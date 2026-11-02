@@ -1,9 +1,10 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, TextInput } from "@/components/ui";
-import { apiSend } from "@/lib/api";
+import { apiGet, apiSend } from "@/lib/api";
+import { errorMessage } from "@/lib/errors";
 
 export function SiteActions() {
   const router = useRouter();
@@ -12,6 +13,13 @@ export function SiteActions() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
+  const [canWrite, setCanWrite] = useState(false);
+
+  useEffect(() => {
+    apiGet<{ user: { role: string } }>("/v1/auth/me")
+      .then((res) => setCanWrite(res.user.role !== "viewer"))
+      .catch(() => setCanWrite(false));
+  }, []);
 
   async function createSite(e: FormEvent) {
     e.preventDefault();
@@ -26,11 +34,13 @@ export function SiteActions() {
       router.push(`/sites/${site.id}`);
       router.refresh();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "فشل الإنشاء");
+      setMsg(errorMessage(err, "فشل إنشاء الموقع"));
     } finally {
       setBusy(false);
     }
   }
+
+  if (!canWrite) return null;
 
   if (!open) {
     return (
@@ -57,7 +67,11 @@ export function SiteActions() {
       <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
         إلغاء
       </Button>
-      {msg && <span className="text-xs text-slate-500">{msg}</span>}
+      {msg && (
+        <span role="alert" className="text-xs text-red-700">
+          {msg}
+        </span>
+      )}
     </form>
   );
 }

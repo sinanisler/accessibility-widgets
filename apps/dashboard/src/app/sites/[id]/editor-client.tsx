@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  V1_FEATURE_IDS,
   FEATURE_CATALOG,
   checkPrimaryContrast,
   defaultFeatureEntries,
+  featureLabelKey,
+  levelLabelKey,
   mergeWidgetConfig,
+  t,
+  widgetConfigSchema,
   type FeatureConfigEntry,
   type WidgetConfig,
 } from "@a11y/core";
@@ -17,12 +20,16 @@ import {
   ColorInput,
   SelectInput,
   Switch,
+  TAB_PANEL_ID,
   Tabs,
   TextInput,
+  tabId,
 } from "@/components/ui";
 import { apiGet, apiSend, API_BASE } from "@/lib/api";
+import { errorMessage } from "@/lib/errors";
 
 const PREVIEW_ORIGIN = process.env.NEXT_PUBLIC_WIDGET_PREVIEW || "http://127.0.0.1:5173";
+const WIDGET_CDN = process.env.NEXT_PUBLIC_WIDGET_CDN || "https://cdn.example.com/v2/muneer.js";
 const PREVIEW_URL = `/preview.html?widget=${encodeURIComponent(`${PREVIEW_ORIGIN}/src/index.ts`)}`;
 
 type Site = {
@@ -45,25 +52,43 @@ const TABS = [
   { id: "look", label: "الشكل" },
   { id: "text", label: "النصوص" },
   { id: "behavior", label: "السلوك" },
+  { id: "usage", label: "الاستخدام" },
   { id: "install", label: "التثبيت" },
   { id: "history", label: "السجل" },
 ];
 
 function featureLabel(id: string): string {
-  const map: Record<string, string> = {
-    "bigger-text": "تكبير النص",
-    "high-contrast": "تباين عالٍ",
-    "text-spacing": "تباعد النص",
-    "line-height": "ارتفاع الأسطر",
-    "highlight-links": "إبراز الروابط",
-    "highlight-headings": "إبراز العناوين",
-    "strong-focus": "مؤشر التركيز",
-    "pause-animations": "إيقاف الحركة",
-    "reading-guide": "دليل القراءة",
-    "bigger-cursor": "مؤشر أكبر",
-  };
-  return map[id] || id;
+  return t("ar", featureLabelKey(id));
 }
+
+const FIELD_ERRORS: Record<string, string> = {
+  statementUrl: "أدخل رابطاً كاملاً يبدأ بـ https://",
+  buttonSize: "القيمة بين 40 و96",
+  radius: "القيمة بين 0 و32",
+  widgetWidth: "مثال صحيح: 380px",
+  "offset.x": "القيمة بين 0 و400",
+  "offset.y": "القيمة بين 0 و400",
+  openShortcut: "مثال صحيح: Alt+A",
+};
+
+const COLOR_ERROR = "أدخل لون hex مثل #0B5FFF";
+
+/** Numeric fields may be empty while typing; empty means "use the default". */
+function numberOrUndefined(value: string): number | undefined {
+  return value === "" ? undefined : Number(value);
+}
+
+const EVENT_LABELS: Record<string, string> = {
+  widget_init: "مرات تحميل الودجت",
+  feature_toggle: "تغيير الخصائص",
+  reset: "إعادة الضبط",
+};
+
+type Analytics = {
+  total: number;
+  byEvent: Record<string, number>;
+  byFeature: Record<string, number>;
+};
 
 export function EditorClient({ siteId }: { siteId: string }) {
   const [site, setSite] = useState<Site | null>(null);
@@ -73,6 +98,9 @@ export function EditorClient({ siteId }: { siteId: string }) {
   const [localDirty, setLocalDirty] = useState(false);
   const [tab, setTab] = useState("features");
   const [msg, setMsg] = useState("");
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [readOnly, setReadOnly] = useState(false);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [busy, setBusy] = useState(false);
   const [versions, setVersions] = useState<VersionRow[]>([]);
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
@@ -84,13 +112,27 @@ export function EditorClient({ siteId }: { siteId: string }) {
     [draft?.colors],
   );
 
+  const fieldErrors = useMemo(() => {
+    const errors: Record<string, string> = {};
+    const parsed = widgetConfigSchema.safeParse(draft ?? {});
+    if (parsed.success) return errors;
+    for (const issue of parsed.error.issues) {
+      const path = issue.path.join(".");
+      errors[path] = path.startsWith("colors.") ? COLOR_ERROR : FIELD_ERRORS[path] ?? "قيمة غير صالحة";
+    }
+    return errors;
+  }, [draft]);
+  const invalid = Object.keys(fieldErrors).length > 0;
+
   const load = useCallback(async () => {
-    const [s, cfg, vers] = await Promise.all([
+    const [s, cfg, vers, usage, me] = await Promise.all([
       apiGet<Site>(`/v1/sites/${siteId}`),
       apiGet<{ draft: WidgetConfig; published: WidgetConfig; dirty: boolean }>(
         `/v1/sites/${siteId}/config/draft`,
       ),
       apiGet<VersionRow[]>(`/v1/sites/${siteId}/config/versions`),
+      apiGet<Analytics>(`/v1/sites/${siteId}/analytics`),
+      apiGet<{ user: { role: string } }>("/v1/auth/me"),
     ]);
     setSite(s);
     setDraft(mergeWidgetConfig(cfg.draft));
@@ -98,11 +140,27 @@ export function EditorClient({ siteId }: { siteId: string }) {
     setDirty(cfg.dirty);
     setLocalDirty(false);
     setVersions(vers);
+    setAnalytics(usage);
+    setReadOnly(me.user.role === "viewer");
   }, [siteId]);
 
   useEffect(() => {
-    void load().catch(() => setMsg("تعذر تحميل الإعدادات"));
+    void load().catch(() => setLoadFailed(true));
   }, [load]);
+
+  // beforeunload does not cover in-app navigation, so internal links are guarded here.
+  useEffect(() => {
+    if (!localDirty) return;
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element | null)?.closest?.("a[href]");
+      if (link && !window.confirm("لديك تعديلات غير محفوظة. هل تريد المغادرة دون حفظها؟")) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [localDirty]);
 
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -143,7 +201,8 @@ export function EditorClient({ siteId }: { siteId: string }) {
   function update(partial: Partial<WidgetConfig>) {
     setDraft((prev) => {
       if (!prev) return prev;
-      return mergeWidgetConfig({ ...prev, ...partial });
+      // Kept unvalidated so half-typed values stay in the field; checked by fieldErrors and on save.
+      return { ...prev, ...partial };
     });
     setLocalDirty(true);
   }
@@ -154,6 +213,10 @@ export function EditorClient({ siteId }: { siteId: string }) {
 
   async function saveDraft() {
     if (!draft) return;
+    if (invalid) {
+      setMsg("صحّح الحقول المحددة قبل الحفظ.");
+      return;
+    }
     setBusy(true);
     setMsg("");
     try {
@@ -163,7 +226,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
       setDirty(true);
       await load();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "فشل الحفظ");
+      setMsg(errorMessage(err, "فشل الحفظ"));
     } finally {
       setBusy(false);
     }
@@ -171,6 +234,11 @@ export function EditorClient({ siteId }: { siteId: string }) {
 
   async function publish() {
     if (!draft) return;
+    if (invalid) {
+      setMsg("صحّح الحقول المحددة قبل النشر.");
+      return;
+    }
+    if (!window.confirm("نشر هذه الإعدادات على الموقع الآن؟")) return;
     setBusy(true);
     try {
       if (localDirty) await apiSend(`/v1/sites/${siteId}/config/draft`, "PUT", draft);
@@ -179,7 +247,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
       setLocalDirty(false);
       await load();
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "فشل النشر");
+      setMsg(errorMessage(err, "فشل النشر"));
     } finally {
       setBusy(false);
     }
@@ -187,9 +255,17 @@ export function EditorClient({ siteId }: { siteId: string }) {
 
   async function discard() {
     if (!published) return;
-    setDraft(mergeWidgetConfig(published));
-    setLocalDirty(true);
-    setMsg("تم استرجاع النسخة المنشورة إلى المحرر (احفظ المسودة لتثبيت)");
+    if (!window.confirm("حذف كل التعديلات والعودة إلى النسخة المنشورة؟")) return;
+    setBusy(true);
+    try {
+      await apiSend(`/v1/sites/${siteId}/config/draft`, "PUT", published);
+      await load();
+      setMsg("تمت العودة إلى النسخة المنشورة");
+    } catch (err) {
+      setMsg(errorMessage(err, "تعذر تجاهل التغييرات"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function killSwitch(enabled: boolean) {
@@ -198,15 +274,18 @@ export function EditorClient({ siteId }: { siteId: string }) {
     try {
       await apiSend(`/v1/sites/${siteId}/config/kill-switch`, "POST", { enabled });
       setMsg(enabled ? "تم التفعيل" : "تم الإيقاف الطارئ");
-      await load();
+      // Only `enabled` changed, so unsaved edits in the form stay as they are.
+      setDraft((prev) => (prev ? { ...prev, enabled } : prev));
+      setPublished((prev) => (prev ? { ...prev, enabled } : prev));
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "فشل");
+      setMsg(errorMessage(err, "تعذر تنفيذ الإيقاف"));
     } finally {
       setBusy(false);
     }
   }
 
   async function restore(versionId: string) {
+    if (localDirty && !window.confirm("ستُستبدل التعديلات غير المحفوظة. هل تريد المتابعة؟")) return;
     setBusy(true);
     try {
       await apiSend(`/v1/sites/${siteId}/config/versions/${versionId}/restore`, "POST");
@@ -214,7 +293,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
       await load();
       setLocalDirty(true);
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : "فشل الاستعادة");
+      setMsg(errorMessage(err, "فشل الاستعادة"));
     } finally {
       setBusy(false);
     }
@@ -236,6 +315,18 @@ export function EditorClient({ siteId }: { siteId: string }) {
     updateFeatures(next);
   }
 
+  if (loadFailed) {
+    return (
+      <Card className="max-w-md space-y-3">
+        <h1 className="text-xl font-bold">تعذر فتح هذا الموقع</h1>
+        <p className="text-sm text-slate-600">قد يكون الموقع غير موجود أو غير متاح لحسابك.</p>
+        <Link href="/sites" className="text-sm font-semibold text-brand">
+          العودة إلى المواقع
+        </Link>
+      </Card>
+    );
+  }
+
   if (!draft || !site) {
     return <p className="text-slate-500">جارٍ التحميل…</p>;
   }
@@ -244,7 +335,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
     (a, b) => a.order - b.order,
   );
 
-  const embed = `<script src="https://cdn.example.com/v2/muneer.js" data-site-key="${site.siteKey}" data-api="${API_BASE}"></script>`;
+  const embed = `<script src="${WIDGET_CDN}" data-site-key="${site.siteKey}" data-api="${API_BASE}" defer></script>`;
 
   return (
     <div className="space-y-4">
@@ -262,32 +353,42 @@ export function EditorClient({ siteId }: { siteId: string }) {
               مسودة غير منشورة
             </span>
           )}
-          <Button variant="ghost" disabled={busy} onClick={() => void discard()}>
+          {readOnly && (
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              عرض فقط
+            </span>
+          )}
+          <Button variant="ghost" disabled={busy || readOnly} onClick={() => void discard()}>
             تجاهل التغييرات
           </Button>
-          <Button variant="ghost" disabled={busy} onClick={() => void saveDraft()}>
+          <Button variant="ghost" disabled={busy || readOnly} onClick={() => void saveDraft()}>
             حفظ المسودة
           </Button>
-          <Button disabled={busy} onClick={() => void publish()}>
+          <Button disabled={busy || readOnly} onClick={() => void publish()}>
             نشر
           </Button>
           <Button
             variant="danger"
-            disabled={busy}
+            disabled={busy || readOnly}
             onClick={() => void killSwitch(draft.enabled === false)}
           >
             {draft.enabled === false ? "إلغاء الإيقاف" : "إيقاف طارئ"}
           </Button>
         </div>
       </div>
-      {msg && <p className="text-sm text-slate-600">{msg}</p>}
+      <p role="status" className="min-h-5 text-sm text-slate-600">
+        {msg}
+      </p>
       {!contrast.passesAa && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{contrast.warning}</p>
+        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+          تباين اللون الأساسي مع النص الأبيض {contrast.ratio}:1، والمطلوب 4.5:1 على الأقل.
+        </p>
       )}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_420px]">
         <Card className="space-y-4">
           <Tabs tabs={TABS} active={tab} onChange={setTab} />
+          <div role="tabpanel" id={TAB_PANEL_ID} aria-labelledby={tabId(tab)} tabIndex={0}>
 
           {tab === "features" && (
             <div className="space-y-3">
@@ -304,13 +405,22 @@ export function EditorClient({ siteId }: { siteId: string }) {
                   >
                     <div>
                       <div className="font-semibold">{featureLabel(f.id)}</div>
-                      <div className="text-xs text-slate-500">{f.id}</div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <Button variant="ghost" type="button" onClick={() => moveFeature(f.id, -1)}>
+                      <Button
+                        variant="ghost"
+                        type="button"
+                        aria-label={`نقل ${featureLabel(f.id)} لأعلى`}
+                        onClick={() => moveFeature(f.id, -1)}
+                      >
                         ↑
                       </Button>
-                      <Button variant="ghost" type="button" onClick={() => moveFeature(f.id, 1)}>
+                      <Button
+                        variant="ghost"
+                        type="button"
+                        aria-label={`نقل ${featureLabel(f.id)} لأسفل`}
+                        onClick={() => moveFeature(f.id, 1)}
+                      >
                         ↓
                       </Button>
                       <Switch
@@ -324,7 +434,8 @@ export function EditorClient({ siteId }: { siteId: string }) {
                       />
                       {levels.length > 1 && (
                         <select
-                          className="rounded-lg border border-slate-300 px-2 py-1 text-sm"
+                          aria-label={`المستوى الافتراضي لخاصية ${featureLabel(f.id)}`}
+                          className="rounded-lg border border-slate-400 px-2 py-1 text-sm"
                           value={String(f.defaultLevel ?? "")}
                           onChange={(e) => {
                             const raw = e.target.value;
@@ -338,7 +449,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                           <option value="">بدون افتراضي</option>
                           {levels.map((l) => (
                             <option key={String(l)} value={String(l)}>
-                              {String(l)}
+                              {t("ar", levelLabelKey(f.id, l))}
                             </option>
                           ))}
                         </select>
@@ -347,9 +458,6 @@ export function EditorClient({ siteId }: { siteId: string }) {
                   </div>
                 );
               })}
-              <p className="text-xs text-slate-400">
-                المعتمد: {V1_FEATURE_IDS.join(", ")}
-              </p>
             </div>
           )}
 
@@ -367,20 +475,23 @@ export function EditorClient({ siteId }: { siteId: string }) {
               </SelectInput>
               <TextInput
                 label="عرض اللوحة"
-                value={draft.widgetWidth || "380px"}
+                value={draft.widgetWidth ?? ""}
+                error={fieldErrors.widgetWidth}
                 onChange={(e) => update({ widgetWidth: e.target.value })}
               />
               <TextInput
                 label="حجم الزر"
                 type="number"
-                value={draft.buttonSize ?? 56}
-                onChange={(e) => update({ buttonSize: Number(e.target.value) })}
+                value={draft.buttonSize ?? ""}
+                error={fieldErrors.buttonSize}
+                onChange={(e) => update({ buttonSize: numberOrUndefined(e.target.value) })}
               />
               <TextInput
                 label="نصف القطر"
                 type="number"
-                value={draft.radius ?? 16}
-                onChange={(e) => update({ radius: Number(e.target.value) })}
+                value={draft.radius ?? ""}
+                error={fieldErrors.radius}
+                onChange={(e) => update({ radius: numberOrUndefined(e.target.value) })}
               />
               <SelectInput
                 label="الأيقونة"
@@ -407,6 +518,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 label="إزاحة أفقية"
                 type="number"
                 value={draft.offset?.x ?? 20}
+                error={fieldErrors["offset.x"]}
                 onChange={(e) =>
                   update({ offset: { x: Number(e.target.value), y: draft.offset?.y ?? 20 } })
                 }
@@ -415,29 +527,28 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 label="إزاحة رأسية"
                 type="number"
                 value={draft.offset?.y ?? 20}
+                error={fieldErrors["offset.y"]}
                 onChange={(e) =>
                   update({ offset: { x: draft.offset?.x ?? 20, y: Number(e.target.value) } })
                 }
               />
               <ColorInput
                 label="اللون الأساسي"
-                value={draft.colors?.primary || "#0B5FFF"}
+                value={draft.colors?.primary ?? ""}
+                error={fieldErrors["colors.primary"]}
                 onChange={(primary) => update({ colors: { ...draft.colors, primary } })}
               />
               <ColorInput
                 label="لون الخلفية"
-                value={draft.colors?.background || "#FFFFFF"}
+                value={draft.colors?.background ?? ""}
+                error={fieldErrors["colors.background"]}
                 onChange={(background) => update({ colors: { ...draft.colors, background } })}
               />
               <ColorInput
                 label="لون النص"
-                value={draft.colors?.text || "#111827"}
+                value={draft.colors?.text ?? ""}
+                error={fieldErrors["colors.text"]}
                 onChange={(text) => update({ colors: { ...draft.colors, text } })}
-              />
-              <ColorInput
-                label="لون التمييز"
-                value={draft.colors?.accent || "#10B981"}
-                onChange={(accent) => update({ colors: { ...draft.colors, accent } })}
               />
               <SelectInput
                 label="موضع الجوال"
@@ -491,6 +602,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 label="رابط بيان الوصول"
                 className="sm:col-span-2"
                 value={draft.statementUrl || ""}
+                error={fieldErrors.statementUrl}
                 onChange={(e) => update({ statementUrl: e.target.value })}
                 placeholder="https://example.com/accessibility"
               />
@@ -549,7 +661,8 @@ export function EditorClient({ siteId }: { siteId: string }) {
               </div>
               <TextInput
                 label="اختصار الفتح"
-                value={draft.openShortcut || "Alt+A"}
+                value={draft.openShortcut ?? ""}
+                error={fieldErrors.openShortcut}
                 onChange={(e) => update({ openShortcut: e.target.value })}
               />
               <label className="block text-sm sm:col-span-2">
@@ -570,6 +683,38 @@ export function EditorClient({ siteId }: { siteId: string }) {
                   placeholder={"/admin\n/checkout/**"}
                 />
               </label>
+            </div>
+          )}
+
+          {tab === "usage" && (
+            <div className="space-y-3">
+              {!analytics?.total && (
+                <p className="text-sm text-slate-500">لا توجد بيانات استخدام بعد.</p>
+              )}
+              {!!analytics?.total && (
+                <>
+                  <ul className="divide-y divide-slate-100 text-sm">
+                    {Object.entries(analytics.byEvent).map(([event, count]) => (
+                      <li key={event} className="flex justify-between py-2">
+                        <span>{EVENT_LABELS[event] ?? event}</span>
+                        <span className="font-semibold">{count}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <h2 className="text-sm font-semibold">أكثر الخصائص استخداماً</h2>
+                  <ul className="divide-y divide-slate-100 text-sm">
+                    {Object.entries(analytics.byFeature)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([feature, count]) => (
+                        <li key={feature} className="flex justify-between py-2">
+                          <span>{featureLabel(feature)}</span>
+                          <span className="font-semibold">{count}</span>
+                        </li>
+                      ))}
+                  </ul>
+                </>
+              )}
+              <p className="text-xs text-slate-500">آخر 500 حدث، دون أي بيانات شخصية.</p>
             </div>
           )}
 
@@ -612,7 +757,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                       {v.createdBy?.name || v.createdBy?.email || "—"}
                       {v.note ? ` · ${v.note}` : ""}
                     </div>
-                    <div className="mt-1 text-xs text-slate-400">
+                    <div className="mt-1 text-xs text-slate-500">
                       موضع: {v.config.position} · لغة: {v.config.language}
                     </div>
                   </div>
@@ -623,6 +768,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
               ))}
             </div>
           )}
+          </div>
         </Card>
 
         <Card className="space-y-3">

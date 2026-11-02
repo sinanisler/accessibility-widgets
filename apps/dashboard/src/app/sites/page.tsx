@@ -32,7 +32,7 @@ export default async function SitesPage() {
       <div className="grid gap-4">
         {sites.length === 0 && (
           <Card>
-            <p className="text-sm text-slate-500">لا توجد مواقع بعد، أو يلزم تسجيل الدخول.</p>
+            <p className="text-sm text-slate-500">لا توجد مواقع بعد. أضف موقعك الأول للبدء.</p>
           </Card>
         )}
         {sites.map((site) => {
@@ -40,11 +40,11 @@ export default async function SitesPage() {
           return (
             <Card key={site.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-semibold">{site.name}</h2>
+                <div className="min-w-0">
+                  <h2 className="break-words text-lg font-semibold">{site.name}</h2>
                   <p className="text-sm text-slate-500">{site.domain}</p>
                   <p className="mt-2 text-xs text-slate-500">
-                    المفتاح: <code className="rounded bg-slate-100 px-2 py-1">{site.siteKey}</code>
+                    المفتاح: <code className="break-all rounded bg-slate-100 px-2 py-1 text-slate-800">{site.siteKey}</code>
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
                     اللغة: {cfg.language || "ar"} · الموضع: {cfg.position || "bottom-right"}
