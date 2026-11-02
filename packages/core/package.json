@@ -16,8 +16,7 @@
     "build": "tsup src/index.ts --format esm --dts --clean",
     "dev": "tsup src/index.ts --format esm --dts --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "lint": "echo \"ok\""
+    "test": "vitest run"
   },
   "dependencies": {
     "zod": "^3.24.2"

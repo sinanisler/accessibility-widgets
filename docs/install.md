@@ -13,6 +13,14 @@
 <script src="https://cdn.example.com/v2/muneer.js" defer></script>
 ```
 
+أو بسطر واحد، وهو الكود الذي تعطيه اللوحة في تبويب «التثبيت»:
+
+```html
+<script src="https://cdn.example.com/v2/muneer.js" data-site-key="demo-site-key" data-api="https://api.example.com" defer></script>
+```
+
+عند ضبط `siteKey` لا يظهر الودجت إلا بإعداد موثوق من الـ API أو من نسخة مخزنة خلال آخر 24 ساعة. لذلك يتوقف عند 403 و404، وعند تعطل الـ API لزائر جديد.
+
 للتطوير المحلي بعد البناء:
 
 ```html
@@ -36,12 +44,12 @@ pnpm --filter @a11y/widget dev
 
 ## تسجيل دخول لوحة التحكم
 
-بعد `db:push` يُنشأ حساب تجريبي:
+بعد `db:push` يُنشأ حساب تجريبي في بيئة التطوير فقط:
 
 - البريد: `admin@example.com`
 - كلمة المرور: `admin123` (أو قيمة `SEED_ADMIN_PASSWORD`)
 
-اضبط `JWT_SECRET` في بيئة الإنتاج.
+في الإنتاج يجب ضبط `JWT_SECRET` و`SEED_ADMIN_PASSWORD`، وإلا يرفض الـ API الإقلاع.
 
 ## محرر إعدادات الودجت
 
@@ -72,5 +80,8 @@ pnpm --filter @a11y/widget dev
 | `JWT_SECRET` | API | سر توقيع الجلسة |
 | `SEED_ADMIN_PASSWORD` | API | كلمة مرور الأدمن عند أول seed |
 | `DASHBOARD_ORIGIN` | API | أصل اللوحة لـ CORS |
+| `TRUST_PROXY` | API | اضبطها `1` فقط خلف وكيل تديره، ليُستخدم آخر عنوان في `X-Forwarded-For` |
 | `NEXT_PUBLIC_API_BASE` | Dashboard | عنوان الـ API |
 | `NEXT_PUBLIC_WIDGET_PREVIEW` | Dashboard | أصل معاينة الودجت (افتراضي `http://127.0.0.1:5173`) |
+| `NEXT_PUBLIC_WIDGET_CDN` | Dashboard | رابط `muneer.js` في كود التضمين |
+| `NEXT_PUBLIC_SUPPORT_EMAIL` | Dashboard | بريد الدعم في صفحة الدعم |

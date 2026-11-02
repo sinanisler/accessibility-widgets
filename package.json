@@ -10,8 +10,9 @@
     "dev": "turbo run dev --filter=@a11y/api --filter=@a11y/dashboard --filter=@a11y/widget --parallel",
     "dev:all": "turbo run dev --filter=@a11y/api --filter=@a11y/dashboard --filter=@a11y/widget --parallel",
     "test": "turbo run test",
-    "lint": "turbo run lint",
+    "lint": "eslint .",
     "typecheck": "turbo run typecheck",
+    "test:e2e": "pnpm --filter @a11y/widget test:e2e",
     "widget:build": "pnpm --filter @a11y/widget build",
     "widget:dev": "pnpm --filter @a11y/widget dev",
     "dashboard:dev": "pnpm --filter @a11y/dashboard dev",
@@ -19,8 +20,10 @@
     "scanner:cli": "pnpm --filter @a11y/scanner cli"
   },
   "devDependencies": {
+    "eslint": "^9.39.5",
     "turbo": "^2.5.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.72.1"
   },
   "engines": {
     "node": ">=20"
