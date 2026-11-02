@@ -15,7 +15,7 @@ export default async function HomePage() {
   try {
     sites = await serverApiGet<Site[]>("/v1/sites");
   } catch {
-    error = "تعذر الاتصال بالـ API. شغّل apps/api على المنفذ 8787.";
+    error = "تعذر تحميل البيانات الآن. أعد تحميل الصفحة بعد قليل.";
   }
 
   const totalEvents = sites.reduce((s, x) => s + (x._count?.events || 0), 0);
@@ -42,12 +42,12 @@ export default async function HomePage() {
         <h2 className="mb-3 text-lg font-semibold">أحدث المواقع</h2>
         <ul className="divide-y divide-slate-100">
           {sites.map((s) => (
-            <li key={s.id} className="flex items-center justify-between py-3 text-sm">
+            <li key={s.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
               <div>
                 <div className="font-medium">{s.name}</div>
                 <div className="text-slate-500">{s.domain}</div>
               </div>
-              <code className="rounded bg-slate-100 px-2 py-1 text-xs">{s.siteKey}</code>
+              <code className="break-all rounded bg-slate-100 px-2 py-1 text-xs">{s.siteKey}</code>
             </li>
           ))}
           {!sites.length && !error && <li className="py-3 text-slate-500">لا توجد مواقع بعد.</li>}

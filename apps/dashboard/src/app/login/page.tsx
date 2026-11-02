@@ -5,11 +5,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiSend, setStoredToken } from "@/lib/api";
 import { Button, Card } from "@/components/ui";
 
+/** Browsers treat `/\\host` like `//host`, so only a same-origin parse is trusted. */
+function safeNext(next: string | null): string {
+  if (!next) return "/";
+  try {
+    const url = new URL(next, window.location.origin);
+    return url.origin === window.location.origin ? `${url.pathname}${url.search}` : "/";
+  } catch {
+    return "/";
+  }
+}
+
 function LoginForm() {
   const router = useRouter();
   const search = useSearchParams();
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -24,8 +35,7 @@ function LoginForm() {
         { email, password },
       );
       setStoredToken(res.token);
-      const next = search.get("next") || "/";
-      router.replace(next.startsWith("/") && !next.startsWith("//") ? next : "/");
+      router.replace(safeNext(search.get("next")));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       setError(
@@ -33,7 +43,9 @@ function LoginForm() {
           ? "محاولات كثيرة، حاول بعد دقيقة"
           : msg === "Invalid credentials"
             ? "بيانات الدخول غير صحيحة"
-            : "تعذّر الاتصال بالخادم، حاول مرة أخرى",
+            : msg === "Invalid request"
+              ? "تحقق من صيغة البريد الإلكتروني"
+              : "تعذّر الاتصال بالخادم، حاول مرة أخرى",
       );
     } finally {
       setBusy(false);
@@ -48,7 +60,7 @@ function LoginForm() {
         <label className="block text-sm">
           <span className="mb-1 block text-slate-600">البريد</span>
           <input
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-400 px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -59,7 +71,7 @@ function LoginForm() {
         <label className="block text-sm">
           <span className="mb-1 block text-slate-600">كلمة المرور</span>
           <input
-            className="w-full rounded-xl border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-400 px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -67,12 +79,15 @@ function LoginForm() {
             autoComplete="current-password"
           />
         </label>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-700">
+            {error}
+          </p>
+        )}
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "جارٍ الدخول…" : "دخول"}
         </Button>
       </form>
-      <p className="mt-4 text-xs text-slate-400">تجريبي: admin@example.com / admin123</p>
     </Card>
   );
 }
