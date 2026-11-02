@@ -79,6 +79,54 @@ describe("pathMatches", () => {
   });
 });
 
+describe("pathMatches edge cases", () => {
+  it("treats a trailing /** as the directory itself too", () => {
+    expect(pathMatches("/checkout", ["/checkout/**"])).toBe(true);
+    expect(pathMatches("/checkoutx", ["/checkout/**"])).toBe(false);
+  });
+
+  it("ignores trailing slashes and treats ? literally", () => {
+    expect(pathMatches("/admin/", ["/admin"])).toBe(true);
+    expect(pathMatches("/", ["/"])).toBe(true);
+    expect(pathMatches("/ab", ["/a?b"])).toBe(false);
+  });
+});
+
+describe("mergeWidgetConfig with invalid input", () => {
+  it("drops only the invalid field", () => {
+    const cfg = mergeWidgetConfig({
+      position: "top-left",
+      colors: { primary: "#123456" },
+      statementUrl: "h",
+      buttonSize: 3,
+    });
+    expect(cfg.position).toBe("top-left");
+    expect(cfg.colors?.primary).toBe("#123456");
+    expect(cfg.statementUrl).toBe("");
+    expect(cfg.buttonSize).toBe(56);
+  });
+
+  it("rejects values that could inject CSS or script", () => {
+    const cfg = mergeWidgetConfig({
+      colors: { background: "red}.fab{display:none}/*" },
+      widgetWidth: "1px;}.panel{display:none}/*",
+      statementUrl: "javascript:alert(1)",
+    });
+    expect(cfg.colors?.background).toBe("#FFFFFF");
+    expect(cfg.widgetWidth).toBe("380px");
+    expect(cfg.statementUrl).toBe("");
+  });
+
+  it("falls back to the default features when an entry is invalid", () => {
+    const cfg = mergeWidgetConfig({
+      position: "top-left",
+      features: [{ id: "bigger-text", enabled: true, order: 0, defaultLevel: "<img>" }],
+    });
+    expect(cfg.position).toBe("top-left");
+    expect(cfg.features?.length).toBe(V1_FEATURE_IDS.length);
+  });
+});
+
 describe("contrastRatio", () => {
   it("detects poor primary contrast", () => {
     expect(contrastRatio("#FFFFFF", "#FFFF00")).toBeLessThan(4.5);

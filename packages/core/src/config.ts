@@ -12,10 +12,22 @@ export const CURRENT_SCHEMA_VERSION = 2;
 
 const positionSchema = z.enum(["bottom-right", "bottom-left", "top-right", "top-left"]);
 
-const featureLevelSchema = z.union([z.string(), z.number(), z.boolean()]);
+// Levels, colors, and sizes end up inside generated CSS, so every free-form value is restricted.
+const featureLevelSchema = z.union([
+  z.string().regex(/^[\w.-]{1,32}$/),
+  z.number(),
+  z.boolean(),
+]);
+
+const hexColorSchema = z.string().regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+
+const webUrlSchema = z
+  .string()
+  .url()
+  .refine((value) => /^https?:\/\//i.test(value), "Only http(s) URLs are allowed");
 
 export const featureConfigEntrySchema = z.object({
-  id: z.string(),
+  id: z.string().max(64),
   enabled: z.boolean(),
   order: z.number().int().nonnegative(),
   defaultLevel: featureLevelSchema.nullable().optional(),
@@ -24,19 +36,19 @@ export const featureConfigEntrySchema = z.object({
 
 export const widgetConfigSchema = z.object({
   schemaVersion: z.number().int().positive().optional(),
-  siteKey: z.string().optional(),
-  apiBaseUrl: z.string().url().optional(),
-  language: z.string().optional(),
-  defaultLanguage: z.string().optional(),
+  siteKey: z.string().max(128).optional(),
+  apiBaseUrl: webUrlSchema.optional(),
+  language: z.string().regex(/^[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/).optional(),
+  defaultLanguage: z.string().regex(/^[a-zA-Z]{2,3}(?:-[a-zA-Z]{2,4})?$/).optional(),
   autoDetectLanguage: z.boolean().optional(),
   position: positionSchema.optional(),
-  widgetWidth: z.string().optional(),
+  widgetWidth: z.string().regex(/^\d{1,4}(?:\.\d+)?(?:px|rem|em|vw|%)$/).optional(),
   colors: z
     .object({
-      primary: z.string().optional(),
-      background: z.string().optional(),
-      text: z.string().optional(),
-      accent: z.string().optional(),
+      primary: hexColorSchema.optional(),
+      background: hexColorSchema.optional(),
+      text: hexColorSchema.optional(),
+      accent: hexColorSchema.optional(),
     })
     .optional(),
   enabledFeatures: z.array(z.string()).optional(),
@@ -44,8 +56,8 @@ export const widgetConfigSchema = z.object({
   features: z.array(featureConfigEntrySchema).optional(),
   offset: z
     .object({
-      x: z.number(),
-      y: z.number(),
+      x: z.number().min(0).max(400),
+      y: z.number().min(0).max(400),
     })
     .optional(),
   buttonSize: z.number().min(40).max(96).optional(),
@@ -58,14 +70,14 @@ export const widgetConfigSchema = z.object({
     })
     .optional(),
   radius: z.number().min(0).max(32).optional(),
-  labels: z.record(z.record(z.string())).optional(),
-  statementUrl: z.string().url().or(z.literal("")).optional(),
+  labels: z.record(z.record(z.string().max(200))).optional(),
+  statementUrl: webUrlSchema.or(z.literal("")).optional(),
   enabled: z.boolean().optional(),
-  excludedPaths: z.array(z.string()).optional(),
+  excludedPaths: z.array(z.string().max(256)).max(100).optional(),
   persistPreferences: z.boolean().optional(),
   enableAnalytics: z.boolean().optional(),
   enableCloudTts: z.boolean().optional(),
-  openShortcut: z.string().optional(),
+  openShortcut: z.string().regex(/^[\w+\s/-]{1,32}$/).optional(),
 });
 
 export function defaultFeatureEntries(): FeatureConfigEntry[] {
@@ -103,7 +115,7 @@ export const DEFAULT_WIDGET_CONFIG: WidgetConfig = {
   buttonSize: 56,
   buttonIcon: "person",
   theme: "light",
-  mobile: { position: "bottom-right", hide: false },
+  mobile: { hide: false },
   radius: 16,
   labels: {},
   statementUrl: "",
@@ -167,17 +179,23 @@ export function checkPrimaryContrast(colors?: Partial<WidgetConfig["colors"]>): 
   };
 }
 
+function stripTrailingSlash(path: string): string {
+  return path.length > 1 ? path.replace(/\/+$/, "") || "/" : path;
+}
+
 /** Match pathname against glob-like patterns (`*` = any segment chars, `**` = any path). */
 export function pathMatches(pathname: string, patterns: string[] | undefined): boolean {
   if (!patterns?.length) return false;
-  const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
+  const path = stripTrailingSlash(pathname.startsWith("/") ? pathname : `/${pathname}`);
   return patterns.some((pattern) => {
-    const p = pattern.startsWith("/") ? pattern : `/${pattern}`;
+    const p = stripTrailingSlash(pattern.startsWith("/") ? pattern : `/${pattern}`);
     const escaped = p
-      .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\/\*\*$/, "§/")
       .replace(/\*\*/g, "§§")
       .replace(/\*/g, "[^/]*")
-      .replace(/§§/g, ".*");
+      .replace(/§§/g, ".*")
+      .replace(/§\/$/, "(?:/.*)?");
     return new RegExp(`^${escaped}$`).test(path);
   });
 }
@@ -187,7 +205,7 @@ export function migrateWidgetConfig(raw: unknown): Partial<WidgetConfig> {
   const input = raw as Record<string, unknown>;
   const version = typeof input.schemaVersion === "number" ? input.schemaVersion : 1;
 
-  let next: Partial<WidgetConfig> = { ...input } as Partial<WidgetConfig>;
+  const next: Partial<WidgetConfig> = { ...input } as Partial<WidgetConfig>;
 
   if (version < 2) {
     const enabled = Array.isArray(input.enabledFeatures)
@@ -244,10 +262,39 @@ export function getAllowedLevels(config: WidgetConfig, featureId: string): Featu
   return catalog?.levels ? [...catalog.levels] : [true];
 }
 
+function removeInvalidField(target: Record<string, unknown>, path: (string | number)[]): void {
+  let node: unknown = target;
+  for (let depth = 0; depth < path.length; depth += 1) {
+    if (Array.isArray(node)) {
+      // Array entries cannot be removed in place, so the whole field falls back to its default.
+      delete target[String(path[0])];
+      return;
+    }
+    if (!node || typeof node !== "object") return;
+    const record = node as Record<string, unknown>;
+    const key = String(path[depth]);
+    if (depth === path.length - 1) delete record[key];
+    else node = record[key];
+  }
+}
+
+/** Parse a config, dropping only the fields that fail so one bad value cannot reset the rest. */
+function parseLeniently(input: Partial<WidgetConfig>): z.infer<typeof widgetConfigSchema> {
+  let candidate = JSON.parse(JSON.stringify(input)) as Record<string, unknown>;
+  for (let attempt = 0; attempt < 32; attempt += 1) {
+    const parsed = widgetConfigSchema.safeParse(candidate);
+    if (parsed.success) return parsed.data;
+    for (const issue of parsed.error.issues) {
+      if (!issue.path.length) return {};
+      removeInvalidField(candidate, issue.path);
+    }
+    candidate = JSON.parse(JSON.stringify(candidate)) as Record<string, unknown>;
+  }
+  return {};
+}
+
 export function mergeWidgetConfig(user?: Partial<WidgetConfig>): WidgetConfig {
-  const migrated = migrateWidgetConfig(user ?? {});
-  const parsed = widgetConfigSchema.safeParse(migrated);
-  const safe = parsed.success ? parsed.data : {};
+  const safe = parseLeniently(migrateWidgetConfig(user ?? {}));
 
   const language = safe.language ?? safe.defaultLanguage ?? DEFAULT_WIDGET_CONFIG.language;
 
