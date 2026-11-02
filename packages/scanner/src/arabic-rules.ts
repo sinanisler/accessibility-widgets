@@ -43,38 +43,6 @@ export async function runArabicRules(page: {
       });
     }
 
-    const headings = Array.from(document.querySelectorAll("h1,h2,h3,h4,h5,h6"));
-    let prev = 0;
-    headings.forEach((h, index) => {
-      const level = Number(h.tagName.substring(1));
-      if (prev && level > prev + 1) {
-        issues.push({
-          id: `heading-skip-${index}`,
-          ruleId: "heading-order",
-          impact: "moderate",
-          message: `تخطي في تسلسل العناوين من h${prev} إلى h${level}`,
-          selector: h.tagName.toLowerCase(),
-          html: h.outerHTML.slice(0, 200),
-          wcag: ["1.3.1", "2.4.6"],
-        });
-      }
-      prev = level;
-    });
-
-    document.querySelectorAll("img").forEach((img, index) => {
-      if (!img.hasAttribute("alt")) {
-        issues.push({
-          id: `img-alt-${index}`,
-          ruleId: "image-alt-ar",
-          impact: "critical",
-          message: "صورة بدون نص بديل (alt)",
-          selector: "img",
-          html: img.outerHTML.slice(0, 200),
-          wcag: ["1.1.1"],
-        });
-      }
-    });
-
     // Very rough contrast hint for inline styles with light gray on white
     document.querySelectorAll<HTMLElement>("[style*='color']").forEach((el, index) => {
       const color = el.style.color.toLowerCase();
