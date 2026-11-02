@@ -27,6 +27,17 @@ describe("AccessibilityStore", () => {
     expect(localStorage.getItem("a11y-platform-state-v1")).toBeNull();
   });
 
+  it("remembers turning off a feature that has an admin default", () => {
+    const features = [{ id: "high-contrast", enabled: true, order: 0, defaultLevel: "high" }];
+    const a = new AccessibilityStore({ features });
+    expect(a.get("high-contrast")).toBe("high");
+    a.set("high-contrast", null);
+    const b = new AccessibilityStore({ features });
+    expect(b.get("high-contrast")).toBe(false);
+    b.reset();
+    expect(b.get("high-contrast")).toBe("high");
+  });
+
   it("applies defaultLevel from feature config when empty", () => {
     const store = new AccessibilityStore({
       features: [

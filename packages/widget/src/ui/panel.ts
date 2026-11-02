@@ -1,6 +1,7 @@
 import {
   getAllowedLevels,
   isRtl,
+  levelLabelKey,
   tLabel,
   type FeatureLevel,
   type WidgetConfig,
@@ -13,15 +14,11 @@ export interface PanelApi {
   open: () => void;
   close: () => void;
   toggle: () => void;
+  isOpen: () => boolean;
   destroy: () => void;
   updateConfig: (config: WidgetConfig) => void;
   setFeatures: (features: FeatureModule[]) => void;
   host: HTMLElement;
-}
-
-function formatLevel(level: FeatureLevel): string {
-  if (level === true) return "";
-  return String(level);
 }
 
 function getFocusable(container: HTMLElement): HTMLElement[] {
@@ -49,14 +46,17 @@ function matchesShortcut(e: KeyboardEvent, shortcut: string): boolean {
 export function createPanel(
   store: AccessibilityStore,
   features: FeatureModule[],
-  onApply: () => void,
+  onApply: (featureId?: string) => void,
   options?: {
     onLanguageChange?: (lang: string) => void;
     onHideSession?: () => void;
+    onRevealSession?: () => void;
+    startHidden?: boolean;
     announce?: (msg: string) => void;
   },
 ): PanelApi {
   let featureList = [...features];
+  let sessionHidden = options?.startHidden ?? false;
   const announce = options?.announce ?? (() => undefined);
 
   const host = document.createElement("div");
@@ -161,6 +161,11 @@ export function createPanel(
     return tLabel(lang(), key, store.config.labels);
   }
 
+  function formatLevel(featureId: string, level: FeatureLevel): string {
+    if (level === true) return "";
+    return label(levelLabelKey(featureId, level));
+  }
+
   function activeCount(): number {
     const state = store.getState();
     return featureList.filter((f) => {
@@ -187,11 +192,7 @@ export function createPanel(
     const position =
       (isMobile && cfg.mobile?.position) || cfg.position || "bottom-right";
 
-    if (isMobile && cfg.mobile?.hide) {
-      host.hidden = true;
-    } else {
-      host.hidden = false;
-    }
+    host.hidden = sessionHidden || Boolean(isMobile && cfg.mobile?.hide);
 
     style.textContent = panelStyles({
       primary,
@@ -207,6 +208,7 @@ export function createPanel(
     fab.style.cssText = pos.fab;
     panel.style.cssText = pos.panel;
     panel.dir = isRtl(lang()) ? "rtl" : "ltr";
+    panel.lang = lang();
 
     // Rebuild icon (keep badge)
     const existingBadge = fab.querySelector(".fab-badge");
@@ -214,7 +216,6 @@ export function createPanel(
     if (existingBadge) fab.appendChild(existingBadge);
     else fab.appendChild(badge);
 
-    fab.setAttribute("aria-label", label("openMenu"));
     panel.setAttribute("aria-label", label("menuTitle"));
     panel.setAttribute("aria-labelledby", "a11y-title");
     title.textContent = label("menuTitle");
@@ -222,7 +223,7 @@ export function createPanel(
     resetBtn.textContent = label("reset");
     hideBtn.textContent = label("hideWidget");
     langBtn.textContent = lang() === "ar" ? "EN" : "عربي";
-    langBtn.setAttribute("aria-label", label("switchLanguage"));
+    langBtn.setAttribute("aria-label", `${langBtn.textContent} - ${label("switchLanguage")}`);
 
     const statementUrl = cfg.statementUrl?.trim();
     if (statementUrl) {
@@ -235,6 +236,10 @@ export function createPanel(
       statementLink.textContent = "";
     }
 
+    updateFab();
+  }
+
+  function updateFab(): void {
     const count = activeCount();
     badge.textContent = String(count);
     badge.dataset.empty = count === 0 ? "true" : "false";
@@ -273,7 +278,6 @@ export function createPanel(
       decBtn.className = "level-btn";
       decBtn.type = "button";
       decBtn.textContent = "−";
-      decBtn.setAttribute("aria-label", label("decrease"));
 
       const levelValue = document.createElement("span");
       levelValue.className = "level-value";
@@ -282,7 +286,6 @@ export function createPanel(
       incBtn.className = "level-btn";
       incBtn.type = "button";
       incBtn.textContent = "+";
-      incBtn.setAttribute("aria-label", label("increase"));
 
       controls.append(decBtn, levelValue, incBtn, switchBtn);
       row.append(textWrap, controls);
@@ -301,7 +304,7 @@ export function createPanel(
           store.set(f.id, levels[0] ?? true);
           announce(`${label(f.labelKey)}: ${label("featureOn")}`);
         }
-        onApply();
+        onApply(f.id);
         updateFeatureStates();
       });
 
@@ -315,9 +318,9 @@ export function createPanel(
           announce(`${label(f.labelKey)}: ${label("featureOff")}`);
         } else {
           store.set(f.id, levels[idx - 1]!);
-          announce(`${label(f.labelKey)}: ${formatLevel(levels[idx - 1]!)}`);
+          announce(`${label(f.labelKey)}: ${formatLevel(f.id, levels[idx - 1]!)}`);
         }
-        onApply();
+        onApply(f.id);
         updateFeatureStates();
       });
 
@@ -331,10 +334,10 @@ export function createPanel(
           const idx = levels.findIndex((l) => l === current);
           if (idx >= 0 && idx < levels.length - 1) {
             store.set(f.id, levels[idx + 1]!);
-            announce(`${label(f.labelKey)}: ${formatLevel(levels[idx + 1]!)}`);
+            announce(`${label(f.labelKey)}: ${formatLevel(f.id, levels[idx + 1]!)}`);
           }
         }
-        onApply();
+        onApply(f.id);
         updateFeatureStates();
       });
     }
@@ -354,9 +357,11 @@ export function createPanel(
       nodes.label.textContent = label(f.labelKey);
       nodes.switchBtn.setAttribute("aria-checked", String(active));
       nodes.switchBtn.setAttribute("aria-label", label(f.labelKey));
+      nodes.decBtn.setAttribute("aria-label", `${label("decrease")} ${label(f.labelKey)}`);
+      nodes.incBtn.setAttribute("aria-label", `${label("increase")} ${label(f.labelKey)}`);
 
       if (active) {
-        const levelText = formatLevel(val as FeatureLevel);
+        const levelText = formatLevel(f.id, val as FeatureLevel);
         nodes.meta.textContent = levelText
           ? `${label("active")}: ${levelText}`
           : label("active");
@@ -376,9 +381,7 @@ export function createPanel(
       }
     }
 
-    const count = activeCount();
-    badge.textContent = String(count);
-    badge.dataset.empty = count === 0 ? "true" : "false";
+    updateFab();
   }
 
   function sync(): void {
@@ -397,7 +400,14 @@ export function createPanel(
     const shortcut = store.config.openShortcut || "Alt+A";
     if (matchesShortcut(e, shortcut)) {
       e.preventDefault();
-      api.toggle();
+      if (sessionHidden) {
+        sessionHidden = false;
+        options?.onRevealSession?.();
+        applyChrome();
+        api.open();
+      } else if (!host.hidden) {
+        api.toggle();
+      }
       return;
     }
 
@@ -407,7 +417,11 @@ export function createPanel(
     const first = focusables[0]!;
     const last = focusables[focusables.length - 1]!;
     const active = shadow.activeElement as HTMLElement | null;
-    if (e.shiftKey && active === first) {
+    const outsideList = !active || !focusables.includes(active);
+    if (outsideList) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+    } else if (e.shiftKey && active === first) {
       e.preventDefault();
       last.focus();
     } else if (!e.shiftKey && active === last) {
@@ -433,6 +447,9 @@ export function createPanel(
       if (panel.hidden) api.open();
       else api.close();
     },
+    isOpen() {
+      return !panel.hidden;
+    },
     destroy() {
       document.removeEventListener("keydown", onKeyDown);
       host.remove();
@@ -457,7 +474,9 @@ export function createPanel(
   hideBtn.onclick = () => {
     options?.onHideSession?.();
     api.close();
+    sessionHidden = true;
     host.hidden = true;
+    announce(label("hiddenHint").replace("{shortcut}", store.config.openShortcut || "Alt+A"));
   };
   langBtn.onclick = () => {
     const next = lang() === "ar" ? "en" : "ar";

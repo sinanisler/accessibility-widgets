@@ -18,14 +18,16 @@ export function panelStyles(opts: {
 
   const bg = isDark ? "#111827" : background;
   const fg = isDark ? "#F9FAFB" : text;
-  const muted = isDark ? "#9CA3AF" : "#6b7280";
+  const muted = isDark ? "#CBD5E1" : "#4b5563";
   const border = isDark ? "#374151" : "#e5e7eb";
   const surface = isDark ? "#1F2937" : "#f9fafb";
   const activeBg = isDark ? "#1e3a5f" : "#eff6ff";
 
   return `
 :host { all: initial; }
-* { box-sizing: border-box; font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif; }
+* { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif; }
+:host([hidden]), [hidden] { display: none !important; }
+button:focus-visible, a:focus-visible { outline: 3px solid ${isDark ? "#fff" : primary}; outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
@@ -38,18 +40,18 @@ export function panelStyles(opts: {
   display: grid; place-items: center;
   min-width: 44px; min-height: 44px;
 }
-.fab:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.fab:focus-visible { outline: 3px solid #111827; outline-offset: 3px; box-shadow: 0 0 0 3px #fff; }
 .fab-badge {
   position: absolute; top: -2px; inset-inline-end: -2px;
   min-width: 20px; height: 20px; padding: 0 5px;
-  border-radius: 999px; background: #ef4444; color: #fff;
+  border-radius: 999px; background: #b91c1c; color: #fff;
   font-size: 11px; font-weight: 700; display: grid; place-items: center;
   border: 2px solid #fff;
 }
 .fab-badge[data-empty="true"] { display: none; }
 .panel {
   position: fixed; width: min(${width}, calc(100vw - 24px));
-  max-height: min(80vh, 640px); overflow: auto;
+  max-height: min(80vh, 640px); overflow: hidden;
   background: ${bg}; color: ${fg};
   border-radius: ${radius}px; box-shadow: 0 20px 50px rgba(0,0,0,.28);
   z-index: 2147483647; padding: 12px;
@@ -59,10 +61,11 @@ export function panelStyles(opts: {
 .header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .title { font-weight:700; font-size:1.05rem; margin:0; outline: none; }
 .header-actions { display:flex; gap:6px; align-items:center; }
-.list { display:flex; flex-direction:column; gap:8px; flex:1; }
+.list { display:flex; flex-direction:column; gap:8px; flex:1; min-height:0; overflow-y:auto; padding:2px; }
+.header, .footer { flex-shrink:0; }
 .feature {
   border:1px solid ${border}; border-radius:12px; padding:12px;
-  background:${isDark ? "#1F2937" : "#fff"};
+  background:${isDark ? "#1F2937" : background};
   display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
   min-height:56px;
 }
@@ -72,7 +75,7 @@ export function panelStyles(opts: {
 .feature-controls { display:flex; align-items:center; gap:6px; }
 .switch {
   width:48px; height:28px; border-radius:999px; border:none;
-  background:#d1d5db; cursor:pointer; position:relative; flex-shrink:0;
+  background:#6b7280; cursor:pointer; position:relative; flex-shrink:0;
   min-width:44px; min-height:28px;
 }
 .switch[aria-checked="true"] { background:${primary}; }
@@ -84,12 +87,12 @@ export function panelStyles(opts: {
 .switch[aria-checked="true"]::after { transform: translateX(20px); }
 [dir="rtl"] .switch[aria-checked="true"]::after { transform: translateX(-20px); }
 .level-btn {
-  width:36px; height:36px; min-width:36px; min-height:36px;
+  width:40px; height:40px; min-width:40px; min-height:40px;
   border-radius:10px; border:1px solid ${border};
   background:${surface}; color:${fg}; cursor:pointer; font-weight:700; font-size:16px;
 }
 .level-btn:disabled { opacity:.4; cursor:not-allowed; }
-.level-value { font-size:12px; min-width:48px; text-align:center; color:${muted}; }
+.level-value { font-size:12px; min-width:52px; text-align:center; color:${muted}; }
 .footer { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
 .btn {
   border:none; border-radius:10px; padding:10px 12px;
@@ -116,6 +119,7 @@ export function panelStyles(opts: {
 `;
 }
 
+/** Physical sides on purpose: "bottom-right" means the same corner on RTL and LTR pages. */
 export function positionStyles(
   position: WidgetPosition,
   offset: { x: number; y: number } = { x: 20, y: 20 },
@@ -126,20 +130,20 @@ export function positionStyles(
   const panelGap = `${offset.y + buttonSize + 12}px`;
   const map: Record<WidgetPosition, { fab: string; panel: string }> = {
     "bottom-right": {
-      fab: `inset-inline-end:${x}; bottom:${y};`,
-      panel: `inset-inline-end:${x}; bottom:${panelGap};`,
+      fab: `right:${x}; bottom:${y};`,
+      panel: `right:${x}; bottom:${panelGap};`,
     },
     "bottom-left": {
-      fab: `inset-inline-start:${x}; bottom:${y};`,
-      panel: `inset-inline-start:${x}; bottom:${panelGap};`,
+      fab: `left:${x}; bottom:${y};`,
+      panel: `left:${x}; bottom:${panelGap};`,
     },
     "top-right": {
-      fab: `inset-inline-end:${x}; top:${y};`,
-      panel: `inset-inline-end:${x}; top:${panelGap};`,
+      fab: `right:${x}; top:${y};`,
+      panel: `right:${x}; top:${panelGap};`,
     },
     "top-left": {
-      fab: `inset-inline-start:${x}; top:${y};`,
-      panel: `inset-inline-start:${x}; top:${panelGap};`,
+      fab: `left:${x}; top:${y};`,
+      panel: `left:${x}; top:${panelGap};`,
     },
   };
   return map[position];

@@ -25,19 +25,14 @@ export class AccessibilityStore {
   }
 
   set(id: string, value: FeatureLevel | null): void {
-    if (value === null || value === false) {
-      delete this.state[id];
-    } else {
-      this.state[id] = value;
-    }
+    this.write(id, value);
     this.persist();
     this.emit();
   }
 
   setMany(partial: FeatureState): void {
     for (const [id, value] of Object.entries(partial)) {
-      if (value === null || value === false) delete this.state[id];
-      else this.state[id] = value;
+      this.write(id, value);
     }
     this.persist();
     this.emit();
@@ -57,6 +52,22 @@ export class AccessibilityStore {
   subscribe(listener: StoreListener): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
+  }
+
+  /** Turning off a feature with an admin default is stored, otherwise the default returns on reload. */
+  private write(id: string, value: FeatureLevel | null): void {
+    if (value !== null && value !== false) {
+      this.state[id] = value;
+    } else if (this.hasDefault(id)) {
+      this.state[id] = false;
+    } else {
+      delete this.state[id];
+    }
+  }
+
+  private hasDefault(id: string): boolean {
+    const entry = this.config.features?.find((f) => f.id === id);
+    return entry?.defaultLevel !== null && entry?.defaultLevel !== undefined;
   }
 
   private applyDefaultsIfEmpty(): void {

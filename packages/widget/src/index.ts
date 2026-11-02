@@ -1,6 +1,6 @@
 import { applyPreviewConfig, autoInit, initAccessibilityWidget } from "./init.js";
 
-export { initAccessibilityWidget, autoInit, applyPreviewConfig };
+export { initAccessibilityWidget, initAccessibilityWidget as init, autoInit, applyPreviewConfig };
 export type { WidgetConfig } from "@a11y/core";
 
 if (typeof window !== "undefined") {

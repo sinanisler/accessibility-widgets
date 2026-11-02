@@ -5,41 +5,41 @@ export const locales: Record<string, LocaleDict> = {
     menuTitle: "قائمة إمكانية الوصول",
     openMenu: "فتح قائمة إمكانية الوصول",
     closeMenu: "إغلاق",
-    reset: "إعادة التعيين",
+    reset: "إعادة ضبط الكل",
     search: "بحث في الخصائص…",
     visual: "بصري",
     cognitive: "معرفي",
     navigation: "تنقل",
     reader: "قارئ",
     profiles: "ملفات تعريف",
-    highContrast: "تباين عالي",
+    highContrast: "تباين عالٍ",
     darkContrast: "تباين داكن",
     lightContrast: "تباين فاتح",
     invertColors: "عكس الألوان",
     biggerText: "تكبير النص",
     textSpacing: "تباعد النص",
-    lineHeight: "ارتفاع السطر",
+    lineHeight: "ارتفاع الأسطر",
     textAlign: "محاذاة النص",
     hideImages: "إخفاء الصور",
     biggerCursor: "مؤشر أكبر",
     saturation: "التشبع",
     colorFilter: "فلتر عمى الألوان",
     customColors: "ألوان مخصصة",
-    highlightLinks: "تمييز الروابط",
-    highlightHeadings: "تمييز العناوين",
+    highlightLinks: "إبراز الروابط",
+    highlightHeadings: "إبراز العناوين",
     pageZoom: "تكبير الصفحة",
     magnifier: "مكبّر عدسة",
     dyslexiaFont: "خط عسر القراءة",
     fontFamily: "اختيار الخط",
     pauseAnimations: "إيقاف الحركة",
     readingMask: "قناع القراءة",
-    readingGuide: "دليل تتبع السطر",
+    readingGuide: "دليل القراءة",
     focusMode: "وضع التركيز",
     muteMedia: "كتم الوسائط",
     simplifyLayout: "تبسيط التخطيط",
     tooltipDictionary: "قاموس الكلمات",
     pageMap: "خريطة الصفحة",
-    strongFocus: "إطار تركيز قوي",
+    strongFocus: "مؤشر التركيز",
     keyboardNav: "تنقل لوحة المفاتيح",
     landmarkNav: "تنقل المعالم",
     skipLinks: "روابط التخطي",
@@ -67,7 +67,22 @@ export const locales: Record<string, LocaleDict> = {
     accessibilityStatement: "بيان إمكانية الوصول",
     switchLanguage: "تبديل اللغة",
     featuresActive: "خصائص مفعّلة",
-    resetDone: "تمت إعادة التعيين",
+    resetDone: "تمت إعادة الضبط",
+    hiddenHint: "أُخفيت الأداة. اضغط {shortcut} لإظهارها",
+    "level.bigger-text.medium": "كبير",
+    "level.bigger-text.large": "أكبر",
+    "level.bigger-text.xlarge": "الأكبر",
+    "level.high-contrast.medium": "أسود على أبيض",
+    "level.high-contrast.high": "أبيض على أسود",
+    "level.high-contrast.ultra": "أصفر على أسود",
+    "level.text-spacing.light": "خفيف",
+    "level.text-spacing.medium": "متوسط",
+    "level.text-spacing.heavy": "واسع",
+    "level.line-height.2": "مريح",
+    "level.line-height.3": "واسع",
+    "level.line-height.4": "الأوسع",
+    "level.bigger-cursor.black": "أسود",
+    "level.bigger-cursor.white": "أبيض",
     featureOn: "تم التفعيل",
     featureOff: "تم الإيقاف",
   },
@@ -75,7 +90,7 @@ export const locales: Record<string, LocaleDict> = {
     menuTitle: "Accessibility Menu",
     openMenu: "Open accessibility menu",
     closeMenu: "Close",
-    reset: "Reset",
+    reset: "Reset all",
     search: "Search features…",
     visual: "Visual",
     cognitive: "Cognitive",
@@ -138,6 +153,21 @@ export const locales: Record<string, LocaleDict> = {
     switchLanguage: "Switch language",
     featuresActive: "active features",
     resetDone: "Preferences reset",
+    hiddenHint: "Widget hidden. Press {shortcut} to show it again",
+    "level.bigger-text.medium": "Large",
+    "level.bigger-text.large": "Larger",
+    "level.bigger-text.xlarge": "Largest",
+    "level.high-contrast.medium": "Black on white",
+    "level.high-contrast.high": "White on black",
+    "level.high-contrast.ultra": "Yellow on black",
+    "level.text-spacing.light": "Light",
+    "level.text-spacing.medium": "Medium",
+    "level.text-spacing.heavy": "Wide",
+    "level.line-height.2": "Comfortable",
+    "level.line-height.3": "Wide",
+    "level.line-height.4": "Widest",
+    "level.bigger-cursor.black": "Black",
+    "level.bigger-cursor.white": "White",
     featureOn: "Enabled",
     featureOff: "Disabled",
   },
@@ -155,7 +185,7 @@ export function tLabel(
 }
 
 export function t(lang: string, key: string): string {
-  const dict = locales[lang] ?? locales.ar;
+  const dict = locales[lang] ?? locales.en;
   const hit = dict[key] ?? locales.en[key];
   if (hit) return hit;
   // Humanize unknown keys: darkContrast -> Dark contrast
@@ -164,6 +194,19 @@ export function t(lang: string, key: string): string {
     .replace(/[-_]/g, " ")
     .replace(/^\w/, (c) => c.toUpperCase())
     .trim();
+}
+
+/** `bigger-text` -> `biggerText`; the dictionary key shared by the widget and the dashboard. */
+export function featureLabelKey(featureId: string): string {
+  return featureId.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
+}
+
+export function levelLabelKey(featureId: string, level: string | number | boolean): string {
+  return `level.${featureId}.${String(level)}`;
+}
+
+export function isSupportedLanguage(lang: string): boolean {
+  return Object.prototype.hasOwnProperty.call(locales, lang);
 }
 
 export function isRtl(lang: string): boolean {
