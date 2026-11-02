@@ -1,0 +1,27 @@
+{
+  "name": "@a11y/widget",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/muneer.js",
+  "module": "./dist/muneer.mjs",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173",
+    "build": "vite build && tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo \"ok\""
+  },
+  "dependencies": {
+    "@a11y/core": "workspace:*"
+  },
+  "devDependencies": {
+    "jsdom": "^26.0.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.2.5",
+    "vitest": "^3.1.1"
+  }
+}

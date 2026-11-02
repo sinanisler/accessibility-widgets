@@ -1,0 +1,72 @@
+{ 
+  "name": "accessibility-widgets",
+  "version": "2.0.14",
+  "description": "A comprehensive, lightweight accessibility widget that enhances web accessibility for all users. Provides multiple accessibility features including screen reader support, voice control, high contrast mode, and more.",
+  "main": "widget.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "echo \"No build process required - single file widget\"",
+    "dev": "python -m http.server 8000 || python3 -m http.server 8000 || npx http-server -p 8000",
+    "lint": "echo \"No linting configured\"",
+    "prepublishOnly": "echo \"Preparing package for publishing...\""
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "widget",
+    "wcag",
+    "ada",
+    "section508",
+    "screen-reader",
+    "voice-control",
+    "high-contrast",
+    "dyslexia",
+    "colorblind",
+    "disabilities",
+    "inclusive",
+    "web-accessibility",
+    "javascript",
+    "frontend",
+    "ui",
+    "ux",
+    "assistive-technology"
+  ],
+  "author": {
+    "name": "sinanisler",
+    "email": "sinan@sinan.im",
+    "url": "https://sinan.im"
+  },
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinanisler/accessibility-widgets.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sinanisler/accessibility-widgets/issues"
+  },
+  "homepage": "https://sinan.im",
+  "files": [
+    "widget.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ],
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/sinanisler"
+  },
+  "jsdelivr": "widget.js",
+  "unpkg": "widget.js",
+  "cdn": "widget.js"
+}

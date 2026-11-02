@@ -1,0 +1,32 @@
+/**
+ * Arabic dyslexia-friendly font stack.
+ * Short-term: Tajawal with generous spacing.
+ * Long-term: replace with a commissioned typeface under packages/fonts/files/.
+ */
+@font-face {
+  font-family: "A11yDyslexiaArabic";
+  src:
+    local("Tajawal"),
+    url("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/tajawal/Tajawal-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "A11yDyslexiaArabic";
+  src:
+    local("Tajawal Bold"),
+    url("https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/tajawal/Tajawal-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.a11y-dyslexia-font,
+html.a11y-dyslexia-font body {
+  font-family: "A11yDyslexiaArabic", Tajawal, "Comic Sans MS", Tahoma, sans-serif !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.18em !important;
+  line-height: 1.9 !important;
+}
