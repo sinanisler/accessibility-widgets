@@ -22,6 +22,8 @@ export type ButtonIconId = "person" | "a11y" | "eye" | "text";
 
 export type WidgetTheme = "light" | "dark" | "auto";
 
+export type ButtonShape = "circle" | "square" | "pill";
+
 export interface FeatureConfigEntry {
   id: string;
   enabled: boolean;
@@ -60,6 +62,9 @@ export interface WidgetConfig {
   offset?: WidgetOffset;
   buttonSize?: number;
   buttonIcon?: ButtonIconId;
+  buttonShape?: ButtonShape;
+  /** Site logo for the launcher and panel header; replaces `buttonIcon` when set. https URL or PNG/JPEG/WebP data URL. */
+  logoUrl?: string;
   theme?: WidgetTheme;
   mobile?: MobileWidgetOptions;
   radius?: number;
@@ -72,6 +77,8 @@ export interface WidgetConfig {
   enableAnalytics?: boolean;
   enableCloudTts?: boolean;
   openShortcut?: string;
+  /** Show the one-tap bundles ("easier reading" etc.) above the feature tiles. */
+  quickPresets?: boolean;
 }
 
 export interface FeatureState {
@@ -102,7 +109,12 @@ export interface AccessibilityProfile {
 }
 
 export interface ContrastCheckResult {
+  /** Text/icon color on the primary color against the primary color. */
   ratio: number;
+  /** The launcher color against a white page, so the button stays visible. */
+  buttonRatio: number;
+  /** The text/icon color the widget draws on the primary color. */
+  textColor: string;
   passesAa: boolean;
   warning?: string;
 }

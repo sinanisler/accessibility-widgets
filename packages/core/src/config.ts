@@ -26,6 +26,16 @@ const webUrlSchema = z
   .url()
   .refine((value) => /^https?:\/\//i.test(value), "Only http(s) URLs are allowed");
 
+// Data URLs are limited to raster types: the dashboard re-encodes uploads as PNG, and SVG could carry markup.
+const logoUrlSchema = z.union([
+  webUrlSchema.refine((value) => /^https:\/\//i.test(value), "Logos must use https"),
+  z
+    .string()
+    .max(96 * 1024)
+    .regex(/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/),
+  z.literal(""),
+]);
+
 export const featureConfigEntrySchema = z.object({
   id: z.string().max(64),
   enabled: z.boolean(),
@@ -62,6 +72,8 @@ export const widgetConfigSchema = z.object({
     .optional(),
   buttonSize: z.number().min(40).max(96).optional(),
   buttonIcon: z.enum(["person", "a11y", "eye", "text"]).optional(),
+  buttonShape: z.enum(["circle", "square", "pill"]).optional(),
+  logoUrl: logoUrlSchema.optional(),
   theme: z.enum(["light", "dark", "auto"]).optional(),
   mobile: z
     .object({
@@ -78,6 +90,7 @@ export const widgetConfigSchema = z.object({
   enableAnalytics: z.boolean().optional(),
   enableCloudTts: z.boolean().optional(),
   openShortcut: z.string().regex(/^[\w+\s/-]{1,32}$/).optional(),
+  quickPresets: z.boolean().optional(),
 });
 
 export function defaultFeatureEntries(): FeatureConfigEntry[] {
@@ -103,10 +116,10 @@ export const DEFAULT_WIDGET_CONFIG: WidgetConfig = {
   position: "bottom-right",
   widgetWidth: "380px",
   colors: {
-    primary: "#0B5FFF",
+    primary: "#2347C5",
     background: "#FFFFFF",
-    text: "#111827",
-    accent: "#10B981",
+    text: "#141821",
+    accent: "#F2A900",
   },
   enabledFeatures: undefined,
   disabledFeatures: undefined,
@@ -114,6 +127,8 @@ export const DEFAULT_WIDGET_CONFIG: WidgetConfig = {
   offset: { x: 20, y: 20 },
   buttonSize: 56,
   buttonIcon: "person",
+  buttonShape: "circle",
+  logoUrl: "",
   theme: "light",
   mobile: { hide: false },
   radius: 16,
@@ -125,6 +140,7 @@ export const DEFAULT_WIDGET_CONFIG: WidgetConfig = {
   enableAnalytics: true,
   enableCloudTts: false,
   openShortcut: "Alt+A",
+  quickPresets: true,
 };
 
 function parseHexColor(input: string): { r: number; g: number; b: number } | null {
@@ -165,17 +181,33 @@ export function contrastRatio(foreground: string, background: string): number | 
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+const LIGHT_ON = "#FFFFFF";
+const DARK_ON = "#111318";
+
+/** White or near-black, whichever reads better on `background`. */
+export function readableOn(background: string): string {
+  const light = contrastRatio(LIGHT_ON, background) ?? 0;
+  const dark = contrastRatio(DARK_ON, background) ?? 0;
+  return light >= dark ? LIGHT_ON : DARK_ON;
+}
+
 export function checkPrimaryContrast(colors?: Partial<WidgetConfig["colors"]>): ContrastCheckResult {
   const primary = colors?.primary ?? DEFAULT_WIDGET_CONFIG.colors!.primary!;
-  const onPrimary = "#FFFFFF";
-  const ratio = contrastRatio(onPrimary, primary) ?? 0;
-  const passesAa = ratio >= 4.5;
+  const textColor = readableOn(primary);
+  const ratio = contrastRatio(textColor, primary) ?? 0;
+  const buttonRatio = contrastRatio(primary, "#FFFFFF") ?? 0;
+  const passesAa = ratio >= 4.5 && buttonRatio >= 3;
+  const round = (n: number) => Math.round(n * 100) / 100;
   return {
-    ratio: Math.round(ratio * 100) / 100,
+    ratio: round(ratio),
+    buttonRatio: round(buttonRatio),
+    textColor,
     passesAa,
     warning: passesAa
       ? undefined
-      : `Primary color contrast with white text is ${ratio.toFixed(2)}:1 (needs ≥ 4.5:1)`,
+      : ratio < 4.5
+        ? `Text on the primary color is ${ratio.toFixed(2)}:1 (needs ≥ 4.5:1)`
+        : `The button is ${buttonRatio.toFixed(2)}:1 against a white page (needs ≥ 3:1)`,
   };
 }
 

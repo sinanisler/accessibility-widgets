@@ -7,8 +7,10 @@ import {
   mergeWidgetConfig,
   migrateWidgetConfig,
   pathMatches,
+  readableOn,
   resolveFeatureList,
 } from "./config.js";
+import { activeCountLabel } from "./i18n.js";
 import { FEATURE_CATALOG, V1_FEATURE_IDS } from "./features.js";
 
 describe("mergeWidgetConfig", () => {
@@ -138,6 +140,36 @@ describe("contrastRatio", () => {
   it("passes for brand blue on white text", () => {
     const check = checkPrimaryContrast({ primary: "#0B5FFF" });
     expect(check.passesAa).toBe(true);
+  });
+
+  it("draws dark text on light primaries", () => {
+    expect(readableOn("#2347C5")).toBe("#FFFFFF");
+    expect(readableOn("#A3E635")).toBe("#111318");
+  });
+});
+
+describe("logoUrl", () => {
+  it("keeps https and raster data URLs", () => {
+    const png = "data:image/png;base64,iVBORw0KGgo=";
+    expect(mergeWidgetConfig({ logoUrl: png }).logoUrl).toBe(png);
+    expect(mergeWidgetConfig({ logoUrl: "https://cdn.example.com/l.png" }).logoUrl).toBe(
+      "https://cdn.example.com/l.png",
+    );
+  });
+
+  it("drops SVG data URLs and plain http", () => {
+    expect(mergeWidgetConfig({ logoUrl: "data:image/svg+xml;base64,PHN2Zz4=" }).logoUrl).toBe("");
+    expect(mergeWidgetConfig({ logoUrl: "http://example.com/l.png" }).logoUrl).toBe("");
+  });
+});
+
+describe("activeCountLabel", () => {
+  it("uses Arabic dual and plural forms", () => {
+    expect(activeCountLabel("ar", 1)).toBe("خاصية واحدة مفعّلة");
+    expect(activeCountLabel("ar", 2)).toBe("خاصيتان مفعّلتان");
+    expect(activeCountLabel("ar", 3)).toBe("3 خصائص مفعّلة");
+    expect(activeCountLabel("ar", 11)).toBe("11 خاصية مفعّلة");
+    expect(activeCountLabel("en", 1)).toBe("1 feature on");
   });
 });
 

@@ -85,6 +85,19 @@ export const locales: Record<string, LocaleDict> = {
     "level.bigger-cursor.white": "أبيض",
     featureOn: "تم التفعيل",
     featureOff: "تم الإيقاف",
+    quickSettings: "إعدادات سريعة",
+    groupReading: "القراءة",
+    groupVision: "الرؤية",
+    groupNavigation: "التنقل والحركة",
+    presetReading: "قراءة أسهل",
+    presetVision: "رؤية أوضح",
+    presetNavigation: "تنقّل أسهل",
+    resetShort: "إعادة ضبط",
+    undo: "تراجع",
+    show: "إظهار",
+    poweredBy: "بواسطة",
+    brandName: "NELC",
+    levelOf: "المستوى {n} من {total}",
   },
   en: {
     menuTitle: "Accessibility Menu",
@@ -170,6 +183,19 @@ export const locales: Record<string, LocaleDict> = {
     "level.bigger-cursor.white": "White",
     featureOn: "Enabled",
     featureOff: "Disabled",
+    quickSettings: "Quick settings",
+    groupReading: "Reading",
+    groupVision: "Vision",
+    groupNavigation: "Navigation & motion",
+    presetReading: "Easier reading",
+    presetVision: "Clearer view",
+    presetNavigation: "Easier navigation",
+    resetShort: "Reset",
+    undo: "Undo",
+    show: "Show",
+    poweredBy: "by",
+    brandName: "NELC",
+    levelOf: "Level {n} of {total}",
   },
 };
 
@@ -203,6 +229,15 @@ export function featureLabelKey(featureId: string): string {
 
 export function levelLabelKey(featureId: string, level: string | number | boolean): string {
   return `level.${featureId}.${String(level)}`;
+}
+
+/** "3 features on", with Arabic dual and plural forms. */
+export function activeCountLabel(lang: string, count: number): string {
+  if (!lang.startsWith("ar")) return `${count} ${count === 1 ? "feature" : "features"} on`;
+  if (count === 1) return "خاصية واحدة مفعّلة";
+  if (count === 2) return "خاصيتان مفعّلتان";
+  if (count <= 10) return `${count} خصائص مفعّلة`;
+  return `${count} خاصية مفعّلة`;
 }
 
 export function isSupportedLanguage(lang: string): boolean {

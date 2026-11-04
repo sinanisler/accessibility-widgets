@@ -77,3 +77,35 @@ export const V1_FEATURE_IDS = [
 export function isReleasedFeature(id: string): boolean {
   return (V1_FEATURE_IDS as readonly string[]).includes(id);
 }
+
+/** How the widget groups the v1 tiles, by what the visitor wants to do. Admin order applies inside each group. */
+export const FEATURE_GROUPS = [
+  { id: "reading", labelKey: "groupReading", features: ["bigger-text", "line-height", "text-spacing", "reading-guide"] },
+  { id: "vision", labelKey: "groupVision", features: ["high-contrast", "highlight-links", "highlight-headings", "bigger-cursor"] },
+  { id: "navigation", labelKey: "groupNavigation", features: ["strong-focus", "pause-animations"] },
+] as const;
+
+export interface QuickPreset {
+  id: string;
+  labelKey: string;
+  features: Record<string, string | boolean>;
+}
+
+/** Task-based bundles. Deliberately not medical profiles (see docs/v1-release-scope.md). */
+export const QUICK_PRESETS: QuickPreset[] = [
+  {
+    id: "easier-reading",
+    labelKey: "presetReading",
+    features: { "bigger-text": "medium", "line-height": "2", "text-spacing": "light", "reading-guide": true },
+  },
+  {
+    id: "clearer-view",
+    labelKey: "presetVision",
+    features: { "high-contrast": "medium", "bigger-text": "large", "highlight-links": true, "bigger-cursor": "black" },
+  },
+  {
+    id: "easier-navigation",
+    labelKey: "presetNavigation",
+    features: { "strong-focus": true, "highlight-links": true, "pause-animations": true, "bigger-cursor": "black" },
+  },
+];
