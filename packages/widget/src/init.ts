@@ -212,6 +212,7 @@ function mountWidget(config: WidgetConfig, options: MountOptions = {}): void {
     },
     {
       announce,
+      onRestore: applyAll,
       startHidden: readStorage("sessionStorage", SESSION_HIDE_KEY) === "1",
       onLanguageChange: (next) => {
         store.config = { ...store.config, language: next };

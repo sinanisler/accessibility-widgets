@@ -21,8 +21,8 @@ function cssFeature(
 }
 
 /** Everything inside the page except media and the widget's own overlays. */
-const pageContent = (cls: string) =>
-  `html.${cls} body, html.${cls} body *:not([id^="a11y-"]):not(img):not(video):not(canvas):not(iframe):not(svg):not(svg *)`;
+const pageContent = (cls: string, extra = "") =>
+  `html.${cls} body${extra}, html.${cls} body *:not([id^="a11y-"]):not(img):not(video):not(canvas):not(iframe):not(svg):not(svg *)${extra}`;
 
 const CONTRAST_THEMES = {
   medium: { bg: "#fff", fg: "#000", link: "#00008b" },
@@ -55,7 +55,9 @@ html.a11y-high-contrast a, html.a11y-high-contrast a * { color:${t.link} !import
   }),
   cssFeature("text-spacing", "visual", "textSpacing", ["light", "medium", "heavy"], (level) => {
     const s = TEXT_SPACING[level as keyof typeof TEXT_SPACING] ?? TEXT_SPACING.light;
-    return `${pageContent("a11y-text-spacing")} { letter-spacing:${s.letter} !important; word-spacing:${s.word} !important; }`;
+    // Letter spacing breaks the joins between Arabic letters, so Arabic text only gets word spacing.
+    return `${pageContent("a11y-text-spacing")} { word-spacing:${s.word} !important; }
+${pageContent("a11y-text-spacing", ":not(:lang(ar))")} { letter-spacing:${s.letter} !important; }`;
   }),
   // Unitless so each element's line height follows its own font size.
   cssFeature("line-height", "visual", "lineHeight", ["2", "3", "4"], (level) => {
