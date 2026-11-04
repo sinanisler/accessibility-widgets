@@ -1,0 +1,9 @@
+Accessibility Platform
+Copyright 2026 Accessibility Platform Contributors
+
+This product is an original TypeScript rewrite and does not incorporate
+source code from the legacy GPL-licensed widget stored under /legacy.
+
+The /legacy directory contains third-party GPL-3.0 material kept only for
+historical reference. It is NOT part of this product's Source or Object
+form and MUST NOT be imported, bundled, or redistributed with the platform.

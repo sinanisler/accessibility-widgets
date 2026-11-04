@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* RGB channels so Tailwind opacity modifiers (bg-surface/95) keep working. */
+:root {
+  color-scheme: light;
+  --surface: 255 255 255;
+  --brand: 35 71 197;
+  --brand-hover: 28 58 163;
+  --brand-soft: 238 242 252;
+  --brand-ink: 22 36 94;
+  --brand-fg: 255 255 255;
+  --ink-50: 246 247 249;
+  --ink-100: 237 239 243;
+  --ink-200: 220 224 231;
+  --ink-300: 195 201 212;
+  --ink-400: 142 150 166;
+  --ink-500: 90 98 115;
+  --ink-600: 69 76 91;
+  --ink-700: 50 56 69;
+  --ink-800: 31 36 46;
+  --ink-900: 20 24 33;
+  --success: 6 95 70;
+  --success-soft: 236 253 245;
+  --success-line: 167 243 208;
+  --warning: 120 53 15;
+  --warning-soft: 255 251 235;
+  --warning-line: 252 211 77;
+  --danger: 153 27 27;
+  --danger-soft: 254 242 242;
+  --danger-line: 248 113 113;
+}
+
+.dark {
+  color-scheme: dark;
+  --surface: 23 26 33;
+  --brand: 124 150 255;
+  --brand-hover: 150 171 255;
+  --brand-soft: 28 38 80;
+  --brand-ink: 199 210 255;
+  --brand-fg: 11 20 64;
+  --ink-50: 15 17 21;
+  --ink-100: 29 33 42;
+  --ink-200: 44 49 60;
+  --ink-300: 62 69 84;
+  --ink-400: 112 120 137;
+  --ink-500: 162 169 182;
+  --ink-600: 185 191 202;
+  --ink-700: 205 210 219;
+  --ink-800: 225 229 236;
+  --ink-900: 238 240 244;
+  --success: 110 231 183;
+  --success-soft: 11 42 32;
+  --success-line: 20 83 45;
+  --warning: 252 211 77;
+  --warning-soft: 42 32 8;
+  --warning-line: 113 63 18;
+  --danger: 252 165 165;
+  --danger-soft: 44 18 20;
+  --danger-line: 153 27 27;
+}
+
+body {
+  @apply bg-ink-50 text-ink-900 antialiased;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
