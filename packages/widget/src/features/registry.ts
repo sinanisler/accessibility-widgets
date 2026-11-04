@@ -2,6 +2,7 @@ import type { FeatureLevel, FeatureState } from "@a11y/core";
 import type { FeatureContext, FeatureModule } from "./types.js";
 import { cssFeatures } from "./css-features.js";
 import { runtimeFeatures } from "./runtime-features.js";
+import { optionalFeatures } from "./optional-features.js";
 
 export class FeatureRegistry {
   private features = new Map<string, FeatureModule>();
@@ -14,7 +15,7 @@ export class FeatureRegistry {
     document.head.appendChild(this.styleEl);
     this.ctx = { rootStyle: this.styleEl, announce };
 
-    for (const f of [...cssFeatures, ...runtimeFeatures]) {
+    for (const f of [...cssFeatures, ...runtimeFeatures, ...optionalFeatures]) {
       this.features.set(f.id, f);
     }
   }

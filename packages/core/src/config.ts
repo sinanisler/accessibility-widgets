@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { V1_FEATURE_IDS, FEATURE_CATALOG } from "./features.js";
+import { AVAILABLE_FEATURE_IDS, FEATURE_CATALOG, isOptionalFeature } from "./features.js";
 import type {
   ContrastCheckResult,
   FeatureConfigEntry,
@@ -94,11 +94,11 @@ export const widgetConfigSchema = z.object({
 });
 
 export function defaultFeatureEntries(): FeatureConfigEntry[] {
-  return V1_FEATURE_IDS.map((id, order) => {
+  return AVAILABLE_FEATURE_IDS.map((id, order) => {
     const catalog = FEATURE_CATALOG.find((f) => f.id === id);
     return {
       id,
-      enabled: true,
+      enabled: !isOptionalFeature(id),
       order,
       defaultLevel: null,
       allowedLevels: catalog?.levels ? [...catalog.levels] : [true],
@@ -262,7 +262,7 @@ export function migrateWidgetConfig(raw: unknown): Partial<WidgetConfig> {
     next.schemaVersion = CURRENT_SCHEMA_VERSION;
   }
 
-  // Always clamp features to known V1 IDs and fill missing ones
+  // Always clamp features to shipped IDs and fill missing ones; optional features arrive switched off
   if (next.features) {
     const byId = new Map(next.features.map((f) => [f.id, f]));
     next.features = defaultFeatureEntries().map((def) => {
@@ -283,7 +283,7 @@ export function migrateWidgetConfig(raw: unknown): Partial<WidgetConfig> {
 export function resolveFeatureList(config: WidgetConfig): FeatureConfigEntry[] {
   const features = config.features?.length ? config.features : defaultFeatureEntries();
   return [...features]
-    .filter((f) => (V1_FEATURE_IDS as readonly string[]).includes(f.id) && f.enabled)
+    .filter((f) => (AVAILABLE_FEATURE_IDS as readonly string[]).includes(f.id) && f.enabled)
     .sort((a, b) => a.order - b.order);
 }
 

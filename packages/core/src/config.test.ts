@@ -11,7 +11,7 @@ import {
   resolveFeatureList,
 } from "./config.js";
 import { activeCountLabel } from "./i18n.js";
-import { FEATURE_CATALOG, V1_FEATURE_IDS } from "./features.js";
+import { AVAILABLE_FEATURE_IDS, FEATURE_CATALOG, OPTIONAL_FEATURE_IDS, V1_FEATURE_IDS } from "./features.js";
 
 describe("mergeWidgetConfig", () => {
   it("defaults to Arabic RTL-first language", () => {
@@ -28,10 +28,30 @@ describe("mergeWidgetConfig", () => {
     expect(cfg.colors?.background).toBe("#FFFFFF");
   });
 
-  it("includes default v1 feature entries", () => {
+  it("enables the v1 features and lists the optional ones switched off", () => {
     const cfg = mergeWidgetConfig();
-    expect(cfg.features?.length).toBe(V1_FEATURE_IDS.length);
-    expect(cfg.features?.every((f) => f.enabled)).toBe(true);
+    expect(cfg.features?.length).toBe(AVAILABLE_FEATURE_IDS.length);
+    const enabled = cfg.features?.filter((f) => f.enabled).map((f) => f.id);
+    expect(enabled).toEqual([...V1_FEATURE_IDS]);
+  });
+
+  it("adds optional features switched off to configs saved before they existed", () => {
+    const saved = defaultFeatureEntries().filter((f) => (V1_FEATURE_IDS as readonly string[]).includes(f.id));
+    const cfg = mergeWidgetConfig({ features: saved });
+    for (const id of OPTIONAL_FEATURE_IDS) {
+      expect(cfg.features?.find((f) => f.id === id)?.enabled).toBe(false);
+    }
+    expect(resolveFeatureList(cfg).map((f) => f.id)).toEqual([...V1_FEATURE_IDS]);
+  });
+
+  it("shows an optional feature once an admin turns it on", () => {
+    const cfg = mergeWidgetConfig({ features: [{ id: "reading-mask", enabled: true, order: 3 }] });
+    expect(resolveFeatureList(cfg).some((f) => f.id === "reading-mask")).toBe(true);
+  });
+
+  it("keeps unreleased features out even when enabled", () => {
+    const cfg = mergeWidgetConfig({ features: [{ id: "voice-control", enabled: true, order: 0 }] });
+    expect(cfg.features?.some((f) => f.id === "voice-control")).toBe(false);
   });
 
   it("applies offset and shortcut defaults", () => {
@@ -125,7 +145,7 @@ describe("mergeWidgetConfig with invalid input", () => {
       features: [{ id: "bigger-text", enabled: true, order: 0, defaultLevel: "<img>" }],
     });
     expect(cfg.position).toBe("top-left");
-    expect(cfg.features?.length).toBe(V1_FEATURE_IDS.length);
+    expect(cfg.features?.length).toBe(AVAILABLE_FEATURE_IDS.length);
   });
 });
 
@@ -178,7 +198,7 @@ describe("resolveFeatureList", () => {
     const features = defaultFeatureEntries().map((f, i) => ({
       ...f,
       enabled: i < 3,
-      order: 10 - i,
+      order: 20 - i,
     }));
     const list = resolveFeatureList(mergeWidgetConfig({ features }));
     expect(list.length).toBe(3);

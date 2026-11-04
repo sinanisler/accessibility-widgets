@@ -62,3 +62,53 @@ test("tiles keep a 44px touch target on phones", async ({ page }) => {
   expect(box.height).toBeGreaterThanOrEqual(44);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test("optional features stay hidden until the site turns them on", async ({ page }) => {
+  await fab(page).click();
+  await expect(tile(page, "reading-mask")).toHaveCount(0);
+  await expect(tile(page, "saturation")).toHaveCount(0);
+});
+
+test.describe("optional features", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/demo/?optional=1");
+    await fab(page).click();
+  });
+
+  test("reading mask follows the pointer without blocking clicks", async ({ page }) => {
+    await tile(page, "reading-mask").click();
+    const mask = page.locator("#a11y-reading-mask");
+    await expect(mask).toBeAttached();
+    await page.keyboard.press("Escape");
+    const button = page.getByRole("button", { name: "إرسال" });
+    await button.hover();
+    const box = (await button.boundingBox())!;
+    const maskBox = (await mask.boundingBox())!;
+    expect(maskBox.y).toBeLessThan(box.y + box.height);
+    expect(maskBox.y + maskBox.height).toBeGreaterThan(box.y);
+    await button.click({ timeout: 2000 });
+  });
+
+  test("saturation and color correction combine on the page", async ({ page }) => {
+    await tile(page, "saturation").click();
+    await tile(page, "color-filter").click();
+    const filter = await page.evaluate(() => getComputedStyle(document.documentElement).filter);
+    expect(filter).toContain("saturate(0.5)");
+    expect(filter).toContain("#a11y-cvd");
+  });
+
+  test("readable font swaps the page text font", async ({ page }) => {
+    const font = () => page.locator("main p").first().evaluate((el) => getComputedStyle(el).fontFamily);
+    const before = await font();
+    await tile(page, "font-family").click();
+    expect(await font()).not.toBe(before);
+    expect(await font()).toContain("Verdana");
+  });
+
+  test("text aligns to the start of Arabic paragraphs", async ({ page }) => {
+    await page.locator("main p").first().evaluate((el) => ((el as HTMLElement).style.textAlign = "justify"));
+    await tile(page, "text-align").click();
+    const align = await page.locator("main p").first().evaluate((el) => getComputedStyle(el).textAlign);
+    expect(align).toBe("start");
+  });
+});

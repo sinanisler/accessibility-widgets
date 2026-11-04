@@ -10,18 +10,18 @@ export const FEATURE_CATALOG: FeatureDefinition[] = [
   { id: "bigger-text", category: "visual", levels: ["medium", "large", "xlarge"] },
   { id: "text-spacing", category: "visual", levels: ["light", "medium", "heavy"] },
   { id: "line-height", category: "visual", levels: ["2", "3", "4"] },
-  { id: "text-align", category: "visual", levels: ["left", "center", "right"] },
+  { id: "text-align", category: "visual", levels: [true] },
   { id: "hide-images", category: "visual", levels: [true] },
   { id: "bigger-cursor", category: "visual", levels: ["black", "white"] },
   { id: "saturation", category: "visual", levels: ["low", "high", "none"] },
-  { id: "color-filter", category: "visual", levels: ["protanopia", "deuteranopia", "tritanopia", "grayscale"] },
+  { id: "color-filter", category: "visual", levels: ["protanopia", "deuteranopia", "tritanopia"] },
   { id: "custom-colors", category: "visual", levels: ["text", "background", "headings"] },
   { id: "highlight-links", category: "visual", levels: [true] },
   { id: "highlight-headings", category: "visual", levels: [true] },
   { id: "page-zoom", category: "visual", levels: ["110", "125", "150", "200"] },
   { id: "magnifier", category: "visual", levels: ["2x", "3x", "4x"] },
   { id: "dyslexia-font", category: "visual", levels: [true] },
-  { id: "font-family", category: "visual", levels: ["arial", "times", "verdana", "tajawal"] },
+  { id: "font-family", category: "visual", levels: ["readable", "sans", "serif"] },
   { id: "pause-animations", category: "visual", levels: [true] },
 
   // Cognitive
@@ -74,14 +74,38 @@ export const V1_FEATURE_IDS = [
   "bigger-cursor",
 ] as const;
 
+/** Post-launch features from docs/v1-release-scope.md section 4. Shipped, but off until an admin turns them on per site. */
+export const OPTIONAL_FEATURE_IDS = [
+  "font-family",
+  "text-align",
+  "reading-mask",
+  "saturation",
+  "color-filter",
+] as const;
+
+/** Every feature the widget bundles, in default order. */
+export const AVAILABLE_FEATURE_IDS = [...V1_FEATURE_IDS, ...OPTIONAL_FEATURE_IDS] as const;
+
 export function isReleasedFeature(id: string): boolean {
-  return (V1_FEATURE_IDS as readonly string[]).includes(id);
+  return (AVAILABLE_FEATURE_IDS as readonly string[]).includes(id);
+}
+
+export function isOptionalFeature(id: string): boolean {
+  return (OPTIONAL_FEATURE_IDS as readonly string[]).includes(id);
 }
 
 /** How the widget groups the v1 tiles, by what the visitor wants to do. Admin order applies inside each group. */
 export const FEATURE_GROUPS = [
-  { id: "reading", labelKey: "groupReading", features: ["bigger-text", "line-height", "text-spacing", "reading-guide"] },
-  { id: "vision", labelKey: "groupVision", features: ["high-contrast", "highlight-links", "highlight-headings", "bigger-cursor"] },
+  {
+    id: "reading",
+    labelKey: "groupReading",
+    features: ["bigger-text", "line-height", "text-spacing", "reading-guide", "font-family", "text-align", "reading-mask"],
+  },
+  {
+    id: "vision",
+    labelKey: "groupVision",
+    features: ["high-contrast", "highlight-links", "highlight-headings", "bigger-cursor", "saturation", "color-filter"],
+  },
   { id: "navigation", labelKey: "groupNavigation", features: ["strong-focus", "pause-animations"] },
 ] as const;
 

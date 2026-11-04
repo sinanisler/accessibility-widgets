@@ -28,6 +28,11 @@
         enableAnalytics: false,
         persistPreferences: false
       };
+      // ?optional=1 turns on the opt-in features, the way an admin would from the dashboard.
+      if (new URLSearchParams(location.search).get('optional') === '1') {
+        window.ACCESSIBILITY_WIDGET_CONFIG.features = ['font-family', 'text-align', 'reading-mask', 'saturation', 'color-filter']
+          .map(function (id, i) { return { id: id, enabled: true, order: 10 + i }; });
+      }
       if (new URLSearchParams(location.search).get('preview') === '1') {
         window.__MUNEER_PREVIEW__ = true;
         document.documentElement.dataset.preview = '1';

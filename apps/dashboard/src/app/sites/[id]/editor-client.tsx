@@ -8,6 +8,7 @@ import {
   checkPrimaryContrast,
   defaultFeatureEntries,
   featureLabelKey,
+  isOptionalFeature,
   levelLabelKey,
   mergeWidgetConfig,
   t,
@@ -464,6 +465,9 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 return (
                   <div
                     key={f.id}
+              <p className="text-sm text-ink-500">
+                الخصائص المعلّمة «اختيارية» جديدة ومتوقفة افتراضياً. جرّبها في المعاينة على صفحات موقعك قبل تفعيلها.
+              </p>
                     draggable={!readOnly}
                     onDragStart={(e) => {
                       setDragId(f.id);
@@ -498,7 +502,10 @@ export function EditorClient({ siteId }: { siteId: string }) {
                       />
                     )}
                     <div className="min-w-0 flex-1">
-                      <div className={f.enabled ? "font-semibold" : "font-semibold text-ink-400"}>{featureLabel(f.id)}</div>
+                      <div className={clsx("flex flex-wrap items-center gap-2 font-semibold", !f.enabled && "text-ink-400")}>
+                        {featureLabel(f.id)}
+                        {isOptionalFeature(f.id) && <Badge tone="brand">اختيارية</Badge>}
+                      </div>
                       <div className="text-xs text-ink-500">
                         {f.enabled ? (levels.length > 1 ? `${levels.length} مستويات` : "تشغيل وإيقاف") : "مخفية من الأداة"}
                       </div>

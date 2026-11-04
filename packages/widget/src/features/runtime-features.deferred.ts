@@ -1,6 +1,5 @@
 import type { FeatureContext, FeatureModule } from "./types.js";
 
-let maskEl: HTMLDivElement | null = null;
 let magnifierEl: HTMLDivElement | null = null;
 let pageMapEl: HTMLDivElement | null = null;
 let clickToSpeakHandler: ((e: MouseEvent) => void) | null = null;
@@ -28,39 +27,6 @@ function speak(text: string, rate = 1): void {
 
 /** Hidden after v1.0 (docs/v1-release-scope.md). Kept in source but not bundled. */
 export const deferredRuntimeFeatures: FeatureModule[] = [
-  {
-    id: "reading-mask",
-    category: "cognitive",
-    labelKey: "readingMask",
-    levels: ["narrow", "medium", "wide"],
-    apply(level) {
-      if (!level) {
-        maskEl?.remove();
-        maskEl = null;
-        return;
-      }
-      const heights = { narrow: 80, medium: 120, wide: 180 } as const;
-      const h = heights[level as keyof typeof heights] ?? 120;
-      maskEl = ensureOverlay("a11y-reading-mask");
-      Object.assign(maskEl.style, {
-        position: "fixed",
-        left: "0",
-        right: "0",
-        height: `${h}px`,
-        top: "40%",
-        pointerEvents: "none",
-        zIndex: "2147483645",
-        boxShadow: "0 0 0 9999px rgba(0,0,0,0.65)",
-        borderTop: "2px solid #0B5FFF",
-        borderBottom: "2px solid #0B5FFF",
-      });
-      const move = (e: MouseEvent) => {
-        if (!maskEl) return;
-        maskEl.style.top = `${Math.max(0, e.clientY - h / 2)}px`;
-      };
-      document.addEventListener("mousemove", move, { passive: true });
-    },
-  },
   {
     id: "magnifier",
     category: "visual",
