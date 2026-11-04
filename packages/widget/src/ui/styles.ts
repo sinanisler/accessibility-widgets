@@ -117,6 +117,9 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px s
 }
 .summary-text { display: flex; align-items: center; gap: 8px; }
 .summary-text::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--acc); }
+.summary[data-empty="true"] { background: var(--surface); color: var(--muted); font-weight: 500; }
+.summary[data-empty="true"] .summary-text::before { background: var(--line); }
+.summary[data-empty="true"] .text-btn { visibility: hidden; }
 .text-btn { border: none; background: transparent; cursor: pointer; font-weight: 600; padding: 8px 10px; border-radius: 8px; min-height: 36px; }
 .text-btn:hover { background: var(--surface); }
 
@@ -142,7 +145,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible { outline: 3px s
 .tile:active { transform: scale(.98); }
 .tile .ic { width: 26px; height: 26px; }
 .tile .name { display: block; font-weight: 600; font-size: 14px; line-height: 1.3; }
-.tile .level { display: block; font-size: 12px; color: var(--muted); min-height: 1.3em; }
+/* Fixed height so a tile never grows when its level text appears. */
+.tile .level { display: block; font-size: 12px; line-height: 18px; height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--muted); }
 .pips { position: absolute; top: 14px; inset-inline-end: 12px; display: flex; gap: 4px; }
 .pips i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
 .check { position: absolute; top: 10px; inset-inline-end: 10px; width: 20px; height: 20px; border-radius: 50%; display: none; place-items: center; background: var(--acc); color: var(--on-acc); }

@@ -1,65 +1,50 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8787";
-const TOKEN_KEY = "muneer_token";
 
-export function getStoredToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(TOKEN_KEY);
-}
+/** Set by the API as an HttpOnly cookie; browser code never reads it, the browser just sends it. */
+const SESSION_COOKIE = "muneer_session";
 
-export function setStoredToken(token: string | null): void {
-  if (typeof window === "undefined") return;
-  if (token) {
-    localStorage.setItem(TOKEN_KEY, token);
-    document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
-  } else {
-    localStorage.removeItem(TOKEN_KEY);
-    document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
+// Earlier builds kept the token in localStorage and a script-readable cookie. Clear both once.
+if (typeof window !== "undefined") {
+  try {
+    localStorage.removeItem("muneer_token");
+  } catch {
+    /* storage blocked */
   }
+  document.cookie = "muneer_token=; path=/; max-age=0; SameSite=Lax";
 }
 
-function authHeaders(): HeadersInit {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const token = getStoredToken();
-  if (token) headers.Authorization = `Bearer ${token}`;
-  return headers;
+/**
+ * A revoked session still leaves its cookie behind, and scripts cannot delete an HttpOnly cookie.
+ * The API clears it first; otherwise middleware would bounce /login straight back here.
+ */
+// These answer 401 for a wrong password, which is not a lost session.
+const CREDENTIAL_PATHS = ["/v1/auth/login", "/v1/auth/logout", "/v1/auth/password"];
+
+function onUnauthorized(path: string): void {
+  if (typeof window === "undefined" || CREDENTIAL_PATHS.includes(path)) return;
+  const next = encodeURIComponent(window.location.pathname + window.location.search);
+  void fetch(`${API_BASE}/v1/auth/logout`, { method: "POST", credentials: "include" })
+    .catch(() => undefined)
+    .finally(() => {
+      window.location.href = `/login?next=${next}`;
+    });
 }
 
-export async function apiGet<T>(path: string, token?: string | null): Promise<T> {
-  const headers: Record<string, string> = {};
-  const t = token ?? getStoredToken();
-  if (t) headers.Authorization = `Bearer ${t}`;
-  const res = await fetch(`${API_BASE}${path}`, {
-    cache: "no-store",
-    headers,
-    credentials: "include",
-  });
-  if (res.status === 401 && typeof window !== "undefined") {
-    setStoredToken(null);
-    window.location.href = "/login";
-  }
+export async function apiGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store", credentials: "include" });
+  if (res.status === 401) onUnauthorized(path);
   if (!res.ok) throw new Error(`API ${res.status}`);
   return res.json() as Promise<T>;
 }
 
-export async function apiSend<T>(
-  path: string,
-  method: string,
-  body?: unknown,
-  token?: string | null,
-): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const t = token ?? (typeof window !== "undefined" ? getStoredToken() : null);
-  if (t) headers.Authorization = `Bearer ${t}`;
+export async function apiSend<T>(path: string, method: string, body?: unknown): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method,
-    headers,
+    headers: { "Content-Type": "application/json" },
     body: body ? JSON.stringify(body) : undefined,
     credentials: "include",
   });
-  if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/v1/auth/")) {
-    setStoredToken(null);
-    window.location.href = "/login";
-  }
+  if (res.status === 401) onUnauthorized(path);
   if (!res.ok) {
     let detail = `API ${res.status}`;
     try {
@@ -73,4 +58,4 @@ export async function apiSend<T>(
   return res.json() as Promise<T>;
 }
 
-export { API_BASE, TOKEN_KEY, authHeaders };
+export { API_BASE, SESSION_COOKIE };

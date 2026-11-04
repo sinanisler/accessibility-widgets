@@ -29,11 +29,23 @@ test("button and panel share the configured physical corner", async ({ page }) =
   expect((await panel(page).boundingBox())!.x).toBeLessThan(100);
 });
 
-test("reset appears once a feature is on and stays visible without scrolling", async ({ page }) => {
+test("reset appears once a feature is on without moving the tiles", async ({ page }) => {
+  // The opening animation scales the panel, so measure the settled layout.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await fab(page).click();
   await expect(page.locator('#a11y-platform-root [data-action="reset"]')).toBeHidden();
-  await tile(page, "pause-animations").click();
+  // Position inside the scrolling list, so scrolling a tile into view does not count as movement.
+  const offset = () =>
+    page.evaluate(() => {
+      const root = document.querySelector("#a11y-platform-root")!.shadowRoot!;
+      const body = root.querySelector<HTMLElement>(".body")!;
+      const t = root.querySelector<HTMLElement>('.tile[data-id="line-height"]')!;
+      return t.getBoundingClientRect().top - body.getBoundingClientRect().top + body.scrollTop;
+    });
+  const before = await offset();
+  await tile(page, "bigger-text").click();
   await expect(page.locator('#a11y-platform-root [data-action="reset"]')).toBeInViewport();
+  expect(await offset()).toBe(before);
 });
 
 test("bigger text never shrinks page text", async ({ page }) => {

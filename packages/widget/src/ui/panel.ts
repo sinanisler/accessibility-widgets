@@ -336,8 +336,9 @@ export function createPanel(
     }
 
     const count = activeCount();
-    summary.hidden = count === 0;
-    summaryText.textContent = count ? activeCountLabel(lang(), count) : "";
+    // The bar always keeps its place so the tiles below never move when the first feature turns on.
+    summary.dataset.empty = String(count === 0);
+    summaryText.textContent = count ? activeCountLabel(lang(), count) : label("noActiveFeatures");
     badge.textContent = String(count);
     badge.dataset.empty = String(count === 0);
     fab.dataset.on = String(count > 0);

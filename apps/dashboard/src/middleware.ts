@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const TOKEN_KEY = "muneer_token";
+const TOKEN_KEY = "muneer_session";
+const LEGACY_TOKEN_KEY = "muneer_token";
 const PUBLIC = ["/login", "/preview.html"];
 
 /** Signature is verified by the API; this only catches malformed or expired sessions early. */
@@ -27,7 +28,7 @@ export function middleware(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
     const res = NextResponse.redirect(url);
-    if (rawToken) res.cookies.delete(TOKEN_KEY);
+    res.cookies.delete(LEGACY_TOKEN_KEY);
     return res;
   }
 

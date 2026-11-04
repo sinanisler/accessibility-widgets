@@ -3,7 +3,7 @@
 import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Contrast, MousePointer2, PersonStanding, Type } from "lucide-react";
-import { apiSend, setStoredToken } from "@/lib/api";
+import { apiSend } from "@/lib/api";
 import { Button, TextInput } from "@/components/ui";
 
 /** Browsers treat `/\\host` like `//host`, so only a same-origin parse is trusted. */
@@ -30,12 +30,7 @@ function LoginForm() {
     setBusy(true);
     setError("");
     try {
-      const res = await apiSend<{ token: string; user: { name: string | null } }>(
-        "/v1/auth/login",
-        "POST",
-        { email, password },
-      );
-      setStoredToken(res.token);
+      await apiSend("/v1/auth/login", "POST", { email, password });
       router.replace(safeNext(search.get("next")));
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";

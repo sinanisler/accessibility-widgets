@@ -75,7 +75,9 @@ describe("createPanel", () => {
     const { panel, root, tile } = mount();
     panel.open();
     const summary = root.querySelector(".summary") as HTMLElement;
-    expect(summary.hidden).toBe(true);
+    expect(summary.hidden).toBe(false);
+    expect(summary.dataset.empty).toBe("true");
+    expect(summary.textContent).toContain("لا توجد خصائص مفعّلة");
     tile("bigger-text").click();
     expect(summary.textContent).toContain("خاصية واحدة مفعّلة");
     tile("highlight-links").click();

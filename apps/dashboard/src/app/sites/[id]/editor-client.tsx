@@ -48,6 +48,7 @@ import { CopyField } from "@/components/copy-field";
 import { ConfirmDialog } from "@/components/dialog";
 import { useToast } from "@/components/toast";
 import { LookPanel } from "./look-panel";
+import { SiteDetailsButton } from "./site-details";
 
 const PREVIEW_ORIGIN = process.env.NEXT_PUBLIC_WIDGET_PREVIEW || "http://127.0.0.1:5173";
 const WIDGET_CDN = process.env.NEXT_PUBLIC_WIDGET_CDN || "https://cdn.example.com/v2/muneer.js";
@@ -438,6 +439,11 @@ export function EditorClient({ siteId }: { siteId: string }) {
           </span>
         }
         description={<span dir="ltr">{site.domain}</span>}
+        actions={
+          readOnly ? undefined : (
+            <SiteDetailsButton site={site} onSaved={(next) => setSite((prev) => (prev ? { ...prev, ...next } : prev))} />
+          )
+        }
       />
 
       {!contrast.passesAa && (
@@ -459,15 +465,15 @@ export function EditorClient({ siteId }: { siteId: string }) {
               <p className="text-sm text-ink-500">
                 تظهر الخصائص في الأداة مجمّعة حسب الاستخدام (القراءة، الرؤية، التنقل)، وترتيبك هنا يحدد ترتيبها داخل كل مجموعة. اسحب الصف لتغيير ترتيبه، أو استخدم زرّي الأعلى والأسفل.
               </p>
+              <p className="text-sm text-ink-500">
+                الخصائص المعلّمة «اختيارية» جديدة ومتوقفة افتراضياً. جرّبها في المعاينة على صفحات موقعك قبل تفعيلها.
+              </p>
               {features.map((f) => {
                 const catalog = FEATURE_CATALOG.find((c) => c.id === f.id);
                 const levels = f.allowedLevels ?? catalog?.levels ?? [true];
                 return (
                   <div
                     key={f.id}
-              <p className="text-sm text-ink-500">
-                الخصائص المعلّمة «اختيارية» جديدة ومتوقفة افتراضياً. جرّبها في المعاينة على صفحات موقعك قبل تفعيلها.
-              </p>
                     draggable={!readOnly}
                     onDragStart={(e) => {
                       setDragId(f.id);

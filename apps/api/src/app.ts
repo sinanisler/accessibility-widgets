@@ -20,6 +20,7 @@ import {
   readSessionUser,
   requireAuth,
   setSessionCookie,
+  hashPassword,
   verifyPassword,
   verifyPasswordOrWaste,
   type AppVariables,
@@ -27,6 +28,13 @@ import {
 import { normalizeDomain, originAllowed } from "./domains.js";
 import { clientIp, clientKey, rateLimit } from "./rate-limit.js";
 import { scanTargetError } from "./scan-target.js";
+import {
+  canAssignRole,
+  memberChangeError,
+  PASSWORD_MIN_LENGTH,
+  ROLES,
+  temporaryPassword,
+} from "./users.js";
 
 const app = new Hono<{ Variables: AppVariables }>();
 
@@ -188,8 +196,9 @@ app.post("/v1/auth/login", async (c) => {
     name: user.name,
   };
   const token = await createSessionToken(authUser, user.tokenVersion);
+  // The HttpOnly cookie is the only copy the browser gets; scripts never see the token.
   setSessionCookie(c, token);
-  return c.json({ user: authUser, token });
+  return c.json({ user: authUser });
 });
 
 app.post("/v1/auth/logout", async (c) => {
@@ -209,12 +218,37 @@ app.get("/v1/auth/me", requireAuth, async (c) => {
   return c.json({ user: c.get("user") });
 });
 
+app.post("/v1/auth/password", requireAuth, async (c) => {
+  const user = c.get("user");
+  if (!rateLimit(clientKey(user.id, "password"), 5, 15 * 60_000)) {
+    return c.json({ error: "Rate limit exceeded" }, 429);
+  }
+  const body = z
+    .object({
+      currentPassword: z.string().min(1).max(256),
+      newPassword: z.string().min(PASSWORD_MIN_LENGTH).max(256),
+    })
+    .parse(await c.req.json());
+  const record = await prisma.user.findUnique({ where: { id: user.id } });
+  if (!record || !(await verifyPassword(body.currentPassword, record.passwordHash))) {
+    return c.json({ error: "Invalid credentials" }, 401);
+  }
+  // Bumping the version signs out every other session, then this one gets a fresh token.
+  const updated = await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(body.newPassword), tokenVersion: { increment: 1 } },
+  });
+  setSessionCookie(c, await createSessionToken(user, updated.tokenVersion));
+  return c.json({ ok: true });
+});
+
 app.use("/v1/sites/*", requireAuth);
 app.use("/v1/sites", requireAuth);
 app.use("/v1/licenses", requireAuth);
 app.use("/v1/scans", requireAuth);
 app.use("/v1/scans/*", requireAuth);
 app.use("/v1/users", requireAuth);
+app.use("/v1/users/*", requireAuth);
 
 app.get("/v1/sites", async (c) => {
   const user = c.get("user");
@@ -234,6 +268,30 @@ app.get("/v1/sites/:id", async (c) => {
     include: { config: true, _count: { select: { events: true, scans: true } } },
   });
   return c.json(full);
+});
+
+app.patch("/v1/sites/:id", async (c) => {
+  const user = c.get("user");
+  if (!canWrite(user.role)) return c.json({ error: "Forbidden" }, 403);
+  const site = await assertSiteAccess(user, c.req.param("id"));
+  if (!site) return c.json({ error: "Not found" }, 404);
+  const body = z
+    .object({
+      name: z.string().trim().min(1).max(120).optional(),
+      domain: z.string().min(1).max(253).optional(),
+    })
+    .parse(await c.req.json());
+  let domain: string | undefined;
+  if (body.domain !== undefined) {
+    const normalized = normalizeDomain(body.domain);
+    if (!normalized) return c.json({ error: "Invalid domain" }, 400);
+    domain = normalized;
+  }
+  const updated = await prisma.site.update({
+    where: { id: site.id },
+    data: { ...(body.name ? { name: body.name } : {}), ...(domain ? { domain } : {}) },
+  });
+  return c.json(updated);
 });
 
 app.post("/v1/sites", requireAuth, async (c) => {
@@ -507,7 +565,73 @@ app.get("/v1/users", async (c) => {
     where: { organizationId: user.organizationId },
     include: { organization: true },
   });
-  return c.json(users.map(({ passwordHash: _, ...u }) => u));
+  return c.json(users.map(({ passwordHash: _, tokenVersion: __, ...u }) => u));
+});
+
+app.post("/v1/users", async (c) => {
+  const actor = c.get("user");
+  const body = z
+    .object({
+      email: z.string().max(254).email(),
+      name: z.string().trim().max(120).optional(),
+      role: z.enum(ROLES),
+    })
+    .parse(await c.req.json());
+  if (!canAssignRole(actor.role, body.role)) return c.json({ error: "Forbidden" }, 403);
+  const email = body.email.toLowerCase();
+  if (await prisma.user.findUnique({ where: { email } })) {
+    return c.json({ error: "Email already in use" }, 409);
+  }
+  const password = temporaryPassword();
+  const created = await prisma.user.create({
+    data: {
+      email,
+      name: body.name || null,
+      role: body.role,
+      passwordHash: await hashPassword(password),
+      organizationId: actor.organizationId,
+    },
+  });
+  return c.json(
+    { user: { id: created.id, email: created.email, name: created.name, role: created.role }, temporaryPassword: password },
+    201,
+  );
+});
+
+async function memberContext(c: { get: (k: "user") => AppVariables["user"] }, id: string) {
+  const actor = c.get("user");
+  const target = await prisma.user.findUnique({ where: { id } });
+  if (!target || target.organizationId !== actor.organizationId) return null;
+  const ownerCount = await prisma.user.count({
+    where: { organizationId: actor.organizationId, role: "owner" },
+  });
+  return { actor, target, ownerCount };
+}
+
+app.patch("/v1/users/:id", async (c) => {
+  const ctx = await memberContext(c, c.req.param("id"));
+  if (!ctx) return c.json({ error: "Not found" }, 404);
+  const { role } = z.object({ role: z.enum(ROLES) }).parse(await c.req.json());
+  const error = memberChangeError(ctx.actor, ctx.target, role, ctx.ownerCount);
+  if (error) return c.json({ error }, error === "Forbidden" ? 403 : 409);
+  // A new role must take effect now, so existing sessions are revoked.
+  const updated = await prisma.user.update({
+    where: { id: ctx.target.id },
+    data: { role, tokenVersion: { increment: 1 } },
+  });
+  return c.json({ id: updated.id, role: updated.role });
+});
+
+app.delete("/v1/users/:id", async (c) => {
+  const ctx = await memberContext(c, c.req.param("id"));
+  if (!ctx) return c.json({ error: "Not found" }, 404);
+  const error = memberChangeError(ctx.actor, ctx.target, null, ctx.ownerCount);
+  if (error) return c.json({ error }, error === "Forbidden" ? 403 : 409);
+  await prisma.$transaction([
+    prisma.configVersion.updateMany({ where: { createdById: ctx.target.id }, data: { createdById: null } }),
+    prisma.user.delete({ where: { id: ctx.target.id } }),
+  ]);
+  return c.json({ ok: true });
 });
 
 export default app;

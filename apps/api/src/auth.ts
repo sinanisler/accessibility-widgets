@@ -58,18 +58,28 @@ export async function readSessionUser(
   }
 }
 
+export const SESSION_COOKIE = COOKIE_NAME;
+
+/**
+ * Set COOKIE_DOMAIN (e.g. `.example.com`) when the dashboard and API sit on sibling subdomains, so
+ * the dashboard server can read the HttpOnly cookie too. Locally both run on 127.0.0.1, which
+ * already shares cookies across ports.
+ */
+const cookieDomain = process.env.COOKIE_DOMAIN || undefined;
+
 export function setSessionCookie(c: Context, token: string): void {
   setCookie(c, COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "Lax",
     path: "/",
+    domain: cookieDomain,
     maxAge: 60 * 60 * 24 * 7,
     secure: process.env.NODE_ENV === "production",
   });
 }
 
 export function clearSessionCookie(c: Context): void {
-  deleteCookie(c, COOKIE_NAME, { path: "/" });
+  deleteCookie(c, COOKIE_NAME, { path: "/", domain: cookieDomain });
 }
 
 export function readRequestToken(c: Context): string {

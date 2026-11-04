@@ -80,8 +80,15 @@ pnpm --filter @a11y/widget dev
 | `JWT_SECRET` | API | سر توقيع الجلسة |
 | `SEED_ADMIN_PASSWORD` | API | كلمة مرور الأدمن عند أول seed |
 | `DASHBOARD_ORIGIN` | API | أصل اللوحة لـ CORS |
+| `COOKIE_DOMAIN` | API | نطاق كوكي الجلسة HttpOnly، مثل `.example.com`، عندما تكون اللوحة والـ API على نطاقين فرعيين للنطاق نفسه. اتركه فارغاً محلياً |
 | `TRUST_PROXY` | API | اضبطها `1` فقط خلف وكيل تديره، ليُستخدم آخر عنوان في `X-Forwarded-For` |
-| `NEXT_PUBLIC_API_BASE` | Dashboard | عنوان الـ API |
+| `NEXT_PUBLIC_API_BASE` | Dashboard | عنوان الـ API العام، ويظهر في كود التضمين |
+| `API_INTERNAL_URL` | Dashboard | عنوان الـ API من خادم اللوحة إن اختلف عن العام (اختياري) |
 | `NEXT_PUBLIC_WIDGET_PREVIEW` | Dashboard | أصل معاينة الودجت (افتراضي `http://127.0.0.1:5173`) |
 | `NEXT_PUBLIC_WIDGET_CDN` | Dashboard | رابط `muneer.js` في كود التضمين |
 | `NEXT_PUBLIC_SUPPORT_EMAIL` | Dashboard | بريد الدعم في صفحة الدعم |
+
+### الجلسات
+
+يحفظ الـ API الجلسة في كوكي `muneer_session` بخاصية HttpOnly وSameSite=Lax، ولا يُرجع الرمز في جسم الرد. لا تقرأ اللوحة الرمز من JavaScript، ويقرأ خادمها الكوكي ليمرره إلى الـ API. لذلك يجب أن تكون اللوحة والـ API على النطاق نفسه أو نطاقين فرعيين له مع ضبط `COOKIE_DOMAIN`.
+

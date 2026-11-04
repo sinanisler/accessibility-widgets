@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState, type PropsWithChildren } from "react";
-import { apiGet, apiSend, setStoredToken } from "@/lib/api";
+import { apiGet, apiSend } from "@/lib/api";
 import { ToastProvider } from "@/components/toast";
 import { ThemeSwitch } from "@/components/theme-switch";
 
@@ -74,8 +74,8 @@ export function Shell({ children }: PropsWithChildren) {
     } catch {
       /* ignore */
     }
-    setStoredToken(null);
     router.replace("/login");
+    router.refresh();
   }
 
   return (
@@ -136,7 +136,11 @@ export function Shell({ children }: PropsWithChildren) {
               <ThemeSwitch />
             </div>
             {me && (
-              <div className="mb-2 flex items-center gap-3 px-2 py-1">
+              <Link
+                href="/account"
+                aria-current={pathname === "/account" ? "page" : undefined}
+                className="mb-2 flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-ink-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand aria-[current=page]:bg-brand-soft"
+              >
                 <span
                   aria-hidden="true"
                   className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink-100 text-sm font-bold text-ink-700"
@@ -145,9 +149,9 @@ export function Shell({ children }: PropsWithChildren) {
                 </span>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-medium text-ink-900">{me.name || me.email}</div>
-                  <div className="text-xs text-ink-500">{ROLE_LABELS[me.role] ?? me.role}</div>
+                  <div className="text-xs text-ink-500">{ROLE_LABELS[me.role] ?? me.role} · حسابي</div>
                 </div>
-              </div>
+              </Link>
             )}
             <button
               type="button"

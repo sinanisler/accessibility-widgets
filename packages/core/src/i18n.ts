@@ -110,6 +110,7 @@ export const locales: Record<string, LocaleDict> = {
     poweredBy: "بواسطة",
     brandName: "NELC",
     levelOf: "المستوى {n} من {total}",
+    noActiveFeatures: "لا توجد خصائص مفعّلة",
   },
   en: {
     menuTitle: "Accessibility Menu",
@@ -193,7 +194,6 @@ export const locales: Record<string, LocaleDict> = {
     "level.line-height.4": "Widest",
     "level.bigger-cursor.black": "Black",
     "level.bigger-cursor.white": "White",
-    featureOn: "Enabled",
     "level.font-family.readable": "Clear font",
     "level.font-family.sans": "Sans serif",
     "level.font-family.serif": "Serif",
@@ -206,6 +206,7 @@ export const locales: Record<string, LocaleDict> = {
     "level.color-filter.protanopia": "Red-weak",
     "level.color-filter.deuteranopia": "Green-weak",
     "level.color-filter.tritanopia": "Blue-weak",
+    featureOn: "Enabled",
     featureOff: "Disabled",
     quickSettings: "Quick settings",
     groupReading: "Reading",
@@ -220,6 +221,7 @@ export const locales: Record<string, LocaleDict> = {
     poweredBy: "by",
     brandName: "NELC",
     levelOf: "Level {n} of {total}",
+    noActiveFeatures: "No features on",
   },
 };
 

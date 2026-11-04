@@ -33,6 +33,11 @@
         window.ACCESSIBILITY_WIDGET_CONFIG.features = ['font-family', 'text-align', 'reading-mask', 'saturation', 'color-filter']
           .map(function (id, i) { return { id: id, enabled: true, order: 10 + i }; });
       }
+      // ?live=1 loads the config published from the dashboard for the seeded demo site.
+      if (new URLSearchParams(location.search).get('live') === '1') {
+        window.ACCESSIBILITY_WIDGET_CONFIG.siteKey = 'demo-site-key';
+        window.ACCESSIBILITY_WIDGET_CONFIG.apiBaseUrl = 'http://127.0.0.1:8787';
+      }
       if (new URLSearchParams(location.search).get('preview') === '1') {
         window.__MUNEER_PREVIEW__ = true;
         document.documentElement.dataset.preview = '1';
