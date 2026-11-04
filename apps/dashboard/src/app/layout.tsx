@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Shell } from "@/components/shell";
+import { THEME_BOOT_SCRIPT } from "@/components/theme-switch";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,8 +10,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <link
           href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap"
           rel="stylesheet"

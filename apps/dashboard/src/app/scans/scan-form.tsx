@@ -1,65 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import { Button, Card } from "@/components/ui";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ScanSearch } from "lucide-react";
+import { Button, Card, SelectInput, TextInput } from "@/components/ui";
+import { useToast } from "@/components/toast";
 import { apiSend } from "@/lib/api";
 import { errorMessage } from "@/lib/errors";
 
 export function ScanForm({ sites }: { sites: Array<{ id: string; name: string }> }) {
+  const router = useRouter();
+  const toast = useToast();
   const [siteId, setSiteId] = useState(sites[0]?.id || "");
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
 
-  async function run() {
+  async function run(e: FormEvent) {
+    e.preventDefault();
     setBusy(true);
-    setMsg("جاري الفحص… قد يستغرق دقيقة");
     try {
       const report = await apiSend<{ score: number }>("/v1/scans", "POST", { siteId, url });
-      setMsg(`اكتمل الفحص — الدرجة ${report.score}`);
-      window.location.reload();
+      toast(`اكتمل الفحص، والدرجة ${report.score} من 100`);
+      router.refresh();
     } catch (err) {
-      setMsg(errorMessage(err, "تعذر إكمال الفحص. أعد المحاولة بعد قليل."));
+      toast(errorMessage(err, "تعذر إكمال الفحص. أعد المحاولة بعد قليل."), "error");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <Card className="space-y-3">
-      <div className="grid gap-3 md:grid-cols-2">
-        <label className="text-sm">
-          الموقع
-          <select
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-            value={siteId}
-            onChange={(e) => setSiteId(e.target.value)}
-          >
-            {sites.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm">
-          الرابط
-          <input
-            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-            dir="ltr"
-            type="url"
-            placeholder="https://example.com/"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-        </label>
-      </div>
-      <Button disabled={busy || !siteId || !url} onClick={run}>
-        بدء الفحص
-      </Button>
-      <p role="status" className="text-sm text-slate-600">
-        {msg}
-      </p>
+    <Card>
+      <form onSubmit={run} className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_auto] md:items-end">
+        <SelectInput label="الموقع" value={siteId} onChange={(e) => setSiteId(e.target.value)}>
+          {sites.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </SelectInput>
+        <TextInput
+          label="رابط الصفحة"
+          dir="ltr"
+          type="url"
+          placeholder="https://example.com/"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          required
+        />
+        <Button type="submit" icon={ScanSearch} disabled={busy || !siteId || !url}>
+          {busy ? "جارٍ الفحص…" : "بدء الفحص"}
+        </Button>
+      </form>
+      {busy && (
+        <p role="status" className="mt-3 text-sm text-ink-500">
+          يفتح الماسح الصفحة في متصفح ويفحصها، وقد يستغرق ذلك دقيقة.
+        </p>
+      )}
     </Card>
   );
 }
