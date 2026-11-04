@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { clsx } from "clsx";
 import {
   FEATURE_CATALOG,
   checkPrimaryContrast,
@@ -15,9 +16,24 @@ import {
   type WidgetConfig,
 } from "@a11y/core";
 import {
+  ChevronDown,
+  ChevronUp,
+  Code2,
+  GripVertical,
+  History,
+  LineChart,
+  Monitor,
+  Palette,
+  Settings2,
+  Smartphone,
+  Sparkles,
+  Type,
+} from "lucide-react";
+import {
+  Badge,
   Button,
   Card,
-  ColorInput,
+  PageHeader,
   SelectInput,
   Switch,
   TAB_PANEL_ID,
@@ -27,6 +43,10 @@ import {
 } from "@/components/ui";
 import { apiGet, apiSend, API_BASE } from "@/lib/api";
 import { errorMessage } from "@/lib/errors";
+import { CopyField } from "@/components/copy-field";
+import { ConfirmDialog } from "@/components/dialog";
+import { useToast } from "@/components/toast";
+import { LookPanel } from "./look-panel";
 
 const PREVIEW_ORIGIN = process.env.NEXT_PUBLIC_WIDGET_PREVIEW || "http://127.0.0.1:5173";
 const WIDGET_CDN = process.env.NEXT_PUBLIC_WIDGET_CDN || "https://cdn.example.com/v2/muneer.js";
@@ -48,14 +68,56 @@ type VersionRow = {
 };
 
 const TABS = [
-  { id: "features", label: "الخصائص" },
-  { id: "look", label: "الشكل" },
-  { id: "text", label: "النصوص" },
-  { id: "behavior", label: "السلوك" },
-  { id: "usage", label: "الاستخدام" },
-  { id: "install", label: "التثبيت" },
-  { id: "history", label: "السجل" },
+  { id: "features", label: "الخصائص", icon: Sparkles },
+  { id: "look", label: "الشكل", icon: Palette },
+  { id: "text", label: "النصوص", icon: Type },
+  { id: "behavior", label: "السلوك", icon: Settings2 },
+  { id: "install", label: "التثبيت", icon: Code2 },
+  { id: "usage", label: "الاستخدام", icon: LineChart },
+  { id: "history", label: "السجل", icon: History },
 ];
+
+/** Config keys grouped under the editor section a person would recognise, for the publish summary. */
+const SECTION_OF: Record<string, string> = {
+  features: "الخصائص",
+  quickPresets: "الإعدادات السريعة",
+  colors: "الألوان",
+  theme: "مظهر اللوحة",
+  position: "المكان",
+  offset: "المكان",
+  mobile: "المكان على الجوال",
+  buttonSize: "الزر والشعار",
+  buttonIcon: "الزر والشعار",
+  buttonShape: "الزر والشعار",
+  logoUrl: "الزر والشعار",
+  widgetWidth: "حجم اللوحة",
+  radius: "حجم اللوحة",
+  language: "اللغة",
+  defaultLanguage: "اللغة",
+  autoDetectLanguage: "اللغة",
+  labels: "النصوص",
+  statementUrl: "بيان الوصول",
+  enabled: "تشغيل الأداة",
+  excludedPaths: "الصفحات المستثناة",
+  persistPreferences: "حفظ التفضيلات",
+  enableAnalytics: "التحليلات",
+  openShortcut: "اختصار الفتح",
+};
+
+function changedSections(draft: WidgetConfig, published: WidgetConfig | null): string[] {
+  if (!published) return [];
+  const keys = new Set([...Object.keys(draft), ...Object.keys(published)]);
+  const out = new Set<string>();
+  for (const key of keys) {
+    const a = JSON.stringify(draft[key as keyof WidgetConfig] ?? null);
+    const b = JSON.stringify(published[key as keyof WidgetConfig] ?? null);
+    if (a !== b && SECTION_OF[key]) out.add(SECTION_OF[key]);
+  }
+  return [...out];
+}
+
+type PendingAction = "publish" | "discard" | "pause" | "resume" | null;
+
 
 function featureLabel(id: string): string {
   return t("ar", featureLabelKey(id));
@@ -72,11 +134,6 @@ const FIELD_ERRORS: Record<string, string> = {
 };
 
 const COLOR_ERROR = "أدخل لون hex مثل #0B5FFF";
-
-/** Numeric fields may be empty while typing; empty means "use the default". */
-function numberOrUndefined(value: string): number | undefined {
-  return value === "" ? undefined : Number(value);
-}
 
 const EVENT_LABELS: Record<string, string> = {
   widget_init: "مرات تحميل الودجت",
@@ -97,7 +154,16 @@ export function EditorClient({ siteId }: { siteId: string }) {
   const [dirty, setDirty] = useState(false);
   const [localDirty, setLocalDirty] = useState(false);
   const [tab, setTab] = useState("features");
-  const [msg, setMsg] = useState("");
+
+  // Deep links such as ?tab=install from the overview checklist.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("tab");
+    if (wanted && TABS.some((t) => t.id === wanted)) setTab(wanted);
+  }, []);
+  const toast = useToast();
+  const [pending, setPending] = useState<PendingAction>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -214,19 +280,18 @@ export function EditorClient({ siteId }: { siteId: string }) {
   async function saveDraft() {
     if (!draft) return;
     if (invalid) {
-      setMsg("صحّح الحقول المحددة قبل الحفظ.");
+      toast("صحّح الحقول المحددة باللون الأحمر قبل الحفظ.", "error");
       return;
     }
     setBusy(true);
-    setMsg("");
     try {
       await apiSend(`/v1/sites/${siteId}/config/draft`, "PUT", draft);
-      setMsg("تم حفظ المسودة");
+      toast("تم حفظ المسودة");
       setLocalDirty(false);
       setDirty(true);
       await load();
     } catch (err) {
-      setMsg(errorMessage(err, "فشل الحفظ"));
+      toast(errorMessage(err, "فشل الحفظ"), "error");
     } finally {
       setBusy(false);
     }
@@ -235,52 +300,52 @@ export function EditorClient({ siteId }: { siteId: string }) {
   async function publish() {
     if (!draft) return;
     if (invalid) {
-      setMsg("صحّح الحقول المحددة قبل النشر.");
+      toast("صحّح الحقول المحددة باللون الأحمر قبل النشر.", "error");
       return;
     }
-    if (!window.confirm("نشر هذه الإعدادات على الموقع الآن؟")) return;
     setBusy(true);
     try {
       if (localDirty) await apiSend(`/v1/sites/${siteId}/config/draft`, "PUT", draft);
       await apiSend(`/v1/sites/${siteId}/config/publish`, "POST", { note: "نشر من المحرر" });
-      setMsg("تم النشر");
+      toast("نُشرت الإعدادات على الموقع");
       setLocalDirty(false);
       await load();
     } catch (err) {
-      setMsg(errorMessage(err, "فشل النشر"));
+      toast(errorMessage(err, "فشل النشر"), "error");
     } finally {
       setBusy(false);
+      setPending(null);
     }
   }
 
   async function discard() {
     if (!published) return;
-    if (!window.confirm("حذف كل التعديلات والعودة إلى النسخة المنشورة؟")) return;
     setBusy(true);
     try {
       await apiSend(`/v1/sites/${siteId}/config/draft`, "PUT", published);
       await load();
-      setMsg("تمت العودة إلى النسخة المنشورة");
+      toast("تمت العودة إلى النسخة المنشورة");
     } catch (err) {
-      setMsg(errorMessage(err, "تعذر تجاهل التغييرات"));
+      toast(errorMessage(err, "تعذر تجاهل التغييرات"), "error");
     } finally {
       setBusy(false);
+      setPending(null);
     }
   }
 
   async function killSwitch(enabled: boolean) {
-    if (!confirm(enabled ? "تفعيل الودجت؟" : "إيقاف الودجت فوراً على الموقع؟")) return;
     setBusy(true);
     try {
       await apiSend(`/v1/sites/${siteId}/config/kill-switch`, "POST", { enabled });
-      setMsg(enabled ? "تم التفعيل" : "تم الإيقاف الطارئ");
+      toast(enabled ? "عادت الأداة للعمل على الموقع" : "أُوقفت الأداة على الموقع");
       // Only `enabled` changed, so unsaved edits in the form stay as they are.
       setDraft((prev) => (prev ? { ...prev, enabled } : prev));
       setPublished((prev) => (prev ? { ...prev, enabled } : prev));
     } catch (err) {
-      setMsg(errorMessage(err, "تعذر تنفيذ الإيقاف"));
+      toast(errorMessage(err, "تعذر تنفيذ الإيقاف"), "error");
     } finally {
       setBusy(false);
+      setPending(null);
     }
   }
 
@@ -289,11 +354,11 @@ export function EditorClient({ siteId }: { siteId: string }) {
     setBusy(true);
     try {
       await apiSend(`/v1/sites/${siteId}/config/versions/${versionId}/restore`, "POST");
-      setMsg("تمت الاستعادة إلى المسودة");
+      toast("تمت الاستعادة إلى المسودة");
       await load();
       setLocalDirty(true);
     } catch (err) {
-      setMsg(errorMessage(err, "فشل الاستعادة"));
+      toast(errorMessage(err, "فشل الاستعادة"), "error");
     } finally {
       setBusy(false);
     }
@@ -315,11 +380,24 @@ export function EditorClient({ siteId }: { siteId: string }) {
     updateFeatures(next);
   }
 
+  /** Drag-and-drop target: place `fromId` where `toId` is and renumber, so orders stay 0..n. */
+  function dropFeature(fromId: string, toId: string) {
+    if (!draft?.features || fromId === toId) return;
+    const sorted = [...draft.features].sort((a, b) => a.order - b.order);
+    const from = sorted.findIndex((f) => f.id === fromId);
+    const to = sorted.findIndex((f) => f.id === toId);
+    if (from < 0 || to < 0) return;
+    const [moved] = sorted.splice(from, 1);
+    sorted.splice(to, 0, moved!);
+    updateFeatures(sorted.map((f, order) => ({ ...f, order })));
+    toast(`نُقلت «${featureLabel(fromId)}» إلى الموضع ${to + 1}`);
+  }
+
   if (loadFailed) {
     return (
       <Card className="max-w-md space-y-3">
         <h1 className="text-xl font-bold">تعذر فتح هذا الموقع</h1>
-        <p className="text-sm text-slate-600">قد يكون الموقع غير موجود أو غير متاح لحسابك.</p>
+        <p className="text-sm text-ink-600">قد يكون الموقع غير موجود أو غير متاح لحسابك.</p>
         <Link href="/sites" className="text-sm font-semibold text-brand">
           العودة إلى المواقع
         </Link>
@@ -328,7 +406,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
   }
 
   if (!draft || !site) {
-    return <p className="text-slate-500">جارٍ التحميل…</p>;
+    return <p className="text-ink-500">جارٍ التحميل…</p>;
   }
 
   const features = [...(draft.features ?? defaultFeatureEntries())].sort(
@@ -337,63 +415,48 @@ export function EditorClient({ siteId }: { siteId: string }) {
 
   const embed = `<script src="${WIDGET_CDN}" data-site-key="${site.siteKey}" data-api="${API_BASE}" defer></script>`;
 
+  const unpublished = dirty || localDirty;
+  const changes = changedSections(draft, published);
+  const paused = draft.enabled === false;
+
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <Link href="/sites" className="text-sm text-brand">
-            ← المواقع
-          </Link>
-          <h1 className="text-2xl font-bold">{site.name}</h1>
-          <p className="text-sm text-slate-500">{site.domain}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {(dirty || localDirty) && (
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
-              مسودة غير منشورة
-            </span>
-          )}
-          {readOnly && (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-              عرض فقط
-            </span>
-          )}
-          <Button variant="ghost" disabled={busy || readOnly} onClick={() => void discard()}>
-            تجاهل التغييرات
-          </Button>
-          <Button variant="ghost" disabled={busy || readOnly} onClick={() => void saveDraft()}>
-            حفظ المسودة
-          </Button>
-          <Button disabled={busy || readOnly} onClick={() => void publish()}>
-            نشر
-          </Button>
-          <Button
-            variant="danger"
-            disabled={busy || readOnly}
-            onClick={() => void killSwitch(draft.enabled === false)}
-          >
-            {draft.enabled === false ? "إلغاء الإيقاف" : "إيقاف طارئ"}
-          </Button>
-        </div>
-      </div>
-      <p role="status" className="min-h-5 text-sm text-slate-600">
-        {msg}
-      </p>
+    <div className="space-y-5">
+      <PageHeader
+        back={{ href: "/sites", label: "المواقع" }}
+        title={
+          <span className="flex flex-wrap items-center gap-3">
+            {site.name}
+            {paused ? (
+              <Badge tone="danger">متوقفة</Badge>
+            ) : unpublished ? (
+              <Badge tone="warning">{localDirty ? "تعديلات غير محفوظة" : "مسودة غير منشورة"}</Badge>
+            ) : (
+              <Badge tone="success">منشورة</Badge>
+            )}
+            {readOnly && <Badge>عرض فقط</Badge>}
+          </span>
+        }
+        description={<span dir="ltr">{site.domain}</span>}
+      />
+
       {!contrast.passesAa && (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
-          تباين اللون الأساسي مع النص الأبيض {contrast.ratio}:1، والمطلوب 4.5:1 على الأقل.
+        <p role="alert" className="rounded-xl border border-danger-line bg-danger-soft px-4 py-3 text-sm text-danger">
+          {contrast.ratio < 4.5
+            ? `تباين النص على اللون الأساسي ${contrast.ratio}:1، والمطلوب 4.5:1 على الأقل.`
+            : `تباين زر الأداة مع صفحة فاتحة ${contrast.buttonRatio}:1، والمطلوب 3:1 على الأقل حتى يظهر الزر.`}
+          {" "}لن يُقبل الحفظ حتى تختار لوناً آخر من تبويب «الشكل».
         </p>
       )}
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_420px]">
-        <Card className="space-y-4">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_440px]">
+        <Card className="space-y-5 pb-24">
           <Tabs tabs={TABS} active={tab} onChange={setTab} />
           <div role="tabpanel" id={TAB_PANEL_ID} aria-labelledby={tabId(tab)} tabIndex={0}>
 
           {tab === "features" && (
             <div className="space-y-3">
-              <p className="text-sm text-slate-500">
-                الخصائص العشر المعتمدة. استخدم الأسهم لإعادة الترتيب.
+              <p className="text-sm text-ink-500">
+                تظهر الخصائص في الأداة مجمّعة حسب الاستخدام (القراءة، الرؤية، التنقل)، وترتيبك هنا يحدد ترتيبها داخل كل مجموعة. اسحب الصف لتغيير ترتيبه، أو استخدم زرّي الأعلى والأسفل.
               </p>
               {features.map((f) => {
                 const catalog = FEATURE_CATALOG.find((c) => c.id === f.id);
@@ -401,28 +464,62 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 return (
                   <div
                     key={f.id}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-3"
+                    draggable={!readOnly}
+                    onDragStart={(e) => {
+                      setDragId(f.id);
+                      e.dataTransfer.effectAllowed = "move";
+                    }}
+                    onDragOver={(e) => {
+                      if (!dragId) return;
+                      e.preventDefault();
+                      setOverId(f.id);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragId) dropFeature(dragId, f.id);
+                      setDragId(null);
+                      setOverId(null);
+                    }}
+                    onDragEnd={() => {
+                      setDragId(null);
+                      setOverId(null);
+                    }}
+                    className={clsx(
+                      "flex flex-wrap items-center justify-between gap-3 rounded-xl border p-3 transition",
+                      f.enabled ? "border-ink-200 bg-surface" : "border-dashed border-ink-200 bg-ink-50",
+                      dragId === f.id && "opacity-50",
+                      overId === f.id && dragId !== f.id && "border-brand bg-brand-soft",
+                    )}
                   >
-                    <div>
-                      <div className="font-semibold">{featureLabel(f.id)}</div>
+                    {!readOnly && (
+                      <GripVertical
+                        aria-hidden="true"
+                        className="h-5 w-5 shrink-0 cursor-grab text-ink-400 active:cursor-grabbing"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className={f.enabled ? "font-semibold" : "font-semibold text-ink-400"}>{featureLabel(f.id)}</div>
+                      <div className="text-xs text-ink-500">
+                        {f.enabled ? (levels.length > 1 ? `${levels.length} مستويات` : "تشغيل وإيقاف") : "مخفية من الأداة"}
+                      </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
                         variant="ghost"
                         type="button"
+                        size="sm"
+                        icon={ChevronUp}
                         aria-label={`نقل ${featureLabel(f.id)} لأعلى`}
                         onClick={() => moveFeature(f.id, -1)}
-                      >
-                        ↑
-                      </Button>
+                      />
                       <Button
                         variant="ghost"
                         type="button"
+                        size="sm"
+                        icon={ChevronDown}
                         aria-label={`نقل ${featureLabel(f.id)} لأسفل`}
                         onClick={() => moveFeature(f.id, 1)}
-                      >
-                        ↓
-                      </Button>
+                      />
                       <Switch
                         label={`تفعيل ${featureLabel(f.id)}`}
                         checked={f.enabled}
@@ -435,7 +532,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                       {levels.length > 1 && (
                         <select
                           aria-label={`المستوى الافتراضي لخاصية ${featureLabel(f.id)}`}
-                          className="rounded-lg border border-slate-400 px-2 py-1 text-sm"
+                          className="rounded-lg border border-ink-400 px-2 py-1 text-sm"
                           value={String(f.defaultLevel ?? "")}
                           onChange={(e) => {
                             const raw = e.target.value;
@@ -462,120 +559,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
           )}
 
           {tab === "look" && (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <SelectInput
-                label="الموضع"
-                value={draft.position || "bottom-right"}
-                onChange={(e) => update({ position: e.target.value as WidgetConfig["position"] })}
-              >
-                <option value="bottom-right">أسفل يمين</option>
-                <option value="bottom-left">أسفل يسار</option>
-                <option value="top-right">أعلى يمين</option>
-                <option value="top-left">أعلى يسار</option>
-              </SelectInput>
-              <TextInput
-                label="عرض اللوحة"
-                value={draft.widgetWidth ?? ""}
-                error={fieldErrors.widgetWidth}
-                onChange={(e) => update({ widgetWidth: e.target.value })}
-              />
-              <TextInput
-                label="حجم الزر"
-                type="number"
-                value={draft.buttonSize ?? ""}
-                error={fieldErrors.buttonSize}
-                onChange={(e) => update({ buttonSize: numberOrUndefined(e.target.value) })}
-              />
-              <TextInput
-                label="نصف القطر"
-                type="number"
-                value={draft.radius ?? ""}
-                error={fieldErrors.radius}
-                onChange={(e) => update({ radius: numberOrUndefined(e.target.value) })}
-              />
-              <SelectInput
-                label="الأيقونة"
-                value={draft.buttonIcon || "person"}
-                onChange={(e) =>
-                  update({ buttonIcon: e.target.value as WidgetConfig["buttonIcon"] })
-                }
-              >
-                <option value="person">شخص</option>
-                <option value="a11y">وصول</option>
-                <option value="eye">عين</option>
-                <option value="text">نص</option>
-              </SelectInput>
-              <SelectInput
-                label="السمة"
-                value={draft.theme || "light"}
-                onChange={(e) => update({ theme: e.target.value as WidgetConfig["theme"] })}
-              >
-                <option value="light">فاتح</option>
-                <option value="dark">داكن</option>
-                <option value="auto">تلقائي</option>
-              </SelectInput>
-              <TextInput
-                label="إزاحة أفقية"
-                type="number"
-                value={draft.offset?.x ?? 20}
-                error={fieldErrors["offset.x"]}
-                onChange={(e) =>
-                  update({ offset: { x: Number(e.target.value), y: draft.offset?.y ?? 20 } })
-                }
-              />
-              <TextInput
-                label="إزاحة رأسية"
-                type="number"
-                value={draft.offset?.y ?? 20}
-                error={fieldErrors["offset.y"]}
-                onChange={(e) =>
-                  update({ offset: { x: draft.offset?.x ?? 20, y: Number(e.target.value) } })
-                }
-              />
-              <ColorInput
-                label="اللون الأساسي"
-                value={draft.colors?.primary ?? ""}
-                error={fieldErrors["colors.primary"]}
-                onChange={(primary) => update({ colors: { ...draft.colors, primary } })}
-              />
-              <ColorInput
-                label="لون الخلفية"
-                value={draft.colors?.background ?? ""}
-                error={fieldErrors["colors.background"]}
-                onChange={(background) => update({ colors: { ...draft.colors, background } })}
-              />
-              <ColorInput
-                label="لون النص"
-                value={draft.colors?.text ?? ""}
-                error={fieldErrors["colors.text"]}
-                onChange={(text) => update({ colors: { ...draft.colors, text } })}
-              />
-              <SelectInput
-                label="موضع الجوال"
-                value={draft.mobile?.position || draft.position || "bottom-right"}
-                onChange={(e) =>
-                  update({
-                    mobile: {
-                      ...draft.mobile,
-                      position: e.target.value as WidgetConfig["position"],
-                    },
-                  })
-                }
-              >
-                <option value="bottom-right">أسفل يمين</option>
-                <option value="bottom-left">أسفل يسار</option>
-                <option value="top-right">أعلى يمين</option>
-                <option value="top-left">أعلى يسار</option>
-              </SelectInput>
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
-                <span className="text-sm">إخفاء على الجوال</span>
-                <Switch
-                  label="إخفاء على الجوال"
-                  checked={!!draft.mobile?.hide}
-                  onChange={(hide) => update({ mobile: { ...draft.mobile, hide } })}
-                />
-              </div>
-            </div>
+            <LookPanel draft={draft} update={update} fieldErrors={fieldErrors} />
           )}
 
           {tab === "text" && (
@@ -590,7 +574,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 <option value="ar">العربية</option>
                 <option value="en">English</option>
               </SelectInput>
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-ink-200 p-3">
                 <span className="text-sm">اكتشاف لغة الصفحة</span>
                 <Switch
                   label="اكتشاف لغة الصفحة"
@@ -635,7 +619,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
 
           {tab === "behavior" && (
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-ink-200 p-3">
                 <span className="text-sm">الودجت مفعّل</span>
                 <Switch
                   label="الودجت مفعّل"
@@ -643,7 +627,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                   onChange={(enabled) => update({ enabled })}
                 />
               </div>
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-ink-200 p-3">
                 <span className="text-sm">حفظ التفضيلات محلياً</span>
                 <Switch
                   label="حفظ التفضيلات"
@@ -651,12 +635,20 @@ export function EditorClient({ siteId }: { siteId: string }) {
                   onChange={(persistPreferences) => update({ persistPreferences })}
                 />
               </div>
-              <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-3">
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-ink-200 p-3">
                 <span className="text-sm">التحليلات</span>
                 <Switch
                   label="التحليلات"
                   checked={draft.enableAnalytics !== false}
                   onChange={(enableAnalytics) => update({ enableAnalytics })}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-2 rounded-xl border border-ink-200 p-3">
+                <span className="text-sm">الإعدادات السريعة في الأداة</span>
+                <Switch
+                  label="الإعدادات السريعة في الأداة"
+                  checked={draft.quickPresets !== false}
+                  onChange={(quickPresets) => update({ quickPresets })}
                 />
               </div>
               <TextInput
@@ -666,11 +658,11 @@ export function EditorClient({ siteId }: { siteId: string }) {
                 onChange={(e) => update({ openShortcut: e.target.value })}
               />
               <label className="block text-sm sm:col-span-2">
-                <span className="mb-1 block text-slate-600">
+                <span className="mb-1 block text-ink-600">
                   صفحات مستثناة (مسار في كل سطر، يدعم * و **)
                 </span>
                 <textarea
-                  className="min-h-28 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                  className="min-h-28 w-full rounded-xl border border-ink-300 px-3 py-2 text-sm"
                   value={(draft.excludedPaths || []).join("\n")}
                   onChange={(e) =>
                     update({
@@ -689,11 +681,11 @@ export function EditorClient({ siteId }: { siteId: string }) {
           {tab === "usage" && (
             <div className="space-y-3">
               {!analytics?.total && (
-                <p className="text-sm text-slate-500">لا توجد بيانات استخدام بعد.</p>
+                <p className="text-sm text-ink-500">لا توجد بيانات استخدام بعد.</p>
               )}
               {!!analytics?.total && (
                 <>
-                  <ul className="divide-y divide-slate-100 text-sm">
+                  <ul className="divide-y divide-ink-100 text-sm">
                     {Object.entries(analytics.byEvent).map(([event, count]) => (
                       <li key={event} className="flex justify-between py-2">
                         <span>{EVENT_LABELS[event] ?? event}</span>
@@ -702,7 +694,7 @@ export function EditorClient({ siteId }: { siteId: string }) {
                     ))}
                   </ul>
                   <h2 className="text-sm font-semibold">أكثر الخصائص استخداماً</h2>
-                  <ul className="divide-y divide-slate-100 text-sm">
+                  <ul className="divide-y divide-ink-100 text-sm">
                     {Object.entries(analytics.byFeature)
                       .sort((a, b) => b[1] - a[1])
                       .map(([feature, count]) => (
@@ -714,54 +706,67 @@ export function EditorClient({ siteId }: { siteId: string }) {
                   </ul>
                 </>
               )}
-              <p className="text-xs text-slate-500">آخر 500 حدث، دون أي بيانات شخصية.</p>
+              <p className="text-xs text-ink-500">آخر 500 حدث، دون أي بيانات شخصية.</p>
             </div>
           )}
 
           {tab === "install" && (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-600">الصق هذا السكربت قبل إغلاق body:</p>
-              <pre className="overflow-x-auto rounded-xl bg-slate-900 p-4 text-xs text-slate-100">
-                {embed}
-              </pre>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  void navigator.clipboard.writeText(embed);
-                  setMsg("تم نسخ كود التضمين");
-                }}
-              >
-                نسخ الكود
-              </Button>
-              <p className="text-xs text-slate-500">Site key: {site.siteKey}</p>
-              <p className="text-xs text-slate-500">API: {API_BASE}</p>
+            <div className="space-y-6">
+              <CopyField label="الصق هذا السطر قبل وسم ‎</body>‎ في كل صفحات الموقع" value={embed} multiline />
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  { title: "HTML", body: "الصق السطر في القالب المشترك قبل إغلاق body." },
+                  { title: "WordPress", body: "من «المظهر ← محرر القوالب» أو إضافة لإدراج الأكواد في التذييل." },
+                  { title: "Next.js / React", body: "أضفه في التخطيط الرئيسي عبر مكوّن Script باستراتيجية afterInteractive." },
+                ].map((p) => (
+                  <div key={p.title} className="rounded-xl border border-ink-200 p-3">
+                    <div className="text-sm font-semibold" dir="ltr">{p.title}</div>
+                    <p className="mt-1 text-xs text-ink-500">{p.body}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap items-center gap-3 rounded-xl bg-ink-50 p-3 text-sm">
+                {(analytics?.byEvent?.widget_init ?? 0) > 0 ? (
+                  <Badge tone="success">الأداة تعمل على الموقع</Badge>
+                ) : (
+                  <Badge tone="warning">لم تصل أي زيارة بعد</Badge>
+                )}
+                <span className="text-ink-500">
+                  تتحقق الحالة من أول تحميل للأداة على {site.domain}. افتح الموقع بعد التثبيت ثم أعد تحميل هذه الصفحة.
+                </span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <CopyField label="مفتاح الموقع" value={site.siteKey} />
+                <CopyField label="عنوان الـ API" value={API_BASE} />
+              </div>
             </div>
           )}
 
           {tab === "history" && (
             <div className="space-y-3">
               {versions.length === 0 && (
-                <p className="text-sm text-slate-500">لا توجد نسخ منشورة بعد.</p>
+                <p className="text-sm text-ink-500">لا توجد نسخ منشورة بعد.</p>
               )}
               {versions.map((v) => (
                 <div
                   key={v.id}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 p-3"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-ink-200 p-3"
                 >
                   <div>
                     <div className="text-sm font-semibold">
                       {new Date(v.createdAt).toLocaleString("ar")}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-ink-500">
                       {v.createdBy?.name || v.createdBy?.email || "—"}
                       {v.note ? ` · ${v.note}` : ""}
                     </div>
-                    <div className="mt-1 text-xs text-slate-500">
-                      موضع: {v.config.position} · لغة: {v.config.language}
-                    </div>
+                    {published && JSON.stringify(v.config) === JSON.stringify(published) && (
+                      <div className="mt-1">
+                        <Badge tone="success">النسخة المنشورة حالياً</Badge>
+                      </div>
+                    )}
                   </div>
-                  <Button variant="ghost" disabled={busy} onClick={() => void restore(v.id)}>
+                  <Button variant="secondary" size="sm" disabled={busy || readOnly} onClick={() => void restore(v.id)}>
                     استعادة للمسودة
                   </Button>
                 </div>
@@ -771,53 +776,144 @@ export function EditorClient({ siteId }: { siteId: string }) {
           </div>
         </Card>
 
-        <Card className="space-y-3">
+        <Card className="space-y-3 xl:sticky xl:top-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-semibold">معاينة حية</h2>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <div role="group" aria-label="جهاز المعاينة" className="flex rounded-xl bg-ink-100 p-1">
+                {([
+                  { id: "desktop", label: "سطح المكتب", Icon: Monitor },
+                  { id: "mobile", label: "الجوال", Icon: Smartphone },
+                ] as const).map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-label={label}
+                    aria-pressed={previewDevice === id}
+                    onClick={() => setPreviewDevice(id)}
+                    className="grid h-8 w-9 place-items-center rounded-lg text-ink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand aria-pressed:bg-surface aria-pressed:text-ink-900 aria-pressed:shadow-card"
+                  >
+                    <Icon aria-hidden="true" className="h-4 w-4" />
+                  </button>
+                ))}
+              </div>
               <Button
-                variant={previewDevice === "desktop" ? "primary" : "ghost"}
+                variant="secondary"
+                size="sm"
                 type="button"
-                onClick={() => setPreviewDevice("desktop")}
-              >
-                سطح مكتب
-              </Button>
-              <Button
-                variant={previewDevice === "mobile" ? "primary" : "ghost"}
-                type="button"
-                onClick={() => setPreviewDevice("mobile")}
-              >
-                جوال
-              </Button>
-              <Button
-                variant="ghost"
-                type="button"
+                lang={previewLang === "ar" ? "en" : "ar"}
+                aria-label={previewLang === "ar" ? "معاينة بالإنجليزية" : "معاينة بالعربية"}
                 onClick={() => setPreviewLang((l) => (l === "ar" ? "en" : "ar"))}
               >
-                {previewLang === "ar" ? "EN" : "عربي"}
+                {previewLang === "ar" ? "EN" : "ع"}
               </Button>
             </div>
           </div>
           <div
-            className="mx-auto overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
+            className="mx-auto overflow-hidden rounded-xl border border-ink-200 bg-ink-100"
             style={{
               width: previewDevice === "mobile" ? 375 : "100%",
-              height: 640,
+              height: "min(640px, calc(100vh - 220px))",
             }}
           >
             <iframe
               ref={iframeRef}
               title="معاينة الودجت"
               src={PREVIEW_URL}
-              className="h-full w-full bg-white"
+              className="h-full w-full bg-surface"
               onLoad={() => draft && pushPreview(draft)}
             />
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-ink-500">
             تتطلب المعاينة تشغيل خادم الودجت على {PREVIEW_ORIGIN}
           </p>
         </Card>
       </div>
+
+      {!readOnly && (
+        <div className="sticky bottom-4 z-20">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-ink-200 bg-surface/95 px-4 py-3 shadow-pop backdrop-blur">
+            <div className="text-sm text-ink-600" aria-live="polite">
+              {localDirty
+                ? "لديك تعديلات غير محفوظة"
+                : unpublished
+                  ? `المسودة تختلف عن المنشور في: ${changes.join("، ") || "إعدادات أخرى"}`
+                  : "كل التعديلات منشورة"}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={paused ? "secondary" : "ghost"}
+                size="sm"
+                disabled={busy}
+                onClick={() => setPending(paused ? "resume" : "pause")}
+                className={paused ? "" : "text-danger"}
+              >
+                {paused ? "إعادة تشغيل الأداة" : "إيقاف طارئ"}
+              </Button>
+              <Button variant="ghost" size="sm" disabled={busy || !unpublished} onClick={() => setPending("discard")}>
+                تجاهل التغييرات
+              </Button>
+              <Button variant="secondary" size="sm" disabled={busy || !localDirty} onClick={() => void saveDraft()}>
+                حفظ المسودة
+              </Button>
+              <Button
+                size="sm"
+                disabled={busy || !unpublished}
+                onClick={() => (invalid ? void publish() : setPending("publish"))}
+              >
+                نشر
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={pending === "publish"}
+        title="نشر الإعدادات على الموقع؟"
+        confirmLabel="نشر الآن"
+        busy={busy}
+        onCancel={() => setPending(null)}
+        onConfirm={() => void publish()}
+      >
+        <p>يرى زوار {site.domain} التغييرات خلال دقائق. تستطيع استعادة أي نسخة سابقة من تبويب «السجل».</p>
+        {changes.length > 0 && (
+          <div className="mt-3">
+            <div className="mb-1 font-medium text-ink-800">ما الذي تغيّر:</div>
+            <ul className="flex flex-wrap gap-1.5">
+              {changes.map((c) => (
+                <li key={c}>
+                  <Badge tone="brand">{c}</Badge>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={pending === "discard"}
+        title="تجاهل كل التعديلات؟"
+        confirmLabel="تجاهل التعديلات"
+        tone="danger"
+        busy={busy}
+        onCancel={() => setPending(null)}
+        onConfirm={() => void discard()}
+      >
+        تعود المسودة إلى النسخة المنشورة حالياً، ولا يمكن التراجع عن ذلك.
+      </ConfirmDialog>
+      <ConfirmDialog
+        open={pending === "pause" || pending === "resume"}
+        title={pending === "resume" ? "إعادة تشغيل الأداة؟" : "إيقاف الأداة فوراً؟"}
+        confirmLabel={pending === "resume" ? "إعادة التشغيل" : "إيقاف الأداة"}
+        tone={pending === "resume" ? "primary" : "danger"}
+        busy={busy}
+        onCancel={() => setPending(null)}
+        onConfirm={() => void killSwitch(pending === "resume")}
+      >
+        {pending === "resume"
+          ? `تعود الأداة للظهور على ${site.domain}.`
+          : `تختفي الأداة من ${site.domain} خلال دقائق دون انتظار النشر. استخدمه إذا سبّبت الأداة مشكلة في الموقع.`}
+      </ConfirmDialog>
     </div>
   );
 }
